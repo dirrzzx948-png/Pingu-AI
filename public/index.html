@@ -38,7 +38,13 @@
                 ],
 
                 processEscapes: true,
-                processEnvironments: true
+                processEnvironments: true,
+                packages: {
+                    "[+]": [
+                        "ams",
+                        "boldsymbol"
+                    ]
+                }
             },
 
             options: {
@@ -49,7 +55,10 @@
                     "textarea",
                     "pre",
                     "code"
-                ]
+                ],
+
+                ignoreHtmlClass:
+                    "math-ignore"
             },
 
             startup: {
@@ -587,6 +596,7 @@
 
         .math-display {
             width: 100%;
+
             margin: 15px 0;
 
             padding: 10px 4px;
@@ -621,40 +631,37 @@
             display: inline;
         }
 
-        /*
-         * MathJax sendiri yang menggambar rumus.
-         * Ukurannya dibuat sedikit lebih besar
-         * agar nyaman dibaca di HP.
-         */
+        .math-inline mjx-container {
+            display: inline-block !important;
+        }
+
         .message-bubble mjx-container {
             color: inherit !important;
         }
 
         .message-bubble mjx-container[display="true"] {
-            margin:
-                12px 0 !important;
+            margin: 12px 0 !important;
+
             max-width: 100%;
+
             overflow-x: auto;
             overflow-y: hidden;
-            padding:
-                3px 0;
+
+            padding: 3px 0;
         }
 
-        .message-bubble mjx-container[display="true"]
+        .message-bubble
+        mjx-container[display="true"]
         mjx-math {
             max-width: none;
         }
 
-        .message-bubble .math-display
+        .message-bubble
+        .math-display
         mjx-container[display="true"] {
-            margin:
-                0 !important;
+            margin: 0 !important;
         }
 
-        /*
-         * Supaya rumus tidak membuat bubble
-         * terlalu sempit di layar kecil.
-         */
         .message-bubble
         mjx-container {
             font-size: 103% !important;
@@ -836,10 +843,6 @@
 
             font-size: .9em;
         }
-
-        /* =========================
-           MESSAGE CONTENT FIX
-        ========================= */
 
         .message-bubble strong {
             font-weight: 750;
@@ -1908,7 +1911,117 @@
     }
 
     /* =========================
-       MATH + MARKDOWN + CODE
+       MATH BLOCK PARSER
+    ========================= */
+
+    function extractMathBlocks(
+        source,
+        blocks
+    ) {
+        /*
+         * DISPLAY:
+         * $$ ... $$
+         */
+        source = source.replace(
+            /\$\$([\s\S]*?)\$\$/g,
+            (_, math) => {
+                const index =
+                    blocks.length;
+
+                blocks.push({
+                    type: "display-math",
+                    content:
+                        String(
+                            math || ""
+                        ).trim()
+                });
+
+                return (
+                    `__PINGU_MATH_BLOCK_${index}__`
+                );
+            }
+        );
+
+        /*
+         * DISPLAY:
+         * \[ ... \]
+         */
+        source = source.replace(
+            /\\\[([\s\S]*?)\\\]/g,
+            (_, math) => {
+                const index =
+                    blocks.length;
+
+                blocks.push({
+                    type: "display-math",
+                    content:
+                        String(
+                            math || ""
+                        ).trim()
+                });
+
+                return (
+                    `__PINGU_MATH_BLOCK_${index}__`
+                );
+            }
+        );
+
+        /*
+         * INLINE:
+         * \( ... \)
+         */
+        source = source.replace(
+            /\\\(([\s\S]*?)\\\)/g,
+            (_, math) => {
+                const index =
+                    blocks.length;
+
+                blocks.push({
+                    type: "inline-math",
+                    content:
+                        String(
+                            math || ""
+                        ).trim()
+                });
+
+                return (
+                    `__PINGU_MATH_BLOCK_${index}__`
+                );
+            }
+        );
+
+        /*
+         * INLINE:
+         * $ ... $
+         *
+         * Tidak boleh melewati newline.
+         */
+        source = source.replace(
+            /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
+            (full, before, math) => {
+                const index =
+                    blocks.length;
+
+                blocks.push({
+                    type: "inline-math",
+                    content:
+                        String(
+                            math || ""
+                        ).trim()
+                });
+
+                return (
+                    before +
+                    `__PINGU_MATH_BLOCK_${index}__`
+                );
+            }
+        );
+
+        return source;
+    }
+
+    /* =========================
+       FORMAT TEXT
     ========================= */
 
     function formatText(text) {
@@ -1919,16 +2032,13 @@
 
         /*
          * ==================================================
-         * 1. AMBIL CODE BLOCK TERLEBIH DAHULU
+         * CODE DIAMBIL PALING PERTAMA
          * ==================================================
          */
 
-        const codePattern =
-            /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g;
-
         source =
             source.replace(
-                codePattern,
+                /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g,
                 (_, language, code) => {
                     const index =
                         blocks.length;
@@ -1952,134 +2062,26 @@
                     });
 
                     return (
-                        `__PINGU_BLOCK_${index}__`
+                        `__PINGU_CODE_BLOCK_${index}__`
                     );
                 }
             );
 
         /*
          * ==================================================
-         * 2. DISPLAY MATH $$...$$
+         * MATH DIAMBIL SETELAH CODE
          * ==================================================
          */
 
         source =
-            source.replace(
-                /\$\$([\s\S]*?)\$\$/g,
-                (_, math) => {
-                    const index =
-                        blocks.length;
-
-                    blocks.push({
-                        type:
-                            "math-display",
-
-                        content:
-                            String(
-                                math || ""
-                            ).trim()
-                    });
-
-                    return (
-                        `__PINGU_BLOCK_${index}__`
-                    );
-                }
+            extractMathBlocks(
+                source,
+                blocks
             );
 
         /*
          * ==================================================
-         * 3. DISPLAY MATH \[...\]
-         * ==================================================
-         */
-
-        source =
-            source.replace(
-                /\\\[([\s\S]*?)\\\]/g,
-                (_, math) => {
-                    const index =
-                        blocks.length;
-
-                    blocks.push({
-                        type:
-                            "math-display",
-
-                        content:
-                            String(
-                                math || ""
-                            ).trim()
-                    });
-
-                    return (
-                        `__PINGU_BLOCK_${index}__`
-                    );
-                }
-            );
-
-        /*
-         * ==================================================
-         * 4. INLINE MATH \(...\)
-         * ==================================================
-         */
-
-        source =
-            source.replace(
-                /\\\(([\s\S]*?)\\\)/g,
-                (_, math) => {
-                    const index =
-                        blocks.length;
-
-                    blocks.push({
-                        type:
-                            "math-inline",
-
-                        content:
-                            String(
-                                math || ""
-                            ).trim()
-                    });
-
-                    return (
-                        `__PINGU_BLOCK_${index}__`
-                    );
-                }
-            );
-
-        /*
-         * ==================================================
-         * 5. INLINE MATH $...$
-         *
-         * Hanya satu baris supaya tidak mengganggu
-         * paragraf biasa.
-         * ==================================================
-         */
-
-        source =
-            source.replace(
-                /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
-                (full, before, math) => {
-                    const index =
-                        blocks.length;
-
-                    blocks.push({
-                        type:
-                            "math-inline",
-
-                        content:
-                            String(
-                                math || ""
-                            ).trim()
-                    });
-
-                    return (
-                        before +
-                        `__PINGU_BLOCK_${index}__`
-                    );
-                }
-            );
-
-        /*
-         * ==================================================
-         * 6. FORMAT TEKS BIASA
+         * TEKS BIASA
          * ==================================================
          */
 
@@ -2090,7 +2092,7 @@
 
         /*
          * ==================================================
-         * 7. MASUKKAN KEMBALI SEMUA BLOCK
+         * KEMBALIKAN PLACEHOLDER
          * ==================================================
          */
 
@@ -2102,12 +2104,14 @@
             const block =
                 blocks[i];
 
-            let blockHTML = "";
+            const codePlaceholder =
+                `__PINGU_CODE_BLOCK_${i}__`;
+
+            const mathPlaceholder =
+                `__PINGU_MATH_BLOCK_${i}__`;
 
             /*
-             * --------------------------
              * CODE
-             * --------------------------
              */
 
             if (
@@ -2124,7 +2128,7 @@
                         block.content
                     );
 
-                blockHTML = `
+                const blockHTML = `
                     <div class="code-wrapper">
                         <div class="code-header">
 
@@ -2147,71 +2151,82 @@
                         <pre class="code"><code>${safeCode}</code></pre>
                     </div>
                 `;
+
+                output =
+                    output.replace(
+                        codePlaceholder,
+                        blockHTML
+                    );
+
+                continue;
             }
 
             /*
-             * --------------------------
-             * DISPLAY MATH
-             * --------------------------
+             * ==================================================
+             * MATH
+             *
+             * PENTING:
+             *
+             * Di sini kita tidak memasukkan
+             * $$...$$ kembali ke HTML.
+             *
+             * Kita membuat placeholder dulu.
+             * Setelah bubble masuk DOM,
+             * replaceMathPlaceholders()
+             * membuat TEXT NODE asli.
+             *
+             * Dengan cara ini:
+             *
+             * \mathbf
+             * &
+             * \begin
+             * \end
+             *
+             * tidak rusak oleh HTML parser.
+             * ==================================================
              */
 
-            else if (
+            if (
                 block.type ===
                 "math-display"
             ) {
-                /*
-                 * Jangan escape backslash.
-                 *
-                 * MathJax membutuhkan LaTeX
-                 * asli seperti:
-                 *
-                 * \begin{aligned}
-                 * x &= 4
-                 * \end{aligned}
-                 *
-                 * Karakter HTML berbahaya tetap
-                 * diubah supaya aman.
-                 */
-
-                const safeMath =
-                    escapeHTML(
-                        block.content
+                output =
+                    output.replace(
+                        mathPlaceholder,
+                        `<div class="math-display" data-math-block="${i}"></div>`
                     );
 
-                blockHTML = `
-                    <div class="math-display">
-                        $$${safeMath}$$
-                    </div>
-                `;
+                continue;
             }
 
-            /*
-             * --------------------------
-             * INLINE MATH
-             * --------------------------
-             */
-
-            else if (
+            if (
                 block.type ===
-                "math-inline"
+                "inline-math"
             ) {
-                const safeMath =
-                    escapeHTML(
-                        block.content
+                output =
+                    output.replace(
+                        mathPlaceholder,
+                        `<span class="math-inline" data-math-block="${i}"></span>`
                     );
-
-                blockHTML =
-                    `<span class="math-inline">$${safeMath}$</span>`;
             }
-
-            output =
-                output.replace(
-                    `__PINGU_BLOCK_${i}__`,
-                    blockHTML
-                );
         }
 
-        return output;
+        /*
+         * Simpan data LaTeX sementara.
+         *
+         * Ini dipakai renderMathBlocks()
+         * setelah HTML masuk DOM.
+         */
+        return {
+            html: output,
+            mathBlocks: blocks.filter(
+                (block) =>
+                    block.type ===
+                        "math-display" ||
+                    block.type ===
+                        "inline-math"
+            )
+        };
     }
 
     function formatNormalText(text) {
@@ -2222,31 +2237,18 @@
         let output =
             escapeHTML(text);
 
-        /*
-         * Inline code.
-         */
         output =
             output.replace(
                 /`([^`\n]+)`/g,
                 '<span class="inline-code">$1</span>'
             );
 
-        /*
-         * Bold.
-         */
         output =
             output.replace(
                 /\*\*([^*\n]+)\*\*/g,
                 "<strong>$1</strong>"
             );
 
-        /*
-         * Newline teks biasa.
-         *
-         * Tidak menyentuh isi code block
-         * atau math block karena sudah
-         * dipisahkan menjadi placeholder.
-         */
         output =
             output.replace(
                 /\r?\n/g,
@@ -2254,6 +2256,83 @@
             );
 
         return output;
+    }
+
+    /* =========================
+       MATH BLOCK RENDERER
+    ========================= */
+
+    function renderMathBlocks(
+        bubble,
+        mathBlocks
+    ) {
+        if (
+            !bubble ||
+            !Array.isArray(mathBlocks) ||
+            !mathBlocks.length
+        ) {
+            return;
+        }
+
+        const placeholders =
+            bubble.querySelectorAll(
+                "[data-math-block]"
+            );
+
+        let mathIndex = 0;
+
+        for (
+            const element of placeholders
+        ) {
+            const block =
+                mathBlocks[mathIndex];
+
+            if (!block) {
+                break;
+            }
+
+            /*
+             * Hapus isi placeholder.
+             */
+            element.textContent = "";
+
+            /*
+             * Gunakan TEXT NODE asli.
+             *
+             * Ini penting agar karakter seperti:
+             *
+             * &
+             * \
+             * {
+             * }
+             *
+             * diterima MathJax sebagai LaTeX,
+             * bukan sebagai HTML.
+             */
+
+            if (
+                block.type ===
+                "math-display"
+            ) {
+                element.appendChild(
+                    document.createTextNode(
+                        "\\[" +
+                        block.content +
+                        "\\]"
+                    )
+                );
+            } else {
+                element.appendChild(
+                    document.createTextNode(
+                        "\\(" +
+                        block.content +
+                        "\\)"
+                    )
+                );
+            }
+
+            mathIndex++;
+        }
     }
 
     /* =========================
@@ -2269,15 +2348,31 @@
 
         try {
             if (
-                window.MathJax &&
-                window.MathJax.startup &&
-                window.MathJax.startup.promise
+                !window.MathJax
             ) {
-                await window.MathJax.startup.promise;
+                return;
             }
 
             if (
-                window.MathJax &&
+                window.MathJax.startup &&
+                window.MathJax.startup.promise
+            ) {
+                await window.MathJax
+                    .startup
+                    .promise;
+            }
+
+            if (
+                typeof
+                    window.MathJax.typesetClear ===
+                    "function"
+            ) {
+                window.MathJax.typesetClear(
+                    [element]
+                );
+            }
+
+            if (
                 typeof
                     window.MathJax.typesetPromise ===
                     "function"
@@ -2444,9 +2539,6 @@
         }
     }
 
-    /*
-     * Event delegation untuk tombol copy.
-     */
     document.addEventListener(
         "click",
         (event) => {
@@ -2550,11 +2642,31 @@
         bubble.className =
             "message-bubble";
 
-        bubble.innerHTML =
+        /*
+         * formatText sekarang mengembalikan:
+         *
+         * {
+         *   html,
+         *   mathBlocks
+         * }
+         */
+        const formatted =
             formatText(
                 message.content ||
                 ""
             );
+
+        bubble.innerHTML =
+            formatted.html;
+
+        /*
+         * Buat LaTeX menjadi TEXT NODE
+         * setelah HTML selesai dimasukkan.
+         */
+        renderMathBlocks(
+            bubble,
+            formatted.mathBlocks
+        );
 
         content.appendChild(
             bubble
@@ -2618,12 +2730,16 @@
         );
 
         /*
-         * Jalankan MathJax setelah bubble
-         * masuk ke DOM.
+         * MathJax baru dijalankan setelah
+         * LaTeX benar-benar ada sebagai text node.
          */
-        typesetMath(
-            bubble
-        );
+        if (
+            formatted.mathBlocks.length
+        ) {
+            typesetMath(
+                bubble
+            );
+        }
 
         if (scroll) {
             scrollBottom();
@@ -3229,28 +3345,35 @@
        MATHJAX READY
     ========================= */
 
-    /*
-     * Kalau MathJax selesai loading setelah
-     * chat sudah dirender, typeset ulang
-     * semua bubble yang sudah ada.
-     */
+    function typesetExistingMath() {
+        document
+            .querySelectorAll(
+                ".message-bubble"
+            )
+            .forEach(
+                (bubble) => {
+                    if (
+                        bubble.querySelector(
+                            ".math-display, .math-inline"
+                        )
+                    ) {
+                        typesetMath(
+                            bubble
+                        );
+                    }
+                }
+            );
+    }
+
     if (
         window.MathJax &&
         window.MathJax.startup
     ) {
-        window.MathJax.startup.promise
+        window.MathJax
+            .startup
+            .promise
             .then(() => {
-                document
-                    .querySelectorAll(
-                        ".message-bubble"
-                    )
-                    .forEach(
-                        (bubble) => {
-                            typesetMath(
-                                bubble
-                            );
-                        }
-                    );
+                typesetExistingMath();
             })
             .catch(
                 (error) => {
