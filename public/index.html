@@ -8,10 +8,7 @@
         content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     >
 
-    <meta
-        name="theme-color"
-        content="#f4efe6"
-    >
+    <meta name="theme-color" content="#f4efe6">
 
     <meta
         name="description"
@@ -20,10 +17,6 @@
 
     <title>Pingu AI</title>
 
-    <!-- =========================
-         MATHJAX
-    ========================== -->
-
     <script>
         window.MathJax = {
             tex: {
@@ -31,23 +24,16 @@
                     ["$", "$"],
                     ["\\(", "\\)"]
                 ],
-
                 displayMath: [
                     ["$$", "$$"],
                     ["\\[", "\\]"]
                 ],
-
                 processEscapes: true,
                 processEnvironments: true,
-
                 packages: {
-                    "[+]": [
-                        "ams",
-                        "boldsymbol"
-                    ]
+                    "[+]": ["ams", "boldsymbol"]
                 }
             },
-
             options: {
                 skipHtmlTags: [
                     "script",
@@ -57,11 +43,8 @@
                     "pre",
                     "code"
                 ],
-
-                ignoreHtmlClass:
-                    "math-ignore"
+                ignoreHtmlClass: "math-ignore"
             },
-
             startup: {
                 typeset: false
             }
@@ -84,23 +67,17 @@
         :root {
             --bg: #f4efe6;
             --bg-soft: #faf7f1;
-
-            --glass: rgba(255, 255, 255, .62);
-            --glass-strong: rgba(255, 255, 255, .78);
-            --glass-soft: rgba(255, 255, 255, .42);
-
-            --border: rgba(55, 48, 39, .10);
-            --border-light: rgba(255, 255, 255, .78);
-
+            --glass: rgba(255,255,255,.62);
+            --glass-strong: rgba(255,255,255,.78);
+            --glass-soft: rgba(255,255,255,.42);
+            --border: rgba(55,48,39,.10);
+            --border-light: rgba(255,255,255,.78);
             --text: #292720;
             --text-soft: #625e56;
             --muted: #918b82;
-
             --accent: #6f5ce7;
             --accent-dark: #5947d0;
-
             --danger: #d95555;
-
             --radius: 18px;
             --sidebar: 270px;
         }
@@ -155,9 +132,7 @@
             display: flex;
         }
 
-        /* =========================
-           SIDEBAR
-        ========================= */
+        /* SIDEBAR */
 
         .sidebar {
             width: var(--sidebar);
@@ -185,30 +160,32 @@
             padding: 8px 6px 14px;
         }
 
-        .brand-logo {
-            width: 38px;
-            height: 38px;
-
+        .brand-logo,
+        .welcome-logo {
             display: grid;
             place-items: center;
-
-            border-radius: 13px;
 
             background:
                 linear-gradient(
                     145deg,
-                    #ffffff,
+                    #fff,
                     #e8e0d3
                 );
 
             border: 1px solid var(--border-light);
 
-            box-shadow:
-                0 5px 15px rgba(52,43,31,.08);
+            color: var(--accent);
 
+            box-shadow:
+                0 8px 25px rgba(52,43,31,.08);
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 13px;
             font-size: 17px;
             font-weight: 800;
-            color: var(--accent);
         }
 
         .brand-text {
@@ -218,7 +195,6 @@
         .brand-title {
             font-size: 16px;
             font-weight: 750;
-            letter-spacing: -.2px;
         }
 
         .brand-subtitle {
@@ -262,10 +238,8 @@
 
         .history-title {
             padding: 8px 7px 2px;
-
             font-size: 11px;
             font-weight: 700;
-
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: .7px;
@@ -336,9 +310,7 @@
             display: flex;
             align-items: center;
             gap: 7px;
-
             padding: 7px;
-
             font-size: 11px;
             color: var(--muted);
         }
@@ -351,9 +323,112 @@
             box-shadow: 0 0 0 3px rgba(84,168,106,.12);
         }
 
-        /* =========================
-           MAIN
-        ========================= */
+        /* ACCOUNT */
+
+        .account-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .login-button {
+            min-height: 36px;
+            padding: 0 13px;
+
+            border-radius: 11px;
+
+            background: rgba(255,255,255,.65);
+            border: 1px solid var(--border-light);
+
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 650;
+
+            box-shadow:
+                0 4px 14px rgba(55,48,39,.05);
+
+            transition:
+                background .15s ease,
+                transform .15s ease;
+        }
+
+        .login-button:hover {
+            background: #fff;
+        }
+
+        .login-button:active {
+            transform: scale(.97);
+        }
+
+        .user-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: 230px;
+
+            padding: 4px 5px 4px 7px;
+
+            border-radius: 12px;
+
+            background: rgba(255,255,255,.62);
+            border: 1px solid var(--border-light);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+
+            border-radius: 9px;
+
+            object-fit: cover;
+
+            background: #e9e2d7;
+        }
+
+        .user-info {
+            min-width: 0;
+            max-width: 110px;
+        }
+
+        .user-name {
+            font-size: 10px;
+            font-weight: 700;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-email {
+            margin-top: 1px;
+
+            font-size: 8px;
+            color: var(--muted);
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .logout-button {
+            min-height: 27px;
+            padding: 0 8px;
+
+            border-radius: 8px;
+
+            background: rgba(217,85,85,.08);
+            color: var(--danger);
+
+            font-size: 9px;
+            font-weight: 650;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* MAIN */
 
         .main {
             min-width: 0;
@@ -367,7 +442,7 @@
         }
 
         .topbar {
-            height: 62px;
+            min-height: 62px;
             flex-shrink: 0;
 
             display: flex;
@@ -392,6 +467,18 @@
 
         .mobile-menu {
             display: none;
+
+            place-items: center;
+
+            width: 36px;
+            height: 36px;
+
+            border-radius: 10px;
+
+            background: rgba(255,255,255,.56);
+            border: 1px solid var(--border);
+
+            color: var(--text-soft);
         }
 
         .top-title {
@@ -408,7 +495,6 @@
         .chat-container {
             flex: 1;
             min-height: 0;
-
             overflow-y: auto;
 
             padding:
@@ -426,9 +512,7 @@
             border-radius: 20px;
         }
 
-        /* =========================
-           WELCOME
-        ========================= */
+        /* WELCOME */
 
         .welcome {
             max-width: 760px;
@@ -442,26 +526,10 @@
 
             margin: 0 auto 17px;
 
-            display: grid;
-            place-items: center;
-
             border-radius: 21px;
-
-            background:
-                linear-gradient(
-                    145deg,
-                    #ffffff,
-                    #e8e0d4
-                );
-
-            border: 1px solid var(--border-light);
-
-            box-shadow:
-                0 10px 28px rgba(55,48,39,.09);
 
             font-size: 25px;
             font-weight: 850;
-            color: var(--accent);
         }
 
         .welcome h1 {
@@ -519,9 +587,7 @@
             transform: translateY(-1px);
         }
 
-        /* =========================
-           MESSAGES
-        ========================= */
+        /* MESSAGE */
 
         .message {
             max-width: 820px;
@@ -591,9 +657,7 @@
                 0 5px 16px rgba(111,92,231,.16);
         }
 
-        /* =========================
-           MATHEMATICS
-        ========================= */
+        /* MATH */
 
         .math-display {
             width: 100%;
@@ -608,24 +672,6 @@
             text-align: center;
 
             border-radius: 10px;
-
-            scrollbar-width: thin;
-            scrollbar-color:
-                rgba(80,70,60,.16)
-                transparent;
-        }
-
-        .math-display::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .math-display::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .math-display::-webkit-scrollbar-thumb {
-            background: rgba(80,70,60,.16);
-            border-radius: 20px;
         }
 
         .math-inline {
@@ -642,40 +688,21 @@
 
         .message-bubble mjx-container[display="true"] {
             margin: 12px 0 !important;
-
             max-width: 100%;
-
             overflow-x: auto;
             overflow-y: hidden;
-
             padding: 3px 0;
         }
 
-        .message-bubble
-        mjx-container[display="true"]
-        mjx-math {
-            max-width: none;
-        }
-
-        .message-bubble
-        .math-display
-        mjx-container[display="true"] {
-            margin: 0 !important;
-        }
-
-        .message-bubble
-        mjx-container {
+        .message-bubble mjx-container {
             font-size: 103% !important;
         }
 
-        .message.user
-        mjx-container {
+        .message.user mjx-container {
             color: #fff !important;
         }
 
-        /* =========================
-           CODE BLOCK
-        ========================= */
+        /* CODE */
 
         .code-wrapper {
             width: 100%;
@@ -752,22 +779,11 @@
 
             font-size: 10px;
             font-weight: 650;
-
-            cursor: pointer;
-
-            transition:
-                background .15s ease,
-                color .15s ease,
-                transform .1s ease;
         }
 
         .copy-code:hover {
             background: rgba(255,255,255,.16);
             color: #fff;
-        }
-
-        .copy-code:active {
-            transform: scale(.95);
         }
 
         .copy-code.copied {
@@ -786,7 +802,6 @@
             width: 100%;
 
             margin: 0;
-
             padding: 14px;
 
             overflow-x: auto;
@@ -807,22 +822,6 @@
 
             white-space: pre;
             tab-size: 4;
-
-            text-align: left;
-        }
-
-        .code::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-
-        .code::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .code::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,.13);
-            border-radius: 20px;
         }
 
         .inline-code {
@@ -849,21 +848,7 @@
             font-weight: 750;
         }
 
-        .message-bubble .code-wrapper {
-            line-height: normal;
-        }
-
-        .message-bubble > .code-wrapper:first-child {
-            margin-top: 2px;
-        }
-
-        .message-bubble > .code-wrapper:last-child {
-            margin-bottom: 2px;
-        }
-
-        /* =========================
-           IMAGE
-        ========================= */
+        /* IMAGE */
 
         .message-image {
             display: block;
@@ -894,18 +879,14 @@
             text-align: right;
         }
 
-        /* =========================
-           IMAGE PREVIEW
-        ========================= */
+        /* ATTACHMENT */
 
         .attachment {
             display: none;
 
             position: fixed;
 
-            left: calc(
-                var(--sidebar) + 20px
-            );
+            left: calc(var(--sidebar) + 20px);
 
             right: 20px;
             bottom: 92px;
@@ -948,7 +929,6 @@
             height: 52px;
 
             object-fit: cover;
-
             border-radius: 10px;
         }
 
@@ -985,9 +965,7 @@
             font-size: 17px;
         }
 
-        /* =========================
-           COMPOSER
-        ========================= */
+        /* COMPOSER */
 
         .composer-area {
             position: absolute;
@@ -1044,15 +1022,6 @@
             color: var(--text-soft);
 
             font-size: 18px;
-
-            transition:
-                background .15s ease,
-                color .15s ease;
-        }
-
-        .composer-button:hover {
-            background: #fff;
-            color: var(--accent);
         }
 
         .composer-button.active {
@@ -1067,9 +1036,7 @@
 
         .mode-row {
             display: none;
-
             gap: 6px;
-
             margin: 0 0 6px;
         }
 
@@ -1106,7 +1073,6 @@
             outline: 0;
 
             background: transparent;
-
             color: var(--text);
 
             padding: 9px 3px;
@@ -1133,18 +1099,10 @@
             color: #fff;
 
             font-size: 16px;
-
-            transition:
-                background .15s ease,
-                transform .15s ease;
         }
 
         .send-button:hover {
             background: var(--accent-dark);
-        }
-
-        .send-button:active {
-            transform: scale(.95);
         }
 
         .send-button:disabled {
@@ -1168,9 +1126,7 @@
             display: none;
         }
 
-        /* =========================
-           TYPING
-        ========================= */
+        /* TYPING */
 
         .typing {
             display: none;
@@ -1230,7 +1186,7 @@
         }
 
         @keyframes typing {
-            0%, 60%, 100% {
+            0%,60%,100% {
                 transform: translateY(0);
                 opacity: .4;
             }
@@ -1241,9 +1197,7 @@
             }
         }
 
-        /* =========================
-           MOBILE
-        ========================= */
+        /* MOBILE */
 
         @media (max-width: 720px) {
             .sidebar {
@@ -1269,22 +1223,32 @@
 
             .mobile-menu {
                 display: grid;
-                place-items: center;
-
-                width: 36px;
-                height: 36px;
-
-                border-radius: 10px;
-
-                background: rgba(255,255,255,.56);
-                border: 1px solid var(--border);
-
-                color: var(--text-soft);
             }
 
             .topbar {
-                height: 58px;
+                min-height: 58px;
                 padding: 0 12px;
+            }
+
+            .topbar .account-area {
+                max-width: 52%;
+            }
+
+            .login-button {
+                padding: 0 9px;
+                font-size: 10px;
+            }
+
+            .user-box {
+                max-width: 170px;
+            }
+
+            .user-info {
+                display: none;
+            }
+
+            .logout-button {
+                padding: 0 7px;
             }
 
             .chat-container {
@@ -1335,43 +1299,13 @@
                 display: none;
             }
 
-            .code-wrapper {
-                margin: 11px 0;
-                border-radius: 11px;
-            }
-
-            .code-header {
-                min-height: 34px;
-                padding-left: 10px;
-            }
-
             .code {
                 font-size: 11px;
                 padding: 12px;
             }
 
-            .copy-code {
-                min-width: 50px;
-                min-height: 26px;
-                padding: 0 8px;
-            }
-
-            .math-display {
-                margin:
-                    12px -2px;
-                padding:
-                    9px 2px;
-            }
-
-            .message-bubble
-            mjx-container {
+            .message-bubble mjx-container {
                 font-size: 96% !important;
-            }
-
-            .message-bubble
-            mjx-container[display="true"] {
-                margin:
-                    9px 0 !important;
             }
         }
     </style>
@@ -1381,20 +1315,14 @@
 
 <div class="app">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
 
         <div class="brand">
             <div class="brand-logo">P</div>
 
             <div class="brand-text">
-                <div class="brand-title">
-                    Pingu
-                </div>
-
-                <div class="brand-subtitle">
-                    AI Assistant
-                </div>
+                <div class="brand-title">Pingu</div>
+                <div class="brand-subtitle">AI Assistant</div>
             </div>
         </div>
 
@@ -1419,13 +1347,12 @@
         <div class="sidebar-footer">
             <div class="status">
                 <span class="status-dot"></span>
-                <span>Online</span>
+                <span id="statusText">Offline / Lokal</span>
             </div>
         </div>
 
     </aside>
 
-    <!-- MAIN -->
     <main class="main">
 
         <header class="topbar">
@@ -1456,9 +1383,55 @@
 
             </div>
 
+            <div class="account-area">
+
+                <button
+                    class="login-button"
+                    id="loginButton"
+                    type="button"
+                >
+                    Masuk dengan Google
+                </button>
+
+                <div
+                    class="user-box hidden"
+                    id="userBox"
+                >
+                    <img
+                        class="user-avatar"
+                        id="userAvatar"
+                        alt="Akun"
+                    >
+
+                    <div class="user-info">
+                        <div
+                            class="user-name"
+                            id="userName"
+                        >
+                            User
+                        </div>
+
+                        <div
+                            class="user-email"
+                            id="userEmail"
+                        >
+                            -
+                        </div>
+                    </div>
+
+                    <button
+                        class="logout-button"
+                        id="logoutButton"
+                        type="button"
+                    >
+                        Keluar
+                    </button>
+                </div>
+
+            </div>
+
         </header>
 
-        <!-- CHAT -->
         <section
             class="chat-container"
             id="chatContainer"
@@ -1517,7 +1490,6 @@
                     </button>
 
                 </div>
-
             </div>
 
             <div id="messages"></div>
@@ -1526,9 +1498,7 @@
                 class="typing"
                 id="typing"
             >
-                <div class="typing-avatar">
-                    P
-                </div>
+                <div class="typing-avatar">P</div>
 
                 <div class="typing-dots">
                     <span></span>
@@ -1539,7 +1509,6 @@
 
         </section>
 
-        <!-- ATTACHMENT -->
         <div
             class="attachment"
             id="attachment"
@@ -1574,7 +1543,6 @@
                     class="attachment-remove"
                     id="removeAttachment"
                     type="button"
-                    aria-label="Hapus gambar"
                 >
                     ×
                 </button>
@@ -1582,7 +1550,6 @@
             </div>
         </div>
 
-        <!-- COMPOSER -->
         <div class="composer-area">
 
             <form
@@ -1595,7 +1562,6 @@
                     id="imageButton"
                     type="button"
                     aria-label="Kirim gambar"
-                    title="Kirim gambar"
                 >
                     +
                 </button>
@@ -1644,7 +1610,6 @@
                     class="send-button"
                     id="sendButton"
                     type="submit"
-                    aria-label="Kirim"
                 >
                     ↑
                 </button>
@@ -1661,1179 +1626,1635 @@
 
 </div>
 
-<script>
-(() => {
-    "use strict";
+<!-- =========================================================
+     FIREBASE + PINGU
+========================================================= -->
 
-    /* =========================================================
-       STORAGE
-    ========================================================= */
+<script type="module">
 
-    const STORAGE_KEY =
-        "pingu_ai_chats_v2";
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
-    const ACTIVE_CHAT_KEY =
-        "pingu_ai_active_chat_v2";
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithRedirect,
+    getRedirectResult,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
-    const elements = {
-        sidebar:
-            document.getElementById("sidebar"),
+import {
+    getFirestore,
+    collection,
+    doc,
+    getDocs,
+    setDoc,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
-        mobileMenu:
-            document.getElementById("mobileMenu"),
 
-        newChatButton:
-            document.getElementById("newChatButton"),
+/* =========================================================
+   FIREBASE CONFIG
+========================================================= */
 
-        history:
-            document.getElementById("history"),
+const firebaseConfig = {
 
-        welcome:
-            document.getElementById("welcome"),
+    /*
+     * GANTI HANYA apiKey DI BAWAH
+     * dengan apiKey dari Firebase kamu.
+     */
 
-        messages:
-            document.getElementById("messages"),
+    apiKey:
+        "AIzaSyBTuy0_tVRc8SkEnSL4KxanM-eFgth2KcA",
 
-        chatContainer:
-            document.getElementById("chatContainer"),
+    authDomain:
+        "project-18c85.firebaseapp.com",
 
-        typing:
-            document.getElementById("typing"),
+    projectId:
+        "project-18c85",
 
-        composer:
-            document.getElementById("composer"),
+    storageBucket:
+        "project-18c85.firebasestorage.app",
 
-        messageInput:
-            document.getElementById("messageInput"),
+    messagingSenderId:
+        "147876349323",
 
-        sendButton:
-            document.getElementById("sendButton"),
+    appId:
+        "1:147876349323:web:a7d7efd9ac8d31585f9b8e"
+};
 
-        imageButton:
-            document.getElementById("imageButton"),
 
-        fileInput:
-            document.getElementById("fileInput"),
+/* =========================================================
+   FIREBASE INIT
+========================================================= */
 
-        attachment:
-            document.getElementById("attachment"),
+const firebaseApp =
+    initializeApp(
+        firebaseConfig
+    );
 
-        attachmentImage:
-            document.getElementById("attachmentImage"),
+const auth =
+    getAuth(
+        firebaseApp
+    );
 
-        attachmentName:
-            document.getElementById("attachmentName"),
+const db =
+    getFirestore(
+        firebaseApp
+    );
 
-        attachmentMode:
-            document.getElementById("attachmentMode"),
+const googleProvider =
+    new GoogleAuthProvider();
 
-        removeAttachment:
-            document.getElementById("removeAttachment"),
 
-        modeRow:
-            document.getElementById("modeRow"),
+/* =========================================================
+   ELEMENTS
+========================================================= */
 
-        chatMode:
-            document.getElementById("chatMode"),
+const $ = id =>
+    document.getElementById(id);
 
-        imageMode:
-            document.getElementById("imageMode"),
+const elements = {
 
-        modelLabel:
-            document.getElementById("modelLabel")
-    };
+    sidebar:
+        $("sidebar"),
 
-    let chats = [];
+    mobileMenu:
+        $("mobileMenu"),
 
-    let currentChatId = null;
+    newChatButton:
+        $("newChatButton"),
 
-    let attachedImage = null;
+    history:
+        $("history"),
 
-    let attachedImagePreview = null;
+    welcome:
+        $("welcome"),
 
-    let currentMode = "chat";
+    messages:
+        $("messages"),
 
-    let isSending = false;
+    chatContainer:
+        $("chatContainer"),
 
-    /* =========================================================
-       STORAGE HELPERS
-    ========================================================= */
+    typing:
+        $("typing"),
 
-    function loadChats() {
-        try {
-            const saved =
-                localStorage.getItem(
-                    STORAGE_KEY
-                );
+    composer:
+        $("composer"),
 
-            if (!saved) {
-                chats = [];
-                return;
-            }
+    messageInput:
+        $("messageInput"),
 
-            const parsed =
-                JSON.parse(saved);
+    sendButton:
+        $("sendButton"),
 
-            if (!Array.isArray(parsed)) {
-                chats = [];
-                return;
-            }
+    imageButton:
+        $("imageButton"),
 
-            chats =
-                parsed
-                    .filter(chat => {
-                        return (
-                            chat &&
-                            typeof chat === "object" &&
-                            typeof chat.id === "string" &&
-                            Array.isArray(chat.messages)
-                        );
-                    })
-                    .map(chat => ({
-                        id:
-                            chat.id,
+    fileInput:
+        $("fileInput"),
 
-                        title:
-                            typeof chat.title === "string"
-                                ? chat.title
-                                : "Chat baru",
+    attachment:
+        $("attachment"),
 
-                        messages:
-                            Array.isArray(chat.messages)
-                                ? chat.messages
-                                : [],
+    attachmentImage:
+        $("attachmentImage"),
 
-                        createdAt:
-                            Number(chat.createdAt) ||
-                            Date.now(),
+    attachmentName:
+        $("attachmentName"),
 
-                        updatedAt:
-                            Number(chat.updatedAt) ||
-                            Number(chat.createdAt) ||
-                            Date.now()
-                    }));
+    attachmentMode:
+        $("attachmentMode"),
 
-        } catch (error) {
-            console.warn(
-                "Gagal membaca history:",
-                error
-            );
+    removeAttachment:
+        $("removeAttachment"),
 
-            chats = [];
-        }
+    modeRow:
+        $("modeRow"),
+
+    chatMode:
+        $("chatMode"),
+
+    imageMode:
+        $("imageMode"),
+
+    modelLabel:
+        $("modelLabel"),
+
+    loginButton:
+        $("loginButton"),
+
+    userBox:
+        $("userBox"),
+
+    userAvatar:
+        $("userAvatar"),
+
+    userName:
+        $("userName"),
+
+    userEmail:
+        $("userEmail"),
+
+    logoutButton:
+        $("logoutButton"),
+
+    statusText:
+        $("statusText")
+};
+
+
+/* =========================================================
+   CONSTANTS
+========================================================= */
+
+const STORAGE_KEY =
+    "pingu_ai_chats_v2";
+
+const ACTIVE_CHAT_KEY =
+    "pingu_ai_active_chat_v2";
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let chats = [];
+
+let currentChatId =
+    null;
+
+let attachedImage =
+    null;
+
+let attachedImagePreview =
+    null;
+
+let currentMode =
+    "chat";
+
+let isSending =
+    false;
+
+let currentUser =
+    null;
+
+let firebaseLoaded =
+    false;
+
+
+/* =========================================================
+   ID
+========================================================= */
+
+function makeId() {
+
+    if (
+        typeof crypto !==
+            "undefined" &&
+        typeof crypto.randomUUID ===
+            "function"
+    ) {
+        return crypto.randomUUID();
     }
 
-    function saveChats() {
-        try {
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify(chats)
-            );
+    return (
+        Date.now().toString(36) +
+        Math.random()
+            .toString(36)
+            .slice(2)
+    );
+}
 
-            if (currentChatId) {
-                localStorage.setItem(
-                    ACTIVE_CHAT_KEY,
-                    currentChatId
-                );
-            }
 
-        } catch (error) {
-            console.warn(
-                "Gagal menyimpan history:",
-                error
-            );
-        }
+/* =========================================================
+   LOCAL STORAGE
+========================================================= */
+
+function normalizeLocalChats(
+    parsed
+) {
+
+    if (
+        !Array.isArray(parsed)
+    ) {
+        return [];
     }
 
-    function saveActiveChat() {
-        try {
-            if (currentChatId) {
-                localStorage.setItem(
-                    ACTIVE_CHAT_KEY,
-                    currentChatId
-                );
-            }
-        } catch (error) {
-            console.warn(
-                "Gagal menyimpan chat aktif:",
-                error
-            );
-        }
-    }
+    return parsed
+        .filter(chat =>
+            chat &&
+            typeof chat ===
+                "object" &&
+            typeof chat.id ===
+                "string" &&
+            Array.isArray(
+                chat.messages
+            )
+        )
+        .map(chat => ({
 
-    function loadActiveChat() {
-        try {
-            return localStorage.getItem(
-                ACTIVE_CHAT_KEY
-            );
-        } catch {
-            return null;
-        }
-    }
-
-    /* =========================================================
-       CHAT
-    ========================================================= */
-
-    function createChat() {
-        const now =
-            Date.now();
-
-        const chat = {
             id:
-                now.toString(36) +
-                Math.random()
-                    .toString(36)
-                    .slice(2),
+                chat.id,
 
             title:
-                "Chat baru",
+                typeof chat.title ===
+                    "string"
+                    ? chat.title
+                    : "Chat baru",
 
             messages:
-                [],
+                chat.messages.map(
+                    message => ({
+
+                        ...message,
+
+                        id:
+                            message.id ||
+                            makeId(),
+
+                        time:
+                            Number(
+                                message.time
+                            ) ||
+                            Date.now()
+
+                    })
+                ),
 
             createdAt:
-                now,
+                Number(
+                    chat.createdAt
+                ) ||
+                Date.now(),
 
             updatedAt:
-                now
-        };
-
-        chats.unshift(chat);
-
-        currentChatId =
-            chat.id;
-
-        saveChats();
-
-        renderHistory();
-        renderMessages();
-
-        return chat;
-    }
-
-    function getCurrentChat() {
-        return chats.find(
-            chat =>
-                chat.id ===
-                currentChatId
-        );
-    }
-
-    function ensureChat() {
-        let chat =
-            getCurrentChat();
-
-        if (!chat) {
-            chat =
-                createChat();
-        }
-
-        return chat;
-    }
-
-    /* =========================================================
-       HISTORY
-    ========================================================= */
-
-    function sortChats() {
-        chats.sort(
-            (a, b) =>
                 Number(
-                    b.updatedAt || 0
-                ) -
+                    chat.updatedAt
+                ) ||
                 Number(
-                    a.updatedAt || 0
-                )
-        );
-    }
+                    chat.createdAt
+                ) ||
+                Date.now()
 
-    function renderHistory() {
-        sortChats();
+        }));
+}
 
-        elements.history.innerHTML =
-            "";
 
-        if (!chats.length) {
-            elements.history.innerHTML = `
-                <div class="history-empty">
-                    Belum ada percakapan.
-                </div>
-            `;
+function loadChats() {
 
+    try {
+
+        const saved =
+            localStorage.getItem(
+                STORAGE_KEY
+            );
+
+        if (!saved) {
+            chats = [];
             return;
         }
 
-        for (const chat of chats) {
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-            button.type =
-                "button";
-
-            button.className =
-                "history-item" +
-                (
-                    chat.id ===
-                    currentChatId
-                        ? " active"
-                        : ""
-                );
-
-            button.textContent =
-                chat.title ||
-                "Chat baru";
-
-            button.addEventListener(
-                "click",
-                () => {
-                    currentChatId =
-                        chat.id;
-
-                    saveActiveChat();
-
-                    renderHistory();
-                    renderMessages();
-
-                    elements.sidebar
-                        .classList
-                        .remove(
-                            "open"
-                        );
-                }
+        chats =
+            normalizeLocalChats(
+                JSON.parse(saved)
             );
 
-            elements.history.appendChild(
-                button
+    } catch (error) {
+
+        console.warn(
+            "Gagal membaca history:",
+            error
+        );
+
+        chats = [];
+    }
+}
+
+
+function saveChats() {
+
+    try {
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(chats)
+        );
+
+        if (currentChatId) {
+
+            localStorage.setItem(
+                ACTIVE_CHAT_KEY,
+                currentChatId
             );
         }
-    }
 
-    /* =========================================================
-       HTML ESCAPE
-    ========================================================= */
+    } catch (error) {
 
-    function escapeHTML(value) {
-        return String(
-            value ?? ""
-        )
-            .replace(
-                /&/g,
-                "&amp;"
-            )
-            .replace(
-                /</g,
-                "&lt;"
-            )
-            .replace(
-                />/g,
-                "&gt;"
-            )
-            .replace(
-                /"/g,
-                "&quot;"
-            )
-            .replace(
-                /'/g,
-                "&#039;"
+        console.warn(
+            "Local history penuh atau gagal disimpan:",
+            error
+        );
+
+        /*
+         * Kalau gambar membuat localStorage
+         * terlalu besar, simpan versi tanpa
+         * image agar history teks tetap ada.
+         */
+
+        try {
+
+            const textOnly =
+                chats.map(chat => ({
+
+                    ...chat,
+
+                    messages:
+                        chat.messages.map(
+                            message => {
+
+                                const copy =
+                                    {
+                                        ...message
+                                    };
+
+                                delete copy.image;
+
+                                return copy;
+                            }
+                        )
+
+                }));
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(
+                    textOnly
+                )
             );
+
+        } catch {}
+    }
+}
+
+
+function loadActiveChat() {
+
+    try {
+
+        return localStorage.getItem(
+            ACTIVE_CHAT_KEY
+        );
+
+    } catch {
+
+        return null;
+    }
+}
+
+
+/* =========================================================
+   FIRESTORE REFERENCES
+========================================================= */
+
+function userChatsCollection() {
+
+    if (!currentUser) {
+        return null;
     }
 
-    /* =========================================================
-       MATH PARSER
-    ========================================================= */
+    return collection(
+        db,
+        "users",
+        currentUser.uid,
+        "chats"
+    );
+}
 
-    function extractMathBlocks(
-        source,
-        blocks
+
+function cloudChatRef(
+    chatId
+) {
+
+    return doc(
+        db,
+        "users",
+        currentUser.uid,
+        "chats",
+        chatId
+    );
+}
+
+
+function cloudMessagesCollection(
+    chatId
+) {
+
+    return collection(
+        db,
+        "users",
+        currentUser.uid,
+        "chats",
+        chatId,
+        "messages"
+    );
+}
+
+
+function cloudMessageRef(
+    chatId,
+    messageId
+) {
+
+    return doc(
+        db,
+        "users",
+        currentUser.uid,
+        "chats",
+        chatId,
+        "messages",
+        messageId
+    );
+}
+
+
+/* =========================================================
+   FIRESTORE SAVE CHAT
+========================================================= */
+
+async function saveChatCloud(
+    chat
+) {
+
+    if (
+        !currentUser ||
+        !chat
     ) {
-        /*
-         * DISPLAY:
-         * $$ ... $$
-         */
-
-        source =
-            source.replace(
-                /\$\$([\s\S]*?)\$\$/g,
-                (_, math) => {
-                    const index =
-                        blocks.length;
-
-                    blocks.push({
-                        type:
-                            "display-math",
-
-                        content:
-                            String(
-                                math || ""
-                            ).trim()
-                    });
-
-                    return (
-                        `__PINGU_MATH_BLOCK_${index}__`
-                    );
-                }
-            );
-
-        /*
-         * DISPLAY:
-         * \[ ... \]
-         */
-
-        source =
-            source.replace(
-                /\\\[([\s\S]*?)\\\]/g,
-                (_, math) => {
-                    const index =
-                        blocks.length;
-
-                    blocks.push({
-                        type:
-                            "display-math",
-
-                        content:
-                            String(
-                                math || ""
-                            ).trim()
-                    });
-
-                    return (
-                        `__PINGU_MATH_BLOCK_${index}__`
-                    );
-                }
-            );
-
-        /*
-         * INLINE:
-         * \( ... \)
-         */
-
-        source =
-            source.replace(
-                /\\\(([\s\S]*?)\\\)/g,
-                (_, math) => {
-                    const index =
-                        blocks.length;
-
-                    blocks.push({
-                        type:
-                            "inline-math",
-
-                        content:
-                            String(
-                                math || ""
-                            ).trim()
-                    });
-
-                    return (
-                        `__PINGU_MATH_BLOCK_${index}__`
-                    );
-                }
-            );
-
-        /*
-         * INLINE:
-         * $ ... $
-         */
-
-        source =
-            source.replace(
-                /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
-                (
-                    full,
-                    before,
-                    math
-                ) => {
-                    const index =
-                        blocks.length;
-
-                    blocks.push({
-                        type:
-                            "inline-math",
-
-                        content:
-                            String(
-                                math || ""
-                            ).trim()
-                    });
-
-                    return (
-                        before +
-                        `__PINGU_MATH_BLOCK_${index}__`
-                    );
-                }
-            );
-
-        return source;
+        return;
     }
 
-    /* =========================================================
-       FORMAT TEXT
-    ========================================================= */
+    try {
 
-    function formatText(text) {
-        let source =
-            String(
-                text ?? ""
-            );
+        await setDoc(
+            cloudChatRef(
+                chat.id
+            ),
+            {
+                title:
+                    chat.title ||
+                    "Chat baru",
 
-        const blocks = [];
+                createdAt:
+                    Number(
+                        chat.createdAt
+                    ) ||
+                    Date.now(),
+
+                updatedAt:
+                    Number(
+                        chat.updatedAt
+                    ) ||
+                    Date.now()
+            },
+            {
+                merge:
+                    true
+            }
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Gagal menyimpan chat Firebase:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   FIRESTORE SAVE MESSAGE
+========================================================= */
+
+async function saveMessageCloud(
+    chat,
+    message
+) {
+
+    if (
+        !currentUser ||
+        !chat ||
+        !message
+    ) {
+        return;
+    }
+
+    try {
 
         /*
-         * CODE DIAMBIL TERLEBIH DAHULU.
+         * JANGAN simpan base64 gambar
+         * ke Firestore.
+         *
+         * Base64 gambar bisa sangat besar.
+         * Gambar tetap disimpan di local
+         * cache untuk perangkat ini.
          */
 
-        source =
-            source.replace(
-                /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g,
-                (
-                    _,
-                    language,
-                    code
-                ) => {
-                    const index =
-                        blocks.length;
+        await setDoc(
+            cloudMessageRef(
+                chat.id,
+                message.id ||
+                    makeId()
+            ),
+            {
+                role:
+                    message.role ||
+                    "assistant",
 
-                    blocks.push({
-                        type:
-                            "code",
+                content:
+                    message.content ||
+                    "",
 
-                        language:
-                            String(
-                                language || ""
-                            ).trim() ||
-                            "code",
+                model:
+                    message.model ||
+                    "",
 
-                        content:
-                            String(
-                                code || ""
-                            ).replace(
-                                /\r?\n$/,
-                                ""
-                            )
-                    });
+                createdAt:
+                    Number(
+                        message.time
+                    ) ||
+                    Date.now()
+            },
+            {
+                merge:
+                    true
+            }
+        );
 
-                    return (
-                        `__PINGU_CODE_BLOCK_${index}__`
-                    );
-                }
+    } catch (error) {
+
+        console.warn(
+            "Gagal menyimpan message Firebase:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   FIRESTORE LOAD
+========================================================= */
+
+async function loadCloudChats() {
+
+    if (!currentUser) {
+        return [];
+    }
+
+    try {
+
+        const chatsSnapshot =
+            await getDocs(
+                query(
+                    userChatsCollection(),
+                    orderBy(
+                        "updatedAt",
+                        "desc"
+                    )
+                )
             );
 
+        const cloudChats = [];
+
+        for (
+            const chatDocument
+            of chatsSnapshot.docs
+        ) {
+
+            const chatData =
+                chatDocument.data();
+
+            const messageSnapshot =
+                await getDocs(
+                    query(
+                        cloudMessagesCollection(
+                            chatDocument.id
+                        ),
+                        orderBy(
+                            "createdAt",
+                            "asc"
+                        )
+                    )
+                );
+
+            const messages =
+                messageSnapshot.docs.map(
+                    messageDocument => {
+
+                        const data =
+                            messageDocument.data();
+
+                        return {
+
+                            id:
+                                messageDocument.id,
+
+                            role:
+                                data.role ||
+                                "assistant",
+
+                            content:
+                                data.content ||
+                                "",
+
+                            model:
+                                data.model ||
+                                "",
+
+                            time:
+                                Number(
+                                    data.createdAt
+                                ) ||
+                                Date.now()
+
+                        };
+                    }
+                );
+
+            cloudChats.push({
+
+                id:
+                    chatDocument.id,
+
+                title:
+                    chatData.title ||
+                    "Chat baru",
+
+                messages,
+
+                createdAt:
+                    Number(
+                        chatData.createdAt
+                    ) ||
+                    Date.now(),
+
+                updatedAt:
+                    Number(
+                        chatData.updatedAt
+                    ) ||
+                    Date.now()
+
+            });
+        }
+
         /*
-         * MATH
-         */
-
-        source =
-            extractMathBlocks(
-                source,
-                blocks
-            );
-
-        /*
-         * TEXT
-         */
-
-        let output =
-            formatNormalText(
-                source
-            );
-
-        /*
-         * RESTORE BLOCKS
+         * Gabungkan gambar dari local cache
+         * ke message cloud jika ID-nya sama.
+         *
+         * Jadi gambar yang sudah pernah dikirim
+         * masih tampil di perangkat yang sama.
          */
 
         for (
-            let i = 0;
-            i < blocks.length;
-            i++
+            const cloudChat
+            of cloudChats
         ) {
-            const block =
-                blocks[i];
 
-            const codePlaceholder =
-                `__PINGU_CODE_BLOCK_${i}__`;
+            const localChat =
+                chats.find(
+                    chat =>
+                        chat.id ===
+                        cloudChat.id
+                );
 
-            const mathPlaceholder =
-                `__PINGU_MATH_BLOCK_${i}__`;
+            if (!localChat) {
+                continue;
+            }
 
-            /*
-             * CODE
-             */
-
-            if (
-                block.type ===
-                "code"
+            for (
+                const cloudMessage
+                of cloudChat.messages
             ) {
-                const safeLanguage =
-                    escapeHTML(
-                        block.language
+
+                const localMessage =
+                    localChat.messages.find(
+                        message =>
+                            message.id ===
+                            cloudMessage.id
                     );
 
-                const safeCode =
-                    escapeHTML(
-                        block.content
-                    );
+                if (
+                    localMessage &&
+                    localMessage.image
+                ) {
 
-                const blockHTML = `
+                    cloudMessage.image =
+                        localMessage.image;
+                }
+            }
+        }
+
+        return cloudChats;
+
+    } catch (error) {
+
+        console.error(
+            "Gagal membaca Firestore:",
+            error
+        );
+
+        return null;
+    }
+}
+
+
+/* =========================================================
+   MIGRATE LOCAL HISTORY
+========================================================= */
+
+async function migrateLocalHistory(
+    localChats
+) {
+
+    if (
+        !currentUser ||
+        !Array.isArray(localChats) ||
+        !localChats.length
+    ) {
+        return;
+    }
+
+    for (
+        const chat of localChats
+    ) {
+
+        await saveChatCloud(
+            chat
+        );
+
+        for (
+            const message
+            of chat.messages
+        ) {
+
+            if (!message.id) {
+                message.id =
+                    makeId();
+            }
+
+            await saveMessageCloud(
+                chat,
+                message
+            );
+        }
+    }
+}
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+function createChat() {
+
+    const now =
+        Date.now();
+
+    const chat = {
+
+        id:
+            makeId(),
+
+        title:
+            "Chat baru",
+
+        messages:
+            [],
+
+        createdAt:
+            now,
+
+        updatedAt:
+            now
+    };
+
+    chats.unshift(
+        chat
+    );
+
+    currentChatId =
+        chat.id;
+
+    saveChats();
+
+    renderHistory();
+    renderMessages();
+
+    if (currentUser) {
+        saveChatCloud(
+            chat
+        );
+    }
+
+    return chat;
+}
+
+
+function getCurrentChat() {
+
+    return chats.find(
+        chat =>
+            chat.id ===
+            currentChatId
+    );
+}
+
+
+function ensureChat() {
+
+    let chat =
+        getCurrentChat();
+
+    if (!chat) {
+        chat =
+            createChat();
+    }
+
+    return chat;
+}
+
+
+function sortChats() {
+
+    chats.sort(
+        (a, b) =>
+            Number(
+                b.updatedAt || 0
+            ) -
+            Number(
+                a.updatedAt || 0
+            )
+    );
+}
+
+
+/* =========================================================
+   HISTORY UI
+========================================================= */
+
+function renderHistory() {
+
+    sortChats();
+
+    elements.history.innerHTML =
+        "";
+
+    if (!chats.length) {
+
+        elements.history.innerHTML = `
+            <div class="history-empty">
+                Belum ada percakapan.
+            </div>
+        `;
+
+        return;
+    }
+
+    for (
+        const chat of chats
+    ) {
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+        button.type =
+            "button";
+
+        button.className =
+            "history-item" +
+            (
+                chat.id ===
+                currentChatId
+                    ? " active"
+                    : ""
+            );
+
+        button.textContent =
+            chat.title ||
+            "Chat baru";
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                currentChatId =
+                    chat.id;
+
+                saveActiveChat();
+
+                renderHistory();
+                renderMessages();
+
+                elements.sidebar
+                    .classList
+                    .remove(
+                        "open"
+                    );
+            }
+        );
+
+        elements.history.appendChild(
+            button
+        );
+    }
+}
+
+
+function saveActiveChat() {
+
+    try {
+
+        if (currentChatId) {
+
+            localStorage.setItem(
+                ACTIVE_CHAT_KEY,
+                currentChatId
+            );
+        }
+
+    } catch {}
+}
+
+
+/* =========================================================
+   HTML
+========================================================= */
+
+function escapeHTML(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+/* =========================================================
+   MATH
+========================================================= */
+
+function extractMathBlocks(
+    source,
+    blocks
+) {
+
+    source =
+        source.replace(
+            /\$\$([\s\S]*?)\$\$/g,
+            (_, math) => {
+
+                const index =
+                    blocks.length;
+
+                blocks.push({
+                    type:
+                        "display-math",
+                    content:
+                        String(
+                            math || ""
+                        ).trim()
+                });
+
+                return `__PINGU_MATH_BLOCK_${index}__`;
+            }
+        );
+
+    source =
+        source.replace(
+            /\\\[([\s\S]*?)\\\]/g,
+            (_, math) => {
+
+                const index =
+                    blocks.length;
+
+                blocks.push({
+                    type:
+                        "display-math",
+                    content:
+                        String(
+                            math || ""
+                        ).trim()
+                });
+
+                return `__PINGU_MATH_BLOCK_${index}__`;
+            }
+        );
+
+    source =
+        source.replace(
+            /\\\(([\s\S]*?)\\\)/g,
+            (_, math) => {
+
+                const index =
+                    blocks.length;
+
+                blocks.push({
+                    type:
+                        "inline-math",
+                    content:
+                        String(
+                            math || ""
+                        ).trim()
+                });
+
+                return `__PINGU_MATH_BLOCK_${index}__`;
+            }
+        );
+
+    source =
+        source.replace(
+            /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
+            (
+                full,
+                before,
+                math
+            ) => {
+
+                const index =
+                    blocks.length;
+
+                blocks.push({
+                    type:
+                        "inline-math",
+                    content:
+                        String(
+                            math || ""
+                        ).trim()
+                });
+
+                return (
+                    before +
+                    `__PINGU_MATH_BLOCK_${index}__`
+                );
+            }
+        );
+
+    return source;
+}
+
+
+function formatNormalText(
+    text
+) {
+
+    if (!text) {
+        return "";
+    }
+
+    let output =
+        escapeHTML(
+            text
+        );
+
+    output =
+        output.replace(
+            /`([^`\n]+)`/g,
+            '<span class="inline-code">$1</span>'
+        );
+
+    output =
+        output.replace(
+            /\*\*([^*\n]+)\*\*/g,
+            "<strong>$1</strong>"
+        );
+
+    output =
+        output.replace(
+            /\r?\n/g,
+            "<br>"
+        );
+
+    return output;
+}
+
+
+function formatText(
+    text
+) {
+
+    let source =
+        String(
+            text ?? ""
+        );
+
+    const blocks = [];
+
+    source =
+        source.replace(
+            /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g,
+            (
+                _,
+                language,
+                code
+            ) => {
+
+                const index =
+                    blocks.length;
+
+                blocks.push({
+                    type:
+                        "code",
+
+                    language:
+                        String(
+                            language || ""
+                        ).trim() ||
+                        "code",
+
+                    content:
+                        String(
+                            code || ""
+                        ).replace(
+                            /\r?\n$/,
+                            ""
+                        )
+                });
+
+                return `__PINGU_CODE_BLOCK_${index}__`;
+            }
+        );
+
+    source =
+        extractMathBlocks(
+            source,
+            blocks
+        );
+
+    let output =
+        formatNormalText(
+            source
+        );
+
+    for (
+        let i = 0;
+        i < blocks.length;
+        i++
+    ) {
+
+        const block =
+            blocks[i];
+
+        const codePlaceholder =
+            `__PINGU_CODE_BLOCK_${i}__`;
+
+        const mathPlaceholder =
+            `__PINGU_MATH_BLOCK_${i}__`;
+
+        if (
+            block.type ===
+            "code"
+        ) {
+
+            output =
+                output.replace(
+                    codePlaceholder,
+                    `
                     <div class="code-wrapper">
                         <div class="code-header">
-
                             <span class="code-language">
-                                ${safeLanguage}
+                                ${escapeHTML(
+                                    block.language
+                                )}
                             </span>
 
                             <button
                                 class="copy-code"
                                 type="button"
-                                aria-label="Salin kode"
-                                title="Salin kode"
                             >
                                 Salin
                             </button>
-
                         </div>
 
-                        <pre class="code"><code>${safeCode}</code></pre>
+                        <pre class="code"><code>${escapeHTML(
+                            block.content
+                        )}</code></pre>
                     </div>
-                `;
+                    `
+                );
 
-                output =
-                    output.replace(
-                        codePlaceholder,
-                        blockHTML
-                    );
-
-                continue;
-            }
-
-            /*
-             * DISPLAY MATH
-             */
-
-            if (
-                block.type ===
-                "display-math"
-            ) {
-                output =
-                    output.replace(
-                        mathPlaceholder,
-                        `<div class="math-display" data-math-index="${i}"></div>`
-                    );
-
-                continue;
-            }
-
-            /*
-             * INLINE MATH
-             */
-
-            if (
-                block.type ===
-                "inline-math"
-            ) {
-                output =
-                    output.replace(
-                        mathPlaceholder,
-                        `<span class="math-inline" data-math-index="${i}"></span>`
-                    );
-            }
-        }
-
-        return {
-            html:
-                output,
-
-            blocks:
-                blocks
-        };
-    }
-
-    function formatNormalText(text) {
-        if (!text) {
-            return "";
-        }
-
-        let output =
-            escapeHTML(text);
-
-        output =
-            output.replace(
-                /`([^`\n]+)`/g,
-                '<span class="inline-code">$1</span>'
-            );
-
-        output =
-            output.replace(
-                /\*\*([^*\n]+)\*\*/g,
-                "<strong>$1</strong>"
-            );
-
-        output =
-            output.replace(
-                /\r?\n/g,
-                "<br>"
-            );
-
-        return output;
-    }
-
-    /* =========================================================
-       RENDER MATH BLOCKS
-    ========================================================= */
-
-    function renderMathBlocks(
-        bubble,
-        blocks
-    ) {
-        if (
-            !bubble ||
-            !Array.isArray(blocks)
+        } else if (
+            block.type ===
+            "display-math"
         ) {
-            return;
+
+            output =
+                output.replace(
+                    mathPlaceholder,
+                    `<div class="math-display" data-math-index="${i}"></div>`
+                );
+
+        } else if (
+            block.type ===
+            "inline-math"
+        ) {
+
+            output =
+                output.replace(
+                    mathPlaceholder,
+                    `<span class="math-inline" data-math-index="${i}"></span>`
+                );
         }
+    }
 
-        const elements =
-            bubble.querySelectorAll(
-                "[data-math-index]"
-            );
+    return {
+        html:
+            output,
 
-        elements.forEach(
+        blocks
+    };
+}
+
+
+function renderMathBlocks(
+    bubble,
+    blocks
+) {
+
+    if (!bubble) {
+        return;
+    }
+
+    bubble
+        .querySelectorAll(
+            "[data-math-index]"
+        )
+        .forEach(
             element => {
-                const index =
-                    Number(
-                        element.dataset
-                            .mathIndex
-                    );
 
                 const block =
-                    blocks[index];
+                    blocks[
+                        Number(
+                            element.dataset
+                                .mathIndex
+                        )
+                    ];
 
-                if (
-                    !block ||
-                    (
-                        block.type !==
-                            "display-math" &&
-                        block.type !==
-                            "inline-math"
-                    )
-                ) {
+                if (!block) {
                     return;
                 }
-
-                /*
-                 * Jangan masukkan LaTeX melalui innerHTML.
-                 *
-                 * Gunakan text node agar:
-                 *
-                 * &
-                 * \
-                 * {
-                 * }
-                 *
-                 * tetap menjadi karakter
-                 * LaTeX asli.
-                 */
-
-                element.textContent =
-                    "";
-
-                const latex =
-                    block.content;
 
                 if (
                     block.type ===
                     "display-math"
                 ) {
-                    element.appendChild(
-                        document.createTextNode(
-                            "\\[" +
-                            latex +
-                            "\\]"
-                        )
-                    );
+
+                    element.textContent =
+                        "\\[" +
+                        block.content +
+                        "\\]";
+
                 } else {
-                    element.appendChild(
-                        document.createTextNode(
-                            "\\(" +
-                            latex +
-                            "\\)"
-                        )
-                    );
+
+                    element.textContent =
+                        "\\(" +
+                        block.content +
+                        "\\)";
                 }
             }
         );
+}
+
+
+async function typesetMath(
+    element
+) {
+
+    if (!element) {
+        return;
     }
 
-    /* =========================================================
-       MATHJAX TYPESET
-    ========================================================= */
+    try {
 
-    async function typesetMath(
-        element
-    ) {
-        if (!element) {
+        if (!window.MathJax) {
             return;
         }
-
-        try {
-            if (!window.MathJax) {
-                return;
-            }
-
-            if (
-                window.MathJax.startup &&
-                window.MathJax.startup.promise
-            ) {
-                await window.MathJax
-                    .startup
-                    .promise;
-            }
-
-            if (
-                typeof
-                    window.MathJax.typesetClear ===
-                    "function"
-            ) {
-                try {
-                    window.MathJax.typesetClear(
-                        [element]
-                    );
-                } catch {}
-            }
-
-            if (
-                typeof
-                    window.MathJax.typesetPromise ===
-                    "function"
-            ) {
-                await window.MathJax.typesetPromise(
-                    [element]
-                );
-            }
-
-        } catch (error) {
-            console.warn(
-                "MathJax gagal merender:",
-                error
-            );
-        }
-    }
-
-    /* =========================================================
-       COPY CODE
-    ========================================================= */
-
-    async function copyCode(
-        button
-    ) {
-        if (!button) {
-            return;
-        }
-
-        const wrapper =
-            button.closest(
-                ".code-wrapper"
-            );
-
-        if (!wrapper) {
-            return;
-        }
-
-        const codeElement =
-            wrapper.querySelector(
-                "code"
-            );
-
-        if (!codeElement) {
-            return;
-        }
-
-        const code =
-            codeElement.textContent ||
-            "";
-
-        try {
-            if (
-                navigator.clipboard &&
-                window.isSecureContext
-            ) {
-                await navigator.clipboard.writeText(
-                    code
-                );
-
-            } else {
-                const textarea =
-                    document.createElement(
-                        "textarea"
-                    );
-
-                textarea.value =
-                    code;
-
-                textarea.setAttribute(
-                    "readonly",
-                    ""
-                );
-
-                textarea.style.position =
-                    "fixed";
-
-                textarea.style.left =
-                    "-9999px";
-
-                textarea.style.top =
-                    "0";
-
-                textarea.style.opacity =
-                    "0";
-
-                document.body.appendChild(
-                    textarea
-                );
-
-                textarea.focus();
-                textarea.select();
-
-                textarea.setSelectionRange(
-                    0,
-                    textarea.value.length
-                );
-
-                const success =
-                    document.execCommand(
-                        "copy"
-                    );
-
-                textarea.remove();
-
-                if (!success) {
-                    throw new Error(
-                        "Clipboard tidak tersedia."
-                    );
-                }
-            }
-
-            button.textContent =
-                "Tersalin";
-
-            button.classList.add(
-                "copied"
-            );
-
-            button.classList.remove(
-                "failed"
-            );
-
-            clearTimeout(
-                button._copyTimer
-            );
-
-            button._copyTimer =
-                setTimeout(
-                    () => {
-                        button.textContent =
-                            "Salin";
-
-                        button.classList.remove(
-                            "copied"
-                        );
-                    },
-                    1600
-                );
-
-        } catch (error) {
-            console.error(
-                "Gagal menyalin kode:",
-                error
-            );
-
-            button.textContent =
-                "Gagal";
-
-            button.classList.add(
-                "failed"
-            );
-
-            button.classList.remove(
-                "copied"
-            );
-
-            clearTimeout(
-                button._copyTimer
-            );
-
-            button._copyTimer =
-                setTimeout(
-                    () => {
-                        button.textContent =
-                            "Salin";
-
-                        button.classList.remove(
-                            "failed"
-                        );
-                    },
-                    1600
-                );
-        }
-    }
-
-    document.addEventListener(
-        "click",
-        event => {
-            const button =
-                event.target.closest(
-                    ".copy-code"
-                );
-
-            if (!button) {
-                return;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            copyCode(button);
-        }
-    );
-
-    /* =========================================================
-       RENDER MESSAGES
-    ========================================================= */
-
-    function renderMessages() {
-        const chat =
-            getCurrentChat();
-
-        elements.messages.innerHTML =
-            "";
 
         if (
-            !chat ||
-            !Array.isArray(
-                chat.messages
-            ) ||
-            !chat.messages.length
+            window.MathJax.startup &&
+            window.MathJax.startup.promise
         ) {
-            elements.welcome.style.display =
-                "block";
 
-            return;
+            await window.MathJax
+                .startup
+                .promise;
         }
 
-        elements.welcome.style.display =
-            "none";
-
-        for (
-            const message of
-            chat.messages
+        if (
+            typeof
+                window.MathJax.typesetPromise ===
+                "function"
         ) {
-            renderMessage(
-                message,
-                false
+
+            await window.MathJax.typesetPromise(
+                [element]
             );
         }
 
-        scrollBottom();
+    } catch (error) {
+
+        console.warn(
+            "MathJax gagal:",
+            error
+        );
     }
+}
 
-    function renderMessage(
-        message,
-        scroll = true
-    ) {
-        const wrapper =
-            document.createElement(
-                "div"
-            );
 
-        wrapper.className =
-            "message " +
-            (
-                message.role ===
-                "user"
-                    ? "user"
-                    : "assistant"
-            );
+/* =========================================================
+   COPY CODE
+========================================================= */
 
-        const avatar =
-            document.createElement(
-                "div"
-            );
+async function copyCode(
+    button
+) {
 
-        avatar.className =
-            "message-avatar";
-
-        avatar.textContent =
-            message.role ===
-            "user"
-                ? ""
-                : "P";
-
-        const content =
-            document.createElement(
-                "div"
-            );
-
-        content.className =
-            "message-content";
-
-        const bubble =
-            document.createElement(
-                "div"
-            );
-
-        bubble.className =
-            "message-bubble";
-
-        const formatted =
-            formatText(
-                message.content ||
-                ""
-            );
-
-        bubble.innerHTML =
-            formatted.html;
-
-        renderMathBlocks(
-            bubble,
-            formatted.blocks
+    const wrapper =
+        button.closest(
+            ".code-wrapper"
         );
 
-        content.appendChild(
-            bubble
+    const code =
+        wrapper?.querySelector(
+            "code"
+        )?.textContent ||
+        "";
+
+    try {
+
+        await navigator.clipboard.writeText(
+            code
         );
 
-        /*
-         * IMAGE DALAM HISTORY
-         */
+        button.textContent =
+            "Tersalin";
 
-        if (message.image) {
-            const image =
-                document.createElement(
-                    "img"
+        button.classList.add(
+            "copied"
+        );
+
+        setTimeout(
+            () => {
+
+                button.textContent =
+                    "Salin";
+
+                button.classList.remove(
+                    "copied"
                 );
 
-            image.className =
-                "message-image";
+            },
+            1500
+        );
 
-            image.src =
-                `data:${message.image.mimeType};base64,${message.image.data}`;
+    } catch {
 
-            image.alt =
-                "Gambar";
+        button.textContent =
+            "Gagal";
 
-            image.loading =
-                "lazy";
+        button.classList.add(
+            "failed"
+        );
 
-            content.appendChild(
-                image
+        setTimeout(
+            () => {
+
+                button.textContent =
+                    "Salin";
+
+                button.classList.remove(
+                    "failed"
+                );
+
+            },
+            1500
+        );
+    }
+}
+
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const button =
+            event.target.closest(
+                ".copy-code"
             );
-        }
 
-        /*
-         * MODEL
-         */
+        if (button) {
+            copyCode(button);
+        }
+    }
+);
+
+
+/* =========================================================
+   RENDER MESSAGE
+========================================================= */
+
+function renderMessages() {
+
+    const chat =
+        getCurrentChat();
+
+    elements.messages.innerHTML =
+        "";
+
+    if (
+        !chat ||
+        !chat.messages.length
+    ) {
+
+        elements.welcome.style.display =
+            "block";
+
+        return;
+    }
+
+    elements.welcome.style.display =
+        "none";
+
+    for (
+        const message of
+        chat.messages
+    ) {
+
+        renderMessage(
+            message,
+            false
+        );
+    }
+
+    scrollBottom();
+}
+
+
+function renderMessage(
+    message,
+    scroll = true
+) {
+
+    const wrapper =
+        document.createElement(
+            "div"
+        );
+
+    wrapper.className =
+        "message " +
+        (
+            message.role ===
+            "user"
+                ? "user"
+                : "assistant"
+        );
+
+    const avatar =
+        document.createElement(
+            "div"
+        );
+
+    avatar.className =
+        "message-avatar";
+
+    avatar.textContent =
+        "P";
+
+    const content =
+        document.createElement(
+            "div"
+        );
+
+    content.className =
+        "message-content";
+
+    const bubble =
+        document.createElement(
+            "div"
+        );
+
+    bubble.className =
+        "message-bubble";
+
+    const formatted =
+        formatText(
+            message.content ||
+            ""
+        );
+
+    bubble.innerHTML =
+        formatted.html;
+
+    renderMathBlocks(
+        bubble,
+        formatted.blocks
+    );
+
+    content.appendChild(
+        bubble
+    );
+
+    if (message.image) {
+
+        const image =
+            document.createElement(
+                "img"
+            );
+
+        image.className =
+            "message-image";
+
+        image.src =
+            `data:${message.image.mimeType};base64,${message.image.data}`;
+
+        image.alt =
+            "Gambar";
+
+        image.loading =
+            "lazy";
+
+        content.appendChild(
+            image
+        );
+    }
+
+    if (message.model) {
 
         const meta =
             document.createElement(
@@ -2844,815 +3265,931 @@
             "message-meta";
 
         meta.textContent =
-            message.model ||
-            "";
+            message.model;
 
         content.appendChild(
             meta
         );
+    }
 
-        /*
-         * ASSISTANT AVATAR
-         */
-
-        if (
-            message.role ===
-            "assistant"
-        ) {
-            wrapper.appendChild(
-                avatar
-            );
-        }
-
+    if (
+        message.role ===
+        "assistant"
+    ) {
         wrapper.appendChild(
-            content
+            avatar
+        );
+    }
+
+    wrapper.appendChild(
+        content
+    );
+
+    elements.messages.appendChild(
+        wrapper
+    );
+
+    if (
+        formatted.blocks.some(
+            block =>
+                block.type ===
+                    "display-math" ||
+                block.type ===
+                    "inline-math"
+        )
+    ) {
+
+        typesetMath(
+            bubble
+        );
+    }
+
+    if (scroll) {
+        scrollBottom();
+    }
+}
+
+
+function scrollBottom() {
+
+    requestAnimationFrame(
+        () => {
+
+            elements.chatContainer.scrollTop =
+                elements.chatContainer.scrollHeight;
+        }
+    );
+}
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+function resetAttachment() {
+
+    if (
+        attachedImagePreview
+    ) {
+
+        URL.revokeObjectURL(
+            attachedImagePreview
+        );
+    }
+
+    attachedImage =
+        null;
+
+    attachedImagePreview =
+        null;
+
+    elements.fileInput.value =
+        "";
+
+    elements.attachment
+        .classList
+        .remove(
+            "show"
         );
 
-        elements.messages.appendChild(
-            wrapper
+    elements.attachmentImage.src =
+        "";
+
+    elements.imageButton
+        .classList
+        .remove(
+            "active"
         );
 
-        /*
-         * MATHJAX
-         */
+    elements.modeRow
+        .classList
+        .remove(
+            "show"
+        );
 
-        if (
-            formatted.blocks.some(
-                block =>
-                    block.type ===
-                        "display-math" ||
-                    block.type ===
-                        "inline-math"
-            )
-        ) {
-            typesetMath(
-                bubble
+    setMode(
+        "chat"
+    );
+}
+
+
+function fileToBase64(
+    file
+) {
+
+    return new Promise(
+        (
+            resolve,
+            reject
+        ) => {
+
+            const reader =
+                new FileReader();
+
+            reader.onload =
+                () => {
+
+                    const result =
+                        String(
+                            reader.result ||
+                            ""
+                        );
+
+                    const comma =
+                        result.indexOf(
+                            ","
+                        );
+
+                    resolve(
+                        comma === -1
+                            ? result
+                            : result.slice(
+                                comma + 1
+                            )
+                    );
+                };
+
+            reader.onerror =
+                reject;
+
+            reader.readAsDataURL(
+                file
             );
         }
+    );
+}
 
-        if (scroll) {
-            scrollBottom();
-        }
+
+async function handleImage(
+    file
+) {
+
+    if (!file) {
+        return;
     }
 
-    function scrollBottom() {
-        requestAnimationFrame(
-            () => {
-                elements.chatContainer.scrollTop =
-                    elements.chatContainer.scrollHeight;
-            }
+    if (
+        !file.type.startsWith(
+            "image/"
+        )
+    ) {
+
+        alert(
+            "File yang dipilih bukan gambar."
         );
+
+        return;
     }
 
-    /* =========================================================
-       IMAGE
-    ========================================================= */
+    if (
+        file.size >
+        15 * 1024 * 1024
+    ) {
 
-    function resetAttachment() {
+        alert(
+            "Ukuran gambar terlalu besar. Maksimal 15 MB."
+        );
+
+        return;
+    }
+
+    try {
+
+        const base64 =
+            await fileToBase64(
+                file
+            );
+
         if (
             attachedImagePreview
         ) {
+
             URL.revokeObjectURL(
                 attachedImagePreview
             );
         }
 
-        attachedImage =
-            null;
+        attachedImage = {
+
+            mimeType:
+                file.type,
+
+            data:
+                base64,
+
+            name:
+                file.name,
+
+            size:
+                file.size
+        };
 
         attachedImagePreview =
-            null;
-
-        elements.fileInput.value =
-            "";
-
-        elements.attachment
-            .classList
-            .remove(
-                "show"
+            URL.createObjectURL(
+                file
             );
 
         elements.attachmentImage.src =
-            "";
+            attachedImagePreview;
+
+        elements.attachmentName.textContent =
+            file.name;
+
+        elements.attachment
+            .classList
+            .add(
+                "show"
+            );
 
         elements.imageButton
             .classList
-            .remove(
+            .add(
                 "active"
             );
 
         elements.modeRow
             .classList
-            .remove(
+            .add(
                 "show"
             );
 
-        setMode("chat");
+        setMode(
+            "chat"
+        );
+
+    } catch {
+
+        alert(
+            "Gagal membaca gambar."
+        );
+    }
+}
+
+
+function updateAttachmentLabel() {
+
+    elements.attachmentMode.textContent =
+        currentMode ===
+        "image"
+            ? "Mode Edit / Buat Gambar"
+            : "Mode Analisis Gambar";
+}
+
+
+function setMode(
+    mode
+) {
+
+    currentMode =
+        mode === "image"
+            ? "image"
+            : "chat";
+
+    elements.chatMode
+        .classList
+        .toggle(
+            "active",
+            currentMode ===
+                "chat"
+        );
+
+    elements.imageMode
+        .classList
+        .toggle(
+            "active",
+            currentMode ===
+                "image"
+        );
+
+    updateAttachmentLabel();
+
+    elements.messageInput.placeholder =
+        currentMode ===
+            "image"
+            ? (
+                attachedImage
+                    ? "Contoh: ubah background menjadi sunset..."
+                    : "Contoh: buat gambar kota futuristik..."
+            )
+            : "Tulis pesan...";
+}
+
+
+/* =========================================================
+   SEND
+========================================================= */
+
+async function sendMessage() {
+
+    if (isSending) {
+        return;
     }
 
-    function fileToBase64(
-        file
+    const text =
+        elements.messageInput.value
+            .trim();
+
+    if (
+        !text &&
+        !attachedImage
     ) {
-        return new Promise(
+        return;
+    }
+
+    const chat =
+        ensureChat();
+
+    const userMessage = {
+
+        id:
+            makeId(),
+
+        role:
+            "user",
+
+        content:
+            text ||
             (
-                resolve,
-                reject
-            ) => {
-                const reader =
-                    new FileReader();
+                currentMode ===
+                "image"
+                    ? "Buat gambar berdasarkan gambar yang saya kirim."
+                    : "Jelaskan gambar ini."
+            ),
 
-                reader.onload =
-                    () => {
-                        const result =
-                            String(
-                                reader.result ||
-                                ""
-                            );
+        time:
+            Date.now()
+    };
 
-                        const comma =
-                            result.indexOf(
-                                ","
-                            );
+    if (attachedImage) {
 
-                        resolve(
-                            comma === -1
-                                ? result
-                                : result.slice(
-                                    comma + 1
-                                )
-                        );
-                    };
+        userMessage.image = {
 
-                reader.onerror =
-                    reject;
+            mimeType:
+                attachedImage.mimeType,
 
-                reader.readAsDataURL(
-                    file
-                );
-            }
+            data:
+                attachedImage.data
+        };
+    }
+
+    chat.messages.push(
+        userMessage
+    );
+
+    if (
+        chat.title ===
+        "Chat baru"
+    ) {
+
+        chat.title =
+            text
+                ? text.slice(
+                    0,
+                    42
+                )
+                : "Percakapan gambar";
+    }
+
+    chat.updatedAt =
+        Date.now();
+
+    saveChats();
+
+    renderHistory();
+
+    elements.welcome.style.display =
+        "none";
+
+    renderMessage(
+        userMessage
+    );
+
+    /*
+     * FIRESTORE
+     */
+
+    if (currentUser) {
+
+        await saveChatCloud(
+            chat
+        );
+
+        await saveMessageCloud(
+            chat,
+            userMessage
         );
     }
 
-    async function handleImage(
-        file
-    ) {
-        if (!file) {
-            return;
-        }
+    const requestImage =
+        attachedImage
+            ? {
 
-        if (
-            !file.type.startsWith(
-                "image/"
-            )
-        ) {
-            alert(
-                "File yang dipilih bukan gambar."
-            );
-
-            return;
-        }
-
-        const maxSize =
-            15 *
-            1024 *
-            1024;
-
-        if (
-            file.size >
-            maxSize
-        ) {
-            alert(
-                "Ukuran gambar terlalu besar. Maksimal 15 MB."
-            );
-
-            return;
-        }
-
-        try {
-            const base64 =
-                await fileToBase64(
-                    file
-                );
-
-            if (
-                attachedImagePreview
-            ) {
-                URL.revokeObjectURL(
-                    attachedImagePreview
-                );
-            }
-
-            attachedImage = {
-                mimeType:
-                    file.type,
-
-                data:
-                    base64,
-
-                name:
-                    file.name,
-
-                size:
-                    file.size
-            };
-
-            attachedImagePreview =
-                URL.createObjectURL(
-                    file
-                );
-
-            elements.attachmentImage.src =
-                attachedImagePreview;
-
-            elements.attachmentName.textContent =
-                file.name;
-
-            elements.attachment
-                .classList
-                .add(
-                    "show"
-                );
-
-            elements.imageButton
-                .classList
-                .add(
-                    "active"
-                );
-
-            elements.modeRow
-                .classList
-                .add(
-                    "show"
-                );
-
-            setMode("chat");
-
-            updateAttachmentLabel();
-
-        } catch {
-            alert(
-                "Gagal membaca gambar."
-            );
-        }
-    }
-
-    function updateAttachmentLabel() {
-        elements.attachmentMode.textContent =
-            currentMode ===
-            "image"
-                ? "Mode Edit / Buat Gambar"
-                : "Mode Analisis Gambar";
-    }
-
-    /* =========================================================
-       MODE
-    ========================================================= */
-
-    function setMode(
-        mode
-    ) {
-        currentMode =
-            mode === "image"
-                ? "image"
-                : "chat";
-
-        elements.chatMode
-            .classList
-            .toggle(
-                "active",
-                currentMode ===
-                    "chat"
-            );
-
-        elements.imageMode
-            .classList
-            .toggle(
-                "active",
-                currentMode ===
-                    "image"
-            );
-
-        updateAttachmentLabel();
-
-        if (
-            currentMode ===
-            "image"
-        ) {
-            elements.messageInput.placeholder =
-                attachedImage
-                    ? "Contoh: ubah background menjadi sunset..."
-                    : "Contoh: buat gambar kota futuristik...";
-        } else {
-            elements.messageInput.placeholder =
-                "Tulis pesan...";
-        }
-    }
-
-    /* =========================================================
-       SEND MESSAGE
-    ========================================================= */
-
-    async function sendMessage() {
-        if (isSending) {
-            return;
-        }
-
-        const text =
-            elements.messageInput.value
-                .trim();
-
-        if (
-            !text &&
-            !attachedImage
-        ) {
-            return;
-        }
-
-        const chat =
-            ensureChat();
-
-        const userMessage = {
-            role:
-                "user",
-
-            content:
-                text ||
-                (
-                    currentMode ===
-                    "image"
-                        ? "Buat gambar berdasarkan gambar yang saya kirim."
-                        : "Jelaskan gambar ini."
-                ),
-
-            time:
-                Date.now()
-        };
-
-        if (attachedImage) {
-            userMessage.image = {
                 mimeType:
                     attachedImage.mimeType,
 
                 data:
                     attachedImage.data
+
+            }
+            : null;
+
+    const requestMode =
+        currentMode;
+
+    elements.messageInput.value =
+        "";
+
+    autoResize();
+
+    resetAttachment();
+
+    setSending(
+        true
+    );
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/chat",
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            messages:
+                                chat.messages.map(
+                                    item => ({
+                                        role:
+                                            item.role,
+
+                                        content:
+                                            item.content
+                                    })
+                                ),
+
+                            image:
+                                requestImage,
+
+                            mode:
+                                requestMode
+                        })
+                }
+            );
+
+        const raw =
+            await response.text();
+
+        let data;
+
+        try {
+
+            data =
+                JSON.parse(
+                    raw
+                );
+
+        } catch {
+
+            throw new Error(
+                raw ||
+                `HTTP ${response.status}`
+            );
+        }
+
+        if (!response.ok) {
+
+            throw new Error(
+                data?.error ||
+                `HTTP ${response.status}`
+            );
+        }
+
+        const assistantMessage = {
+
+            id:
+                makeId(),
+
+            role:
+                "assistant",
+
+            content:
+                data.reply ||
+                "Tidak ada jawaban.",
+
+            model:
+                data.model ||
+                "",
+
+            time:
+                Date.now()
+        };
+
+        if (
+            data.image &&
+            data.image.data
+        ) {
+
+            assistantMessage.image = {
+
+                mimeType:
+                    data.image.mimeType ||
+                    "image/png",
+
+                data:
+                    data.image.data
             };
         }
 
-        /*
-         * SIMPAN PESAN USER
-         */
-
         chat.messages.push(
-            userMessage
+            assistantMessage
         );
-
-        /*
-         * JUDUL CHAT
-         */
-
-        if (
-            chat.title ===
-            "Chat baru"
-        ) {
-            chat.title =
-                text
-                    ? text.slice(
-                        0,
-                        42
-                    )
-                    : "Percakapan gambar";
-        }
 
         chat.updatedAt =
             Date.now();
 
-        /*
-         * SIMPAN SEBELUM REQUEST API.
-         *
-         * Jadi walaupun API error,
-         * pertanyaan user tetap ada
-         * setelah reload.
-         */
-
         saveChats();
+
+        renderMessage(
+            assistantMessage
+        );
+
+        if (
+            data.model
+        ) {
+
+            elements.modelLabel.textContent =
+                data.model;
+        }
 
         renderHistory();
 
-        elements.welcome.style.display =
-            "none";
+        if (currentUser) {
+
+            await saveChatCloud(
+                chat
+            );
+
+            await saveMessageCloud(
+                chat,
+                assistantMessage
+            );
+        }
+
+    } catch (error) {
+
+        const errorMessage = {
+
+            id:
+                makeId(),
+
+            role:
+                "assistant",
+
+            content:
+                `Terjadi kesalahan:\n${
+                    error?.message ||
+                    "Unknown error"
+                }`,
+
+            time:
+                Date.now()
+        };
+
+        chat.messages.push(
+            errorMessage
+        );
+
+        chat.updatedAt =
+            Date.now();
+
+        saveChats();
 
         renderMessage(
-            userMessage
+            errorMessage
         );
 
-        const requestImage =
-            attachedImage
-                ? {
-                    mimeType:
-                        attachedImage.mimeType,
+        renderHistory();
 
-                    data:
-                        attachedImage.data
-                }
-                : null;
+        if (currentUser) {
 
-        const requestMode =
-            currentMode;
+            await saveChatCloud(
+                chat
+            );
 
-        elements.messageInput.value =
-            "";
+            await saveMessageCloud(
+                chat,
+                errorMessage
+            );
+        }
 
-        autoResize();
-
-        resetAttachment();
+    } finally {
 
         setSending(
-            true
+            false
         );
+    }
+}
+
+
+function setSending(
+    sending
+) {
+
+    isSending =
+        sending;
+
+    elements.sendButton.disabled =
+        sending;
+
+    elements.typing
+        .classList
+        .toggle(
+            "show",
+            sending
+        );
+
+    if (sending) {
+        scrollBottom();
+    }
+}
+
+
+/* =========================================================
+   TEXTAREA
+========================================================= */
+
+function autoResize() {
+
+    const textarea =
+        elements.messageInput;
+
+    textarea.style.height =
+        "auto";
+
+    textarea.style.height =
+        Math.min(
+            textarea.scrollHeight,
+            140
+        ) +
+        "px";
+}
+
+
+/* =========================================================
+   AUTH UI
+========================================================= */
+
+function updateAuthUI(
+    user
+) {
+
+    if (user) {
+
+        elements.loginButton
+            .classList
+            .add(
+                "hidden"
+            );
+
+        elements.userBox
+            .classList
+            .remove(
+                "hidden"
+            );
+
+        elements.userName.textContent =
+            user.displayName ||
+            "Pengguna";
+
+        elements.userEmail.textContent =
+            user.email ||
+            "";
+
+        elements.userAvatar.src =
+            user.photoURL ||
+            "";
+
+        elements.statusText.textContent =
+            "Cloud Sync";
+
+    } else {
+
+        elements.loginButton
+            .classList
+            .remove(
+                "hidden"
+            );
+
+        elements.userBox
+            .classList
+            .add(
+                "hidden"
+            );
+
+        elements.statusText.textContent =
+            "Online / Lokal";
+    }
+}
+
+
+/* =========================================================
+   GOOGLE LOGIN
+========================================================= */
+
+async function loginWithGoogle() {
+
+    try {
+
+        elements.loginButton.disabled =
+            true;
+
+        elements.loginButton.textContent =
+            "Membuka Google...";
+
+        await signInWithRedirect(
+            auth,
+            googleProvider
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Google Login:",
+            error
+        );
+
+        alert(
+            error?.message ||
+            "Gagal login dengan Google."
+        );
+
+        elements.loginButton.disabled =
+            false;
+
+        elements.loginButton.textContent =
+            "Masuk dengan Google";
+    }
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logout() {
+
+    try {
+
+        await signOut(
+            auth
+        );
+
+        /*
+         * Jangan tampilkan history akun
+         * ketika sudah logout.
+         */
+
+        chats = [];
+
+        currentChatId =
+            null;
 
         try {
-            const response =
-                await fetch(
-                    "/api/chat",
-                    {
-                        method:
-                            "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify({
-                                messages:
-                                    chat.messages.map(
-                                        item => ({
-                                            role:
-                                                item.role,
-
-                                            content:
-                                                item.content
-                                        })
-                                    ),
-
-                                image:
-                                    requestImage,
-
-                                mode:
-                                    requestMode
-                            })
-                    }
-                );
-
-            const raw =
-                await response.text();
-
-            let data;
-
-            try {
-                data =
-                    JSON.parse(
-                        raw
-                    );
-            } catch {
-                throw new Error(
-                    raw ||
-                    `HTTP ${response.status}`
-                );
-            }
-
-            if (
-                !response.ok
-            ) {
-                throw new Error(
-                    data?.error ||
-                    `HTTP ${response.status}`
-                );
-            }
-
-            const assistantMessage = {
-                role:
-                    "assistant",
-
-                content:
-                    data.reply ||
-                    "Tidak ada jawaban.",
-
-                model:
-                    data.model ||
-                    "",
-
-                time:
-                    Date.now()
-            };
-
-            if (
-                data.image &&
-                data.image.data
-            ) {
-                assistantMessage.image =
-                    {
-                        mimeType:
-                            data.image.mimeType ||
-                            "image/png",
-
-                        data:
-                            data.image.data
-                    };
-            }
-
-            /*
-             * SIMPAN JAWABAN AI
-             */
-
-            chat.messages.push(
-                assistantMessage
+            localStorage.removeItem(
+                STORAGE_KEY
             );
 
-            chat.updatedAt =
-                Date.now();
-
-            saveChats();
-
-            renderMessage(
-                assistantMessage
+            localStorage.removeItem(
+                ACTIVE_CHAT_KEY
             );
+        } catch {}
 
-            if (
-                data.model
-            ) {
-                elements.modelLabel.textContent =
-                    data.model;
-            }
+        createChat();
 
-            renderHistory();
+    } catch (error) {
 
-        } catch (error) {
-
-            /*
-             * ERROR JUGA DISIMPAN
-             */
-
-            const errorMessage = {
-                role:
-                    "assistant",
-
-                content:
-                    `Terjadi kesalahan:\n${error?.message || "Unknown error"}`,
-
-                time:
-                    Date.now()
-            };
-
-            chat.messages.push(
-                errorMessage
-            );
-
-            chat.updatedAt =
-                Date.now();
-
-            saveChats();
-
-            renderMessage(
-                errorMessage
-            );
-
-            renderHistory();
-
-        } finally {
-            setSending(
-                false
-            );
-        }
-    }
-
-    function setSending(
-        sending
-    ) {
-        isSending =
-            sending;
-
-        elements.sendButton.disabled =
-            sending;
-
-        elements.typing
-            .classList
-            .toggle(
-                "show",
-                sending
-            );
-
-        if (sending) {
-            scrollBottom();
-        }
-    }
-
-    /* =========================================================
-       TEXTAREA
-    ========================================================= */
-
-    function autoResize() {
-        const textarea =
-            elements.messageInput;
-
-        textarea.style.height =
-            "auto";
-
-        textarea.style.height =
-            Math.min(
-                textarea.scrollHeight,
-                140
-            ) +
-            "px";
-    }
-
-    /* =========================================================
-       EVENTS
-    ========================================================= */
-
-    elements.composer.addEventListener(
-        "submit",
-        event => {
-            event.preventDefault();
-
-            sendMessage();
-        }
-    );
-
-    elements.messageInput.addEventListener(
-        "input",
-        autoResize
-    );
-
-    elements.messageInput.addEventListener(
-        "keydown",
-        event => {
-            if (
-                event.key ===
-                    "Enter" &&
-                !event.shiftKey
-            ) {
-                event.preventDefault();
-
-                sendMessage();
-            }
-        }
-    );
-
-    elements.imageButton.addEventListener(
-        "click",
-        () => {
-            elements.fileInput.click();
-        }
-    );
-
-    elements.fileInput.addEventListener(
-        "change",
-        () => {
-            const file =
-                elements.fileInput
-                    .files?.[0];
-
-            if (file) {
-                handleImage(
-                    file
-                );
-            }
-        }
-    );
-
-    elements.removeAttachment.addEventListener(
-        "click",
-        resetAttachment
-    );
-
-    elements.chatMode.addEventListener(
-        "click",
-        () => {
-            setMode(
-                "chat"
-            );
-        }
-    );
-
-    elements.imageMode.addEventListener(
-        "click",
-        () => {
-            setMode(
-                "image"
-            );
-        }
-    );
-
-    elements.newChatButton.addEventListener(
-        "click",
-        () => {
-
-            createChat();
-
-            elements.messageInput.focus();
-
-            elements.sidebar
-                .classList
-                .remove(
-                    "open"
-                );
-        }
-    );
-
-    elements.mobileMenu.addEventListener(
-        "click",
-        () => {
-            elements.sidebar
-                .classList
-                .toggle(
-                    "open"
-                );
-        }
-    );
-
-    document
-        .querySelectorAll(
-            ".suggestion"
-        )
-        .forEach(
-            button => {
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        elements.messageInput.value =
-                            button.dataset
-                                .prompt ||
-                            "";
-
-                        autoResize();
-
-                        elements.messageInput
-                            .focus();
-                    }
-                );
-            }
+        console.error(
+            "Logout:",
+            error
         );
 
-    /* =========================================================
-       MATHJAX READY
-    ========================================================= */
-
-    function typesetExistingMath() {
-        document
-            .querySelectorAll(
-                ".message-bubble"
-            )
-            .forEach(
-                bubble => {
-
-                    if (
-                        bubble.querySelector(
-                            ".math-display, .math-inline"
-                        )
-                    ) {
-                        typesetMath(
-                            bubble
-                        );
-                    }
-                }
-            );
+        alert(
+            "Gagal keluar."
+        );
     }
+}
 
-    if (
-        window.MathJax &&
-        window.MathJax.startup
-    ) {
-        window.MathJax
-            .startup
-            .promise
-            .then(
-                () => {
-                    typesetExistingMath();
-                }
-            )
-            .catch(
-                error => {
-                    console.warn(
-                        "MathJax startup gagal:",
-                        error
-                    );
-                }
-            );
+
+/* =========================================================
+   AUTH STATE
+========================================================= */
+
+async function handleAuthState(
+    user
+) {
+
+    currentUser =
+        user;
+
+    updateAuthUI(
+        user
+    );
+
+    if (!user) {
+
+        firebaseLoaded =
+            false;
+
+        return;
     }
-
-    /* =========================================================
-       INITIALIZATION
-    ========================================================= */
-
-    loadChats();
 
     /*
-     * Kalau belum ada history:
-     * buat satu chat kosong.
+     * Simpan history lokal sebelum
+     * diganti dengan cloud history.
      */
+
+    const localBeforeCloud =
+        chats.map(
+            chat => ({
+                ...chat,
+
+                messages:
+                    chat.messages.map(
+                        message => ({
+                            ...message
+                        })
+                    )
+            })
+        );
+
+    const cloudChats =
+        await loadCloudChats();
+
+    if (
+        cloudChats ===
+        null
+    ) {
+
+        /*
+         * Firestore gagal dibaca.
+         * Tetap gunakan local.
+         */
+
+        return;
+    }
+
+    /*
+     * Kalau akun baru dan Firestore
+     * masih kosong, pindahkan history
+     * lokal ke akun Firebase.
+     */
+
+    if (
+        cloudChats.length ===
+            0 &&
+        localBeforeCloud.length
+    ) {
+
+        chats =
+            localBeforeCloud;
+
+        for (
+            const chat of chats
+        ) {
+
+            for (
+                const message
+                of chat.messages
+            ) {
+
+                if (!message.id) {
+                    message.id =
+                        makeId();
+                }
+            }
+        }
+
+        saveChats();
+
+        await migrateLocalHistory(
+            chats
+        );
+
+    } else {
+
+        chats =
+            cloudChats;
+
+        saveChats();
+    }
 
     if (!chats.length) {
 
@@ -3660,33 +4197,22 @@
 
     } else {
 
-        /*
-         * Coba buka chat terakhir yang
-         * sedang aktif sebelum reload.
-         */
-
-        const savedActiveChat =
+        const saved =
             loadActiveChat();
 
-        const savedChatExists =
-            savedActiveChat &&
+        if (
+            saved &&
             chats.some(
                 chat =>
                     chat.id ===
-                    savedActiveChat
-            );
-
-        if (savedChatExists) {
+                    saved
+            )
+        ) {
 
             currentChatId =
-                savedActiveChat;
+                saved;
 
         } else {
-
-            /*
-             * Kalau tidak ada active chat,
-             * buka chat yang paling baru.
-             */
 
             sortChats();
 
@@ -3697,17 +4223,242 @@
         saveActiveChat();
 
         renderHistory();
-
         renderMessages();
     }
 
-    setMode(
-        "chat"
+    firebaseLoaded =
+        true;
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+elements.loginButton.addEventListener(
+    "click",
+    loginWithGoogle
+);
+
+elements.logoutButton.addEventListener(
+    "click",
+    logout
+);
+
+elements.composer.addEventListener(
+    "submit",
+    event => {
+
+        event.preventDefault();
+
+        sendMessage();
+    }
+);
+
+elements.messageInput.addEventListener(
+    "input",
+    autoResize
+);
+
+elements.messageInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key ===
+                "Enter" &&
+            !event.shiftKey
+        ) {
+
+            event.preventDefault();
+
+            sendMessage();
+        }
+    }
+);
+
+elements.imageButton.addEventListener(
+    "click",
+    () => {
+
+        elements.fileInput.click();
+    }
+);
+
+elements.fileInput.addEventListener(
+    "change",
+    () => {
+
+        const file =
+            elements.fileInput
+                .files?.[0];
+
+        if (file) {
+            handleImage(
+                file
+            );
+        }
+    }
+);
+
+elements.removeAttachment.addEventListener(
+    "click",
+    resetAttachment
+);
+
+elements.chatMode.addEventListener(
+    "click",
+    () => {
+        setMode(
+            "chat"
+        );
+    }
+);
+
+elements.imageMode.addEventListener(
+    "click",
+    () => {
+        setMode(
+            "image"
+        );
+    }
+);
+
+elements.newChatButton.addEventListener(
+    "click",
+    () => {
+
+        createChat();
+
+        elements.messageInput.focus();
+
+        elements.sidebar
+            .classList
+            .remove(
+                "open"
+            );
+    }
+);
+
+elements.mobileMenu.addEventListener(
+    "click",
+    () => {
+
+        elements.sidebar
+            .classList
+            .toggle(
+                "open"
+            );
+    }
+);
+
+document
+    .querySelectorAll(
+        ".suggestion"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    elements.messageInput.value =
+                        button.dataset
+                            .prompt ||
+                        "";
+
+                    autoResize();
+
+                    elements.messageInput
+                        .focus();
+                }
+            );
+        }
     );
 
-    autoResize();
 
-})();
+/* =========================================================
+   INITIAL LOCAL LOAD
+========================================================= */
+
+loadChats();
+
+if (!chats.length) {
+
+    createChat();
+
+} else {
+
+    const saved =
+        loadActiveChat();
+
+    if (
+        saved &&
+        chats.some(
+            chat =>
+                chat.id ===
+                saved
+        )
+    ) {
+
+        currentChatId =
+            saved;
+
+    } else {
+
+        sortChats();
+
+        currentChatId =
+            chats[0].id;
+    }
+
+    saveActiveChat();
+
+    renderHistory();
+    renderMessages();
+}
+
+setMode(
+    "chat"
+);
+
+autoResize();
+
+
+/* =========================================================
+   FIREBASE REDIRECT RESULT
+========================================================= */
+
+getRedirectResult(
+    auth
+).catch(
+    error => {
+
+        if (
+            error?.code ===
+            "auth/popup-closed-by-user"
+        ) {
+            return;
+        }
+
+        console.warn(
+            "Firebase redirect:",
+            error
+        );
+    }
+);
+
+
+/* =========================================================
+   FIREBASE AUTH LISTENER
+========================================================= */
+
+onAuthStateChanged(
+    auth,
+    handleAuthState
+);
+
 </script>
 
 </body>
