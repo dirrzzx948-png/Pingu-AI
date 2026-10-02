@@ -315,14 +315,22 @@
             color: var(--muted);
         }
 
-        .history-item {
+        .history-item-wrap {
             width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 5px;
+        }
+
+        .history-item {
+            flex: 1;
+            min-width: 0;
 
             display: flex;
             align-items: center;
 
             padding: 10px 11px;
-            margin-bottom: 5px;
 
             border-radius: 12px;
 
@@ -346,6 +354,29 @@
             background: rgba(255,255,255,.7);
             color: var(--text);
             border: 1px solid rgba(55,48,39,.07);
+        }
+
+        .history-delete {
+            width: 30px;
+            height: 30px;
+            flex-shrink: 0;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 9px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 14px;
+
+            transition:
+                background .15s ease,
+                color .15s ease;
+        }
+
+        .history-delete:hover {
+            background: rgba(217,85,85,.12);
+            color: var(--danger);
         }
 
         .sidebar-footer {
@@ -608,6 +639,37 @@
 
             box-shadow:
                 0 5px 16px rgba(111,92,231,.16);
+        }
+
+        /* Tombol Edit Pesan User */
+        .message-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+            justify-content: flex-end;
+        }
+
+        .message-edit-btn {
+            background: transparent;
+            color: var(--muted);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .message-edit-btn:hover {
+            background: rgba(0,0,0,.05);
+            color: var(--text);
+        }
+
+        .message.user .message-edit-btn {
+            color: rgba(255,255,255,.8);
+        }
+
+        .message.user .message-edit-btn:hover {
+            background: rgba(255,255,255,.15);
+            color: #fff;
         }
 
         /* =====================================================
@@ -2003,7 +2065,7 @@ function sortChats() {
 
 
 /* =========================================================
-   HISTORY UI
+   HISTORY UI & HAPUS 1 PER 1
 ========================================================= */
 
 function renderHistory() {
@@ -2027,6 +2089,9 @@ function renderHistory() {
     for (
         const chat of chats
     ) {
+
+        const wrap = document.createElement("div");
+        wrap.className = "history-item-wrap";
 
         const button =
             document.createElement(
@@ -2065,8 +2130,36 @@ function renderHistory() {
             }
         );
 
+        // Tombol hapus history 1 per 1
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "history-delete";
+        deleteBtn.title = "Hapus percakapan";
+        deleteBtn.innerHTML = "×";
+
+        deleteBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            chats = chats.filter(c => c.id !== chat.id);
+
+            if (currentChatId === chat.id) {
+                if (chats.length > 0) {
+                    currentChatId = chats[0].id;
+                } else {
+                    createChat();
+                }
+            }
+
+            saveChats();
+            saveActiveChat();
+            renderHistory();
+            renderMessages();
+        });
+
+        wrap.appendChild(button);
+        wrap.appendChild(deleteBtn);
         elements.history.appendChild(
-            button
+            wrap
         );
     }
 }
@@ -2507,7 +2600,7 @@ async function typesetMath(
 
 /* =========================================================
    COPY CODE
-========================================================= */
+===================================================== */
 
 async function copyCode(button) {
 
@@ -2592,8 +2685,8 @@ document.addEventListener(
 
 
 /* =========================================================
-   RENDER MESSAGE
-========================================================= */
+   RENDER MESSAGE & EDIT PESAN USER
+===================================================== */
 
 function renderMessages() {
 
@@ -2718,6 +2811,37 @@ function renderMessage(
         content.appendChild(
             image
         );
+    }
+
+    // Tombol Edit untuk Pesan User
+    if (message.role === "user") {
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "message-actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "message-edit-btn";
+        editBtn.textContent = "Edit";
+
+        editBtn.addEventListener("click", () => {
+            elements.messageInput.value = message.content;
+            autoResize();
+            elements.messageInput.focus();
+
+            // Hapus pesan ini dan semua pesan setelahnya dari chat saat diedit ulang
+            const chat = getCurrentChat();
+            if (chat) {
+                const index = chat.messages.findIndex(m => m.id === message.id);
+                if (index !== -1) {
+                    chat.messages = chat.messages.slice(0, index);
+                    saveChats();
+                    renderMessages();
+                }
+            }
+        });
+
+        actionsDiv.appendChild(editBtn);
+        content.appendChild(actionsDiv);
     }
 
     if (message.model) {
@@ -3154,7 +3278,6 @@ async function sendMessage() {
 
     try {
 
-        // Sisipkan system prompt identitas pembuat (Hoidir) ke payload backend/API
         const messagesWithSystem = [
             {
                 role: "system",
@@ -3604,7 +3727,7 @@ if (!chats.length) {
 
 setMode(
     "chat"
-);
+    );
 
 autoResize();
 
