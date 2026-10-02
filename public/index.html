@@ -12,7 +12,7 @@
 
     <meta
         name="description"
-        content="Pingu AI - AI chat dengan dukungan gambar dan matematika."
+        content="Pingu AI - Asisten AI buatan dengan dukungan gambar dan matematika."
     >
 
     <title>Pingu AI</title>
@@ -1285,7 +1285,7 @@
                 </div>
 
                 <div class="brand-subtitle">
-                    AI Assistant
+                    Asisten Digital
                 </div>
 
             </div>
@@ -1331,7 +1331,7 @@
                 <span class="status-dot"></span>
 
                 <span id="statusText">
-                    Online / Lokal
+                    Online / Google
                 </span>
 
             </div>
@@ -1365,7 +1365,7 @@
                         class="top-model"
                         id="modelLabel"
                     >
-                        Gemini
+                        Pingu AI
                     </div>
 
                 </div>
@@ -1579,6 +1579,11 @@
 </div>
 
 <script type="module">
+
+/* =========================================================
+   SYSTEM PROMPT & IDENTITAS PEMBUAT (HOIDIR)
+========================================================= */
+const CREATOR_SYSTEM_PROMPT = "Kamu adalah Pingu AI, sebuah kecerdasan buatan mandiri yang dikembangkan dan diciptakan sepenuhnya oleh Hoidir sebagai pembuat utamamu. Jika ada pengguna yang bertanya siapa yang membuatmu, siapa penciptamu, atau siapa pembuat script ini, jawab dengan tegas dan bangga bahwa kamu diciptakan dan dikembangkan oleh Hoidir. Jangan pernah menyebut nama perusahaan atau pihak lain sebagai pembuatmu.";
 
 /* =========================================================
    ELEMENTS
@@ -3149,6 +3154,18 @@ async function sendMessage() {
 
     try {
 
+        // Sisipkan system prompt identitas pembuat (Hoidir) ke payload backend/API
+        const messagesWithSystem = [
+            {
+                role: "system",
+                content: CREATOR_SYSTEM_PROMPT
+            },
+            ...chat.messages.map(item => ({
+                role: item.role,
+                content: item.content
+            }))
+        ];
+
         const response =
             await fetch(
                 "/api/chat",
@@ -3164,16 +3181,7 @@ async function sendMessage() {
                     body:
                         JSON.stringify({
 
-                            messages:
-                                chat.messages.map(
-                                    item => ({
-                                        role:
-                                            item.role,
-
-                                        content:
-                                            item.content
-                                    })
-                                ),
+                            messages: messagesWithSystem,
 
                             image:
                                 requestImage,
@@ -3225,8 +3233,7 @@ async function sendMessage() {
                 "Tidak ada jawaban.",
 
             model:
-                data.model ||
-                "",
+                " AI",
 
             time:
                 Date.now()
@@ -3261,13 +3268,7 @@ async function sendMessage() {
             assistantMessage
         );
 
-        if (
-            data.model
-        ) {
-
-            elements.modelLabel.textContent =
-                data.model;
-        }
+        elements.modelLabel.textContent = "Google AI";
 
         renderHistory();
 
@@ -3608,7 +3609,7 @@ setMode(
 autoResize();
 
 elements.statusText.textContent =
-    "Online / Lokal";
+    "Online / Google";
 
 </script>
 
