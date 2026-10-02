@@ -15,10 +15,54 @@
 
     <meta
         name="description"
-        content="Pingu AI - AI chat dengan dukungan gambar."
+        content="Pingu AI - AI chat dengan dukungan gambar dan matematika."
     >
 
     <title>Pingu AI</title>
+
+    <!-- =========================
+         MATHJAX
+    ========================== -->
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [
+                    ["$", "$"],
+                    ["\\(", "\\)"]
+                ],
+
+                displayMath: [
+                    ["$$", "$$"],
+                    ["\\[", "\\]"]
+                ],
+
+                processEscapes: true,
+                processEnvironments: true
+            },
+
+            options: {
+                skipHtmlTags: [
+                    "script",
+                    "noscript",
+                    "style",
+                    "textarea",
+                    "pre",
+                    "code"
+                ]
+            },
+
+            startup: {
+                typeset: false
+            }
+        };
+    </script>
+
+    <script
+        id="MathJax-script"
+        async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
 
     <style>
         * {
@@ -538,13 +582,92 @@
         }
 
         /* =========================
-           CODE BLOCK
+           MATHEMATICS
         ========================= */
 
+        .math-display {
+            width: 100%;
+            margin: 15px 0;
+
+            padding: 10px 4px;
+
+            overflow-x: auto;
+            overflow-y: hidden;
+
+            text-align: center;
+
+            border-radius: 10px;
+
+            scrollbar-width: thin;
+            scrollbar-color:
+                rgba(80,70,60,.16)
+                transparent;
+        }
+
+        .math-display::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .math-display::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .math-display::-webkit-scrollbar-thumb {
+            background: rgba(80,70,60,.16);
+            border-radius: 20px;
+        }
+
+        .math-inline {
+            display: inline;
+        }
+
         /*
-         * Hanya area kode yang gelap.
-         * Bubble pesan Pingu tetap cream/transparan.
+         * MathJax sendiri yang menggambar rumus.
+         * Ukurannya dibuat sedikit lebih besar
+         * agar nyaman dibaca di HP.
          */
+        .message-bubble mjx-container {
+            color: inherit !important;
+        }
+
+        .message-bubble mjx-container[display="true"] {
+            margin:
+                12px 0 !important;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding:
+                3px 0;
+        }
+
+        .message-bubble mjx-container[display="true"]
+        mjx-math {
+            max-width: none;
+        }
+
+        .message-bubble .math-display
+        mjx-container[display="true"] {
+            margin:
+                0 !important;
+        }
+
+        /*
+         * Supaya rumus tidak membuat bubble
+         * terlalu sempit di layar kecil.
+         */
+        .message-bubble
+        mjx-container {
+            font-size: 103% !important;
+        }
+
+        .message.user
+        mjx-container {
+            color: #fff !important;
+        }
+
+        /* =========================
+           CODE BLOCK
+        ========================= */
 
         .code-wrapper {
             width: 100%;
@@ -1228,6 +1351,24 @@
                 min-height: 26px;
                 padding: 0 8px;
             }
+
+            .math-display {
+                margin:
+                    12px -2px;
+                padding:
+                    9px 2px;
+            }
+
+            .message-bubble
+            mjx-container {
+                font-size: 96% !important;
+            }
+
+            .message-bubble
+            mjx-container[display="true"] {
+                margin:
+                    9px 0 !important;
+            }
         }
     </style>
 </head>
@@ -1622,6 +1763,7 @@
                 Array.isArray(parsed)
                     ? parsed
                     : [];
+
         } catch {
             chats = [];
         }
@@ -1633,6 +1775,7 @@
                 STORAGE_KEY,
                 JSON.stringify(chats)
             );
+
         } catch (error) {
             console.warn(
                 "Tidak dapat menyimpan history:",
@@ -1752,7 +1895,7 @@
     }
 
     /* =========================
-       MARKDOWN / CODE
+       HTML ESCAPE
     ========================= */
 
     function escapeHTML(value) {
@@ -1764,140 +1907,307 @@
             .replace(/'/g, "&#039;");
     }
 
+    /* =========================
+       MATH + MARKDOWN + CODE
+    ========================= */
+
     function formatText(text) {
-        const source =
+        let source =
             String(text ?? "");
 
-        const codeBlocks = [];
+        const blocks = [];
 
         /*
-         * Cari semua fenced code block:
-         *
-         * ```js
-         * console.log("Hello");
-         * ```
-         *
-         * atau:
-         *
-         * ```
-         * kode
-         * ```
+         * ==================================================
+         * 1. AMBIL CODE BLOCK TERLEBIH DAHULU
+         * ==================================================
          */
+
         const codePattern =
             /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g;
 
-        let lastIndex = 0;
-        let output = "";
+        source =
+            source.replace(
+                codePattern,
+                (_, language, code) => {
+                    const index =
+                        blocks.length;
 
-        let match;
+                    blocks.push({
+                        type: "code",
 
-        while (
-            (match =
-                codePattern.exec(source)) !== null
-        ) {
-            /*
-             * Teks sebelum code block.
-             */
-            const normalText =
-                source.slice(
-                    lastIndex,
-                    match.index
-                );
+                        language:
+                            String(
+                                language || ""
+                            ).trim() ||
+                            "code",
 
-            output +=
-                formatNormalText(
-                    normalText
-                );
+                        content:
+                            String(
+                                code || ""
+                            ).replace(
+                                /\r?\n$/,
+                                ""
+                            )
+                    });
 
-            const language =
-                String(
-                    match[1] || ""
-                ).trim() || "code";
-
-            const code =
-                String(
-                    match[2] || ""
-                ).replace(
-                    /\r?\n$/,
-                    ""
-                );
-
-            const index =
-                codeBlocks.length;
-
-            codeBlocks.push({
-                language,
-                code
-            });
-
-            /*
-             * Placeholder sengaja dibuat
-             * sebelum HTML code block.
-             */
-            output +=
-                `__PINGU_CODE_BLOCK_${index}__`;
-
-            lastIndex =
-                codePattern.lastIndex;
-        }
-
-        /*
-         * Sisa teks setelah code block terakhir.
-         */
-        output +=
-            formatNormalText(
-                source.slice(lastIndex)
+                    return (
+                        `__PINGU_BLOCK_${index}__`
+                    );
+                }
             );
 
         /*
-         * Sekarang baru masukkan code block.
-         *
-         * Penting:
-         * newline di dalam script TIDAK
-         * boleh diubah menjadi <br>.
+         * ==================================================
+         * 2. DISPLAY MATH $$...$$
+         * ==================================================
          */
+
+        source =
+            source.replace(
+                /\$\$([\s\S]*?)\$\$/g,
+                (_, math) => {
+                    const index =
+                        blocks.length;
+
+                    blocks.push({
+                        type:
+                            "math-display",
+
+                        content:
+                            String(
+                                math || ""
+                            ).trim()
+                    });
+
+                    return (
+                        `__PINGU_BLOCK_${index}__`
+                    );
+                }
+            );
+
+        /*
+         * ==================================================
+         * 3. DISPLAY MATH \[...\]
+         * ==================================================
+         */
+
+        source =
+            source.replace(
+                /\\\[([\s\S]*?)\\\]/g,
+                (_, math) => {
+                    const index =
+                        blocks.length;
+
+                    blocks.push({
+                        type:
+                            "math-display",
+
+                        content:
+                            String(
+                                math || ""
+                            ).trim()
+                    });
+
+                    return (
+                        `__PINGU_BLOCK_${index}__`
+                    );
+                }
+            );
+
+        /*
+         * ==================================================
+         * 4. INLINE MATH \(...\)
+         * ==================================================
+         */
+
+        source =
+            source.replace(
+                /\\\(([\s\S]*?)\\\)/g,
+                (_, math) => {
+                    const index =
+                        blocks.length;
+
+                    blocks.push({
+                        type:
+                            "math-inline",
+
+                        content:
+                            String(
+                                math || ""
+                            ).trim()
+                    });
+
+                    return (
+                        `__PINGU_BLOCK_${index}__`
+                    );
+                }
+            );
+
+        /*
+         * ==================================================
+         * 5. INLINE MATH $...$
+         *
+         * Hanya satu baris supaya tidak mengganggu
+         * paragraf biasa.
+         * ==================================================
+         */
+
+        source =
+            source.replace(
+                /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
+                (full, before, math) => {
+                    const index =
+                        blocks.length;
+
+                    blocks.push({
+                        type:
+                            "math-inline",
+
+                        content:
+                            String(
+                                math || ""
+                            ).trim()
+                    });
+
+                    return (
+                        before +
+                        `__PINGU_BLOCK_${index}__`
+                    );
+                }
+            );
+
+        /*
+         * ==================================================
+         * 6. FORMAT TEKS BIASA
+         * ==================================================
+         */
+
+        let output =
+            formatNormalText(
+                source
+            );
+
+        /*
+         * ==================================================
+         * 7. MASUKKAN KEMBALI SEMUA BLOCK
+         * ==================================================
+         */
+
         for (
             let i = 0;
-            i < codeBlocks.length;
+            i < blocks.length;
             i++
         ) {
             const block =
-                codeBlocks[i];
+                blocks[i];
 
-            const safeLanguage =
-                escapeHTML(
-                    block.language
-                );
+            let blockHTML = "";
 
-            const safeCode =
-                escapeHTML(
-                    block.code
-                );
+            /*
+             * --------------------------
+             * CODE
+             * --------------------------
+             */
 
-            const codeHTML = `
-                <div class="code-wrapper">
-                    <div class="code-header">
-                        <span class="code-language">${safeLanguage}</span>
+            if (
+                block.type ===
+                "code"
+            ) {
+                const safeLanguage =
+                    escapeHTML(
+                        block.language
+                    );
 
-                        <button
-                            class="copy-code"
-                            type="button"
-                            data-code-index="${i}"
-                            aria-label="Salin kode"
-                            title="Salin kode"
-                        >
-                            Salin
-                        </button>
+                const safeCode =
+                    escapeHTML(
+                        block.content
+                    );
+
+                blockHTML = `
+                    <div class="code-wrapper">
+                        <div class="code-header">
+
+                            <span class="code-language">
+                                ${safeLanguage}
+                            </span>
+
+                            <button
+                                class="copy-code"
+                                type="button"
+                                data-code-index="${i}"
+                                aria-label="Salin kode"
+                                title="Salin kode"
+                            >
+                                Salin
+                            </button>
+
+                        </div>
+
+                        <pre class="code"><code>${safeCode}</code></pre>
                     </div>
+                `;
+            }
 
-                    <pre class="code"><code>${safeCode}</code></pre>
-                </div>
-            `;
+            /*
+             * --------------------------
+             * DISPLAY MATH
+             * --------------------------
+             */
+
+            else if (
+                block.type ===
+                "math-display"
+            ) {
+                /*
+                 * Jangan escape backslash.
+                 *
+                 * MathJax membutuhkan LaTeX
+                 * asli seperti:
+                 *
+                 * \begin{aligned}
+                 * x &= 4
+                 * \end{aligned}
+                 *
+                 * Karakter HTML berbahaya tetap
+                 * diubah supaya aman.
+                 */
+
+                const safeMath =
+                    escapeHTML(
+                        block.content
+                    );
+
+                blockHTML = `
+                    <div class="math-display">
+                        $$${safeMath}$$
+                    </div>
+                `;
+            }
+
+            /*
+             * --------------------------
+             * INLINE MATH
+             * --------------------------
+             */
+
+            else if (
+                block.type ===
+                "math-inline"
+            ) {
+                const safeMath =
+                    escapeHTML(
+                        block.content
+                    );
+
+                blockHTML =
+                    `<span class="math-inline">$${safeMath}$</span>`;
+            }
 
             output =
                 output.replace(
-                    `__PINGU_CODE_BLOCK_${i}__`,
-                    codeHTML
+                    `__PINGU_BLOCK_${i}__`,
+                    blockHTML
                 );
         }
 
@@ -1931,8 +2241,11 @@
             );
 
         /*
-         * Newline hanya diterapkan ke
-         * teks biasa, bukan code block.
+         * Newline teks biasa.
+         *
+         * Tidak menyentuh isi code block
+         * atau math block karena sudah
+         * dipisahkan menjadi placeholder.
          */
         output =
             output.replace(
@@ -1941,6 +2254,45 @@
             );
 
         return output;
+    }
+
+    /* =========================
+       MATHJAX TYPESET
+    ========================= */
+
+    async function typesetMath(
+        element
+    ) {
+        if (!element) {
+            return;
+        }
+
+        try {
+            if (
+                window.MathJax &&
+                window.MathJax.startup &&
+                window.MathJax.startup.promise
+            ) {
+                await window.MathJax.startup.promise;
+            }
+
+            if (
+                window.MathJax &&
+                typeof
+                    window.MathJax.typesetPromise ===
+                    "function"
+            ) {
+                await window.MathJax.typesetPromise(
+                    [element]
+                );
+            }
+
+        } catch (error) {
+            console.warn(
+                "MathJax gagal merender:",
+                error
+            );
+        }
     }
 
     /* =========================
@@ -1970,10 +2322,6 @@
             return;
         }
 
-        /*
-         * textContent mengambil kode asli,
-         * bukan teks "Salin".
-         */
         const code =
             codeElement.textContent || "";
 
@@ -1985,6 +2333,7 @@
                 await navigator.clipboard.writeText(
                     code
                 );
+
             } else {
                 const textarea =
                     document.createElement(
@@ -2017,6 +2366,7 @@
 
                 textarea.focus();
                 textarea.select();
+
                 textarea.setSelectionRange(
                     0,
                     textarea.value.length
@@ -2095,8 +2445,7 @@
     }
 
     /*
-     * Tombol dibuat setelah AI menjawab,
-     * jadi pakai event delegation.
+     * Event delegation untuk tombol copy.
      */
     document.addEventListener(
         "click",
@@ -2125,7 +2474,8 @@
         const chat =
             getCurrentChat();
 
-        elements.messages.innerHTML = "";
+        elements.messages.innerHTML =
+            "";
 
         if (
             !chat ||
@@ -2267,6 +2617,14 @@
             wrapper
         );
 
+        /*
+         * Jalankan MathJax setelah bubble
+         * masuk ke DOM.
+         */
+        typesetMath(
+            bubble
+        );
+
         if (scroll) {
             scrollBottom();
         }
@@ -2293,7 +2651,8 @@
         attachedImage = null;
         attachedImagePreview = null;
 
-        elements.fileInput.value = "";
+        elements.fileInput.value =
+            "";
 
         elements.attachment
             .classList
@@ -2515,7 +2874,8 @@
                         : "Jelaskan gambar ini."
                 ),
 
-            time: Date.now()
+            time:
+                Date.now()
         };
 
         if (attachedImage) {
@@ -2619,6 +2979,7 @@
             try {
                 data =
                     JSON.parse(raw);
+
             } catch {
                 throw new Error(
                     raw ||
@@ -2759,6 +3120,7 @@
         "submit",
         (event) => {
             event.preventDefault();
+
             sendMessage();
         }
     );
@@ -2864,6 +3226,43 @@
         });
 
     /* =========================
+       MATHJAX READY
+    ========================= */
+
+    /*
+     * Kalau MathJax selesai loading setelah
+     * chat sudah dirender, typeset ulang
+     * semua bubble yang sudah ada.
+     */
+    if (
+        window.MathJax &&
+        window.MathJax.startup
+    ) {
+        window.MathJax.startup.promise
+            .then(() => {
+                document
+                    .querySelectorAll(
+                        ".message-bubble"
+                    )
+                    .forEach(
+                        (bubble) => {
+                            typesetMath(
+                                bubble
+                            );
+                        }
+                    );
+            })
+            .catch(
+                (error) => {
+                    console.warn(
+                        "MathJax startup gagal:",
+                        error
+                    );
+                }
+            );
+    }
+
+    /* =========================
        INIT
     ========================= */
 
@@ -2871,6 +3270,7 @@
 
     if (!chats.length) {
         createChat();
+
     } else {
         currentChatId =
             chats[0].id;
