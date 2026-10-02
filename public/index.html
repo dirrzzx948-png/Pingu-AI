@@ -126,10 +126,6 @@
             cursor: pointer;
         }
 
-        button:disabled {
-            cursor: default;
-        }
-
         .app {
             width: 100%;
             height: 100dvh;
@@ -353,8 +349,7 @@
 
             transition:
                 background .15s ease,
-                transform .15s ease,
-                opacity .15s ease;
+                transform .15s ease;
         }
 
         .login-button:hover {
@@ -363,10 +358,6 @@
 
         .login-button:active {
             transform: scale(.97);
-        }
-
-        .login-button:disabled {
-            opacity: .65;
         }
 
         .user-box {
@@ -1209,7 +1200,6 @@
         /* MOBILE */
 
         @media (max-width: 720px) {
-
             .sidebar {
                 position: fixed;
                 left: 0;
@@ -1357,7 +1347,7 @@
         <div class="sidebar-footer">
             <div class="status">
                 <span class="status-dot"></span>
-                <span id="statusText">Online / Lokal</span>
+                <span id="statusText">Offline / Lokal</span>
             </div>
         </div>
 
@@ -1636,11 +1626,11 @@
 
 </div>
 
-<script type="module">
+<!-- =========================================================
+     FIREBASE + PINGU
+========================================================= -->
 
-/* =========================================================
-   FIREBASE IMPORT
-========================================================= */
+<script type="module">
 
 import {
     initializeApp
@@ -1649,11 +1639,10 @@ import {
 import {
     getAuth,
     GoogleAuthProvider,
-    signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     signOut,
-    onAuthStateChanged,
-    setPersistence,
-    browserLocalPersistence
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 import {
@@ -1672,9 +1661,8 @@ import {
 ========================================================= */
 
 const firebaseConfig = {
-
     apiKey:
-        "PASTE_API_KEY_FIREBASE_KAMU_DI_SINI",
+        "AIzaSyBTuy0_tVRc8SkEnSL4KxanM-eFgth2KcA",
 
     authDomain:
         "project-18c85.firebaseapp.com",
@@ -1715,29 +1703,6 @@ const db =
 const googleProvider =
     new GoogleAuthProvider();
 
-googleProvider.setCustomParameters({
-    prompt: "select_account"
-});
-
-
-/*
- * Pakai local persistence supaya session
- * login Google tetap tersimpan setelah
- * halaman Pingu direfresh.
- */
-await setPersistence(
-    auth,
-    browserLocalPersistence
-).catch(
-    error => {
-
-        console.warn(
-            "Firebase persistence gagal:",
-            error
-        );
-    }
-);
-
 
 /* =========================================================
    ELEMENTS
@@ -1747,7 +1712,6 @@ const $ = id =>
     document.getElementById(id);
 
 const elements = {
-
     sidebar:
         $("sidebar"),
 
@@ -1872,6 +1836,9 @@ let isSending =
 let currentUser =
     null;
 
+let firebaseLoaded =
+    false;
+
 
 /* =========================================================
    ID
@@ -1981,9 +1948,7 @@ function loadChats() {
             );
 
         if (!saved) {
-
             chats = [];
-
             return;
         }
 
@@ -2217,19 +2182,11 @@ async function saveMessageCloud(
 
     try {
 
-        const messageId =
-            message.id ||
-            makeId();
-
-        if (!message.id) {
-            message.id =
-                messageId;
-        }
-
         await setDoc(
             cloudMessageRef(
                 chat.id,
-                messageId
+                message.id ||
+                    makeId()
             ),
             {
                 role:
@@ -2372,9 +2329,6 @@ async function loadCloudChats() {
             });
         }
 
-        /*
-         * Gabungkan gambar dari local cache.
-         */
         for (
             const cloudChat
             of cloudChats
@@ -2511,7 +2465,6 @@ function createChat() {
     renderMessages();
 
     if (currentUser) {
-
         saveChatCloud(
             chat
         );
@@ -3293,7 +3246,6 @@ function renderMessage(
         message.role ===
         "assistant"
     ) {
-
         wrapper.appendChild(
             avatar
         );
@@ -3987,17 +3939,9 @@ function updateAuthUI(
             user.email ||
             "";
 
-        if (user.photoURL) {
-
-            elements.userAvatar.src =
-                user.photoURL;
-
-        } else {
-
-            elements.userAvatar.removeAttribute(
-                "src"
-            );
-        }
+        elements.userAvatar.src =
+            user.photoURL ||
+            "";
 
         elements.statusText.textContent =
             "Cloud Sync";
@@ -4028,58 +3972,18 @@ function updateAuthUI(
 
 async function loginWithGoogle() {
 
-    if (currentUser) {
-        return;
-    }
-
-    const button =
-        elements.loginButton;
-
     try {
 
-        button.disabled =
+        elements.loginButton.disabled =
             true;
 
-        button.textContent =
+        elements.loginButton.textContent =
             "Membuka Google...";
 
-        /*
-         * INI PERBAIKAN UTAMA:
-         *
-         * Sebelumnya:
-         * signInWithRedirect()
-         *
-         * Sekarang:
-         * signInWithPopup()
-         *
-         * Hasil login langsung dikembalikan
-         * ke halaman Pingu tanpa perlu
-         * getRedirectResult().
-         */
-
-        const result =
-            await signInWithPopup(
-                auth,
-                googleProvider
-            );
-
-        if (
-            result &&
-            result.user
-        ) {
-
-            currentUser =
-                result.user;
-
-            updateAuthUI(
-                currentUser
-            );
-
-            /*
-             * onAuthStateChanged juga akan
-             * menjalankan sinkronisasi history.
-             */
-        }
+        await signInWithRedirect(
+            auth,
+            googleProvider
+        );
 
     } catch (error) {
 
@@ -4088,68 +3992,16 @@ async function loginWithGoogle() {
             error
         );
 
-        let message =
-            "Gagal login dengan Google.";
-
-        switch (
-            error?.code
-        ) {
-
-            case "auth/popup-closed-by-user":
-                message =
-                    "Jendela Google ditutup sebelum login selesai.";
-                break;
-
-            case "auth/popup-blocked":
-                message =
-                    "Popup Google diblokir browser. Izinkan popup untuk Pingu lalu coba lagi.";
-                break;
-
-            case "auth/cancelled-popup-request":
-                message =
-                    "Permintaan login dibatalkan.";
-                break;
-
-            case "auth/unauthorized-domain":
-                message =
-                    "Domain Pingu belum diizinkan di Firebase Authentication.";
-                break;
-
-            case "auth/operation-not-allowed":
-                message =
-                    "Google Sign-In belum diaktifkan di Firebase Authentication.";
-                break;
-
-            case "auth/network-request-failed":
-                message =
-                    "Koneksi internet bermasalah. Coba lagi.";
-                break;
-
-            case "auth/invalid-api-key":
-                message =
-                    "Firebase API key tidak valid atau belum dipasang.";
-                break;
-
-            default:
-                message =
-                    error?.message ||
-                    message;
-        }
-
         alert(
-            message
+            error?.message ||
+            "Gagal login dengan Google."
         );
 
-    } finally {
-
-        button.disabled =
+        elements.loginButton.disabled =
             false;
 
-        if (!currentUser) {
-
-            button.textContent =
-                "Masuk dengan Google";
-        }
+        elements.loginButton.textContent =
+            "Masuk dengan Google";
     }
 }
 
@@ -4166,16 +4018,12 @@ async function logout() {
             auth
         );
 
-        currentUser =
-            null;
-
         chats = [];
 
         currentChatId =
             null;
 
         try {
-
             localStorage.removeItem(
                 STORAGE_KEY
             );
@@ -4183,17 +4031,9 @@ async function logout() {
             localStorage.removeItem(
                 ACTIVE_CHAT_KEY
             );
-
         } catch {}
 
-        updateAuthUI(
-            null
-        );
-
         createChat();
-
-        renderHistory();
-        renderMessages();
 
     } catch (error) {
 
@@ -4203,7 +4043,6 @@ async function logout() {
         );
 
         alert(
-            error?.message ||
             "Gagal keluar."
         );
     }
@@ -4213,9 +4052,6 @@ async function logout() {
 /* =========================================================
    AUTH STATE
 ========================================================= */
-
-let authSyncRunning =
-    false;
 
 async function handleAuthState(
     user
@@ -4230,212 +4066,112 @@ async function handleAuthState(
 
     if (!user) {
 
+        firebaseLoaded =
+            false;
+
         return;
     }
 
-    /*
-     * Hindari sinkronisasi ganda jika
-     * Firebase memanggil observer lebih
-     * dari sekali.
-     */
-    if (authSyncRunning) {
-        return;
-    }
+    const localBeforeCloud =
+        chats.map(
+            chat => ({
+                ...chat,
 
-    authSyncRunning =
-        true;
-
-    try {
-
-        /*
-         * Simpan history lokal sebelum
-         * diganti dengan cloud history.
-         */
-        const localBeforeCloud =
-            chats.map(
-                chat => ({
-                    ...chat,
-
-                    messages:
-                        chat.messages.map(
-                            message => ({
-                                ...message
-                            })
-                        )
-                })
-            );
-
-        const cloudChats =
-            await loadCloudChats();
-
-        if (
-            cloudChats ===
-            null
-        ) {
-
-            /*
-             * Firestore gagal dibaca.
-             * Jangan hapus local history.
-             */
-            return;
-        }
-
-        /*
-         * Akun baru:
-         * upload local history.
-         */
-        if (
-            cloudChats.length ===
-                0 &&
-            localBeforeCloud.length
-        ) {
-
-            chats =
-                localBeforeCloud;
-
-            for (
-                const chat of chats
-            ) {
-
-                for (
-                    const message
-                    of chat.messages
-                ) {
-
-                    if (!message.id) {
-
-                        message.id =
-                            makeId();
-                    }
-                }
-            }
-
-            saveChats();
-
-            await migrateLocalHistory(
-                chats
-            );
-
-            /*
-             * Ambil lagi dari Firebase
-             * setelah migrasi.
-             */
-            const migrated =
-                await loadCloudChats();
-
-            if (
-                migrated &&
-                migrated.length
-            ) {
-
-                /*
-                 * Gabungkan gambar local
-                 * ke hasil cloud.
-                 */
-                for (
-                    const cloudChat
-                    of migrated
-                ) {
-
-                    const localChat =
-                        localBeforeCloud.find(
-                            chat =>
-                                chat.id ===
-                                cloudChat.id
-                        );
-
-                    if (!localChat) {
-                        continue;
-                    }
-
-                    for (
-                        const message
-                        of cloudChat.messages
-                    ) {
-
-                        const localMessage =
-                            localChat.messages.find(
-                                item =>
-                                    item.id ===
-                                    message.id
-                            );
-
-                        if (
-                            localMessage?.image
-                        ) {
-
-                            message.image =
-                                localMessage.image;
-                        }
-                    }
-                }
-
-                chats =
-                    migrated;
-            }
-
-        } else {
-
-            /*
-             * Akun sudah memiliki history.
-             */
-            chats =
-                cloudChats;
-        }
-
-        if (!chats.length) {
-
-            createChat();
-
-        } else {
-
-            const saved =
-                loadActiveChat();
-
-            if (
-                saved &&
-                chats.some(
-                    chat =>
-                        chat.id ===
-                        saved
-                )
-            ) {
-
-                currentChatId =
-                    saved;
-
-            } else {
-
-                sortChats();
-
-                currentChatId =
-                    chats[0].id;
-            }
-
-            saveChats();
-            saveActiveChat();
-
-            renderHistory();
-            renderMessages();
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Sinkronisasi Firebase gagal:",
-            error
+                messages:
+                    chat.messages.map(
+                        message => ({
+                            ...message
+                        })
+                    )
+            })
         );
 
-        /*
-         * Jangan merusak local history
-         * jika cloud bermasalah.
-         */
+    const cloudChats =
+        await loadCloudChats();
 
-    } finally {
-
-        authSyncRunning =
-            false;
+    if (
+        cloudChats ===
+        null
+    ) {
+        return;
     }
+
+    if (
+        cloudChats.length ===
+            0 &&
+        localBeforeCloud.length
+    ) {
+
+        chats =
+            localBeforeCloud;
+
+        for (
+            const chat of chats
+        ) {
+
+            for (
+                const message
+                of chat.messages
+            ) {
+
+                if (!message.id) {
+                    message.id =
+                        makeId();
+                }
+            }
+        }
+
+        saveChats();
+
+        await migrateLocalHistory(
+            chats
+        );
+
+    } else {
+
+        chats =
+            cloudChats;
+
+        saveChats();
+    }
+
+    if (!chats.length) {
+
+        createChat();
+
+    } else {
+
+        const saved =
+            loadActiveChat();
+
+        if (
+            saved &&
+            chats.some(
+                chat =>
+                    chat.id ===
+                    saved
+            )
+        ) {
+
+            currentChatId =
+                saved;
+
+        } else {
+
+            sortChats();
+
+            currentChatId =
+                chats[0].id;
+        }
+
+        saveActiveChat();
+
+        renderHistory();
+        renderMessages();
+    }
+
+    firebaseLoaded =
+        true;
 }
 
 
@@ -4502,7 +4238,6 @@ elements.fileInput.addEventListener(
                 .files?.[0];
 
         if (file) {
-
             handleImage(
                 file
             );
@@ -4518,7 +4253,6 @@ elements.removeAttachment.addEventListener(
 elements.chatMode.addEventListener(
     "click",
     () => {
-
         setMode(
             "chat"
         );
@@ -4528,7 +4262,6 @@ elements.chatMode.addEventListener(
 elements.imageMode.addEventListener(
     "click",
     () => {
-
         setMode(
             "image"
         );
@@ -4638,14 +4371,36 @@ autoResize();
 
 
 /* =========================================================
-   FIREBASE AUTH LISTENER
+   FIREBASE REDIRECT RESULT
 ========================================================= */
 
-/*
- * TIDAK ADA getRedirectResult()
- * lagi karena sekarang menggunakan
- * signInWithPopup().
- */
+getRedirectResult(
+    auth
+).catch(
+    error => {
+
+        if (
+            error?.code ===
+            "auth/popup-closed-by-user"
+        ) {
+            return;
+        }
+
+        console.warn(
+            "Firebase redirect:",
+            error
+        );
+
+        // Pulihkan tombol jika gagal login
+        elements.loginButton.disabled = false;
+        elements.loginButton.textContent = "Masuk dengan Google";
+    }
+);
+
+
+/* =========================================================
+   FIREBASE AUTH LISTENER
+========================================================= */
 
 onAuthStateChanged(
     auth,
