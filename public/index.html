@@ -537,6 +537,207 @@
                 0 5px 16px rgba(111,92,231,.16);
         }
 
+        /* =========================
+           CODE BLOCK
+        ========================= */
+
+        /*
+         * Hanya area kode yang gelap.
+         * Bubble pesan Pingu tetap cream/transparan.
+         */
+
+        .code-wrapper {
+            width: 100%;
+            margin: 13px 0;
+
+            overflow: hidden;
+
+            border-radius: 13px;
+
+            background: #25231f;
+
+            border: 1px solid rgba(255,255,255,.08);
+
+            box-shadow:
+                0 5px 18px rgba(30,27,23,.12);
+
+            text-align: left;
+        }
+
+        .code-header {
+            min-height: 36px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 10px;
+
+            padding: 5px 7px 5px 12px;
+
+            background: #2d2a25;
+
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+        .code-language {
+            min-width: 0;
+
+            color: rgba(238,234,226,.62);
+
+            font-family:
+                ui-monospace,
+                SFMono-Regular,
+                Menlo,
+                Monaco,
+                Consolas,
+                monospace;
+
+            font-size: 10px;
+            text-transform: lowercase;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .copy-code {
+            min-width: 52px;
+            min-height: 27px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 0 9px;
+
+            flex-shrink: 0;
+
+            border-radius: 7px;
+
+            background: rgba(255,255,255,.09);
+
+            color: rgba(238,234,226,.88);
+
+            font-size: 10px;
+            font-weight: 650;
+
+            cursor: pointer;
+
+            transition:
+                background .15s ease,
+                color .15s ease,
+                transform .1s ease;
+        }
+
+        .copy-code:hover {
+            background: rgba(255,255,255,.16);
+            color: #fff;
+        }
+
+        .copy-code:active {
+            transform: scale(.95);
+        }
+
+        .copy-code.copied {
+            background: rgba(111,92,231,.35);
+            color: #fff;
+        }
+
+        .copy-code.failed {
+            background: rgba(217,85,85,.25);
+            color: #fff;
+        }
+
+        .code {
+            display: block;
+
+            width: 100%;
+
+            margin: 0;
+
+            padding: 14px;
+
+            overflow-x: auto;
+
+            background: #25231f;
+            color: #eeeae2;
+
+            font-family:
+                ui-monospace,
+                SFMono-Regular,
+                Menlo,
+                Monaco,
+                Consolas,
+                monospace;
+
+            font-size: 12px;
+            line-height: 1.55;
+
+            white-space: pre;
+            tab-size: 4;
+
+            text-align: left;
+        }
+
+        .code::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        .code::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .code::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,.13);
+            border-radius: 20px;
+        }
+
+        .inline-code {
+            display: inline;
+
+            padding: 2px 5px;
+
+            border-radius: 5px;
+
+            background: rgba(80,70,60,.08);
+
+            font-family:
+                ui-monospace,
+                SFMono-Regular,
+                Menlo,
+                Monaco,
+                Consolas,
+                monospace;
+
+            font-size: .9em;
+        }
+
+        /* =========================
+           MESSAGE CONTENT FIX
+        ========================= */
+
+        .message-bubble strong {
+            font-weight: 750;
+        }
+
+        .message-bubble .code-wrapper {
+            line-height: normal;
+        }
+
+        .message-bubble > .code-wrapper:first-child {
+            margin-top: 2px;
+        }
+
+        .message-bubble > .code-wrapper:last-child {
+            margin-bottom: 2px;
+        }
+
+        /* =========================
+           IMAGE
+        ========================= */
+
         .message-image {
             display: block;
 
@@ -564,133 +765,6 @@
 
         .message.user .message-meta {
             text-align: right;
-        }
-
-        /* =========================
-           CODE BLOCK
-        ========================= */
-
-        .code-wrapper {
-            margin: 11px 0;
-
-            overflow: hidden;
-
-            border-radius: 13px;
-
-            background: #25231f;
-
-            border: 1px solid rgba(255,255,255,.07);
-
-            box-shadow:
-                0 5px 18px rgba(30,27,23,.12);
-        }
-
-        .code-header {
-            min-height: 34px;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            padding: 5px 7px 5px 12px;
-
-            background: rgba(255,255,255,.035);
-
-            border-bottom: 1px solid rgba(255,255,255,.07);
-        }
-
-        .code-language {
-            color: rgba(238,234,226,.58);
-
-            font-family:
-                ui-monospace,
-                SFMono-Regular,
-                Menlo,
-                Monaco,
-                Consolas,
-                monospace;
-
-            font-size: 10px;
-            text-transform: lowercase;
-        }
-
-        .copy-code {
-            min-height: 27px;
-
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-            padding: 0 9px;
-
-            border-radius: 7px;
-
-            background: rgba(255,255,255,.08);
-
-            color: rgba(238,234,226,.82);
-
-            font-size: 10px;
-            font-weight: 600;
-
-            transition:
-                background .15s ease,
-                color .15s ease;
-        }
-
-        .copy-code:hover {
-            background: rgba(255,255,255,.14);
-            color: #fff;
-        }
-
-        .copy-code.copied {
-            background: rgba(111,92,231,.28);
-            color: #fff;
-        }
-
-        .code {
-            margin: 0;
-
-            padding: 13px;
-
-            overflow-x: auto;
-
-            background: transparent;
-            color: #eeeae2;
-
-            font-family:
-                ui-monospace,
-                SFMono-Regular,
-                Menlo,
-                Monaco,
-                Consolas,
-                monospace;
-
-            font-size: 12px;
-            line-height: 1.55;
-
-            white-space: pre;
-        }
-
-        .code::-webkit-scrollbar {
-            height: 5px;
-        }
-
-        .code::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,.12);
-            border-radius: 20px;
-        }
-
-        .inline-code {
-            padding: 2px 5px;
-            border-radius: 5px;
-
-            background: rgba(80,70,60,.08);
-
-            font-family:
-                ui-monospace,
-                monospace;
-
-            font-size: .9em;
         }
 
         /* =========================
@@ -1057,6 +1131,7 @@
                     transform .18s ease;
 
                 background: rgba(250,247,241,.92);
+
                 box-shadow:
                     8px 0 30px rgba(40,35,30,.08);
             }
@@ -1133,11 +1208,23 @@
                 display: none;
             }
 
+            .code-wrapper {
+                margin: 11px 0;
+                border-radius: 11px;
+            }
+
+            .code-header {
+                min-height: 34px;
+                padding-left: 10px;
+            }
+
             .code {
                 font-size: 11px;
+                padding: 12px;
             }
 
             .copy-code {
+                min-width: 50px;
                 min-height: 26px;
                 padding: 0 8px;
             }
@@ -1665,11 +1752,11 @@
     }
 
     /* =========================
-       MARKDOWN
+       MARKDOWN / CODE
     ========================= */
 
     function escapeHTML(value) {
-        return String(value || "")
+        return String(value ?? "")
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
@@ -1678,65 +1765,96 @@
     }
 
     function formatText(text) {
-        let source =
-            String(text || "");
+        const source =
+            String(text ?? "");
 
-        /*
-         * Pisahkan code block terlebih dahulu.
-         * Ini membuat tombol Salin dapat mengambil
-         * isi kode asli tanpa mengambil tombolnya.
-         */
         const codeBlocks = [];
 
-        source =
-            source.replace(
-                /```([^\n`]*)\n?([\s\S]*?)```/g,
-                (_, language, code) => {
-                    const index =
-                        codeBlocks.length;
-
-                    codeBlocks.push({
-                        language:
-                            String(
-                                language || ""
-                            ).trim() ||
-                            "code",
-
-                        code:
-                            String(code || "")
-                                .replace(
-                                    /\n$/,
-                                    ""
-                                )
-                    });
-
-                    return `___PINGU_CODE_${index}___`;
-                }
-            );
-
-        let output =
-            escapeHTML(source);
-
         /*
-         * Inline code
+         * Cari semua fenced code block:
+         *
+         * ```js
+         * console.log("Hello");
+         * ```
+         *
+         * atau:
+         *
+         * ```
+         * kode
+         * ```
          */
-        output =
-            output.replace(
-                /`([^`]+)`/g,
-                '<span class="inline-code">$1</span>'
-            );
+        const codePattern =
+            /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g;
+
+        let lastIndex = 0;
+        let output = "";
+
+        let match;
+
+        while (
+            (match =
+                codePattern.exec(source)) !== null
+        ) {
+            /*
+             * Teks sebelum code block.
+             */
+            const normalText =
+                source.slice(
+                    lastIndex,
+                    match.index
+                );
+
+            output +=
+                formatNormalText(
+                    normalText
+                );
+
+            const language =
+                String(
+                    match[1] || ""
+                ).trim() || "code";
+
+            const code =
+                String(
+                    match[2] || ""
+                ).replace(
+                    /\r?\n$/,
+                    ""
+                );
+
+            const index =
+                codeBlocks.length;
+
+            codeBlocks.push({
+                language,
+                code
+            });
+
+            /*
+             * Placeholder sengaja dibuat
+             * sebelum HTML code block.
+             */
+            output +=
+                `__PINGU_CODE_BLOCK_${index}__`;
+
+            lastIndex =
+                codePattern.lastIndex;
+        }
 
         /*
-         * Bold
+         * Sisa teks setelah code block terakhir.
          */
-        output =
-            output.replace(
-                /\*\*([^*]+)\*\*/g,
-                "<strong>$1</strong>"
+        output +=
+            formatNormalText(
+                source.slice(lastIndex)
             );
 
         /*
-         * Code block
+         * Sekarang baru masukkan code block.
+         *
+         * Penting:
+         * newline di dalam script TIDAK
+         * boleh diubah menjadi <br>.
          */
         for (
             let i = 0;
@@ -1746,28 +1864,27 @@
             const block =
                 codeBlocks[i];
 
-            const safeCode =
-                escapeHTML(
-                    block.code
-                );
-
             const safeLanguage =
                 escapeHTML(
                     block.language
                 );
 
+            const safeCode =
+                escapeHTML(
+                    block.code
+                );
+
             const codeHTML = `
                 <div class="code-wrapper">
                     <div class="code-header">
-                        <span class="code-language">
-                            ${safeLanguage}
-                        </span>
+                        <span class="code-language">${safeLanguage}</span>
 
                         <button
                             class="copy-code"
                             type="button"
                             data-code-index="${i}"
                             aria-label="Salin kode"
+                            title="Salin kode"
                         >
                             Salin
                         </button>
@@ -1779,25 +1896,48 @@
 
             output =
                 output.replace(
-                    `___PINGU_CODE_${i}___`,
+                    `__PINGU_CODE_BLOCK_${i}__`,
                     codeHTML
                 );
         }
 
-        output =
-            output.replace(
-                /\n/g,
-                "<br>"
-            );
+        return output;
+    }
+
+    function formatNormalText(text) {
+        if (!text) {
+            return "";
+        }
+
+        let output =
+            escapeHTML(text);
 
         /*
-         * Karena <br> tidak boleh masuk
-         * ke dalam pre, bersihkan kembali.
+         * Inline code.
          */
         output =
             output.replace(
-                /(<pre class="code">[\s\S]*?<\/pre>)<br>/g,
-                "$1"
+                /`([^`\n]+)`/g,
+                '<span class="inline-code">$1</span>'
+            );
+
+        /*
+         * Bold.
+         */
+        output =
+            output.replace(
+                /\*\*([^*\n]+)\*\*/g,
+                "<strong>$1</strong>"
+            );
+
+        /*
+         * Newline hanya diterapkan ke
+         * teks biasa, bukan code block.
+         */
+        output =
+            output.replace(
+                /\r?\n/g,
+                "<br>"
             );
 
         return output;
@@ -1808,10 +1948,9 @@
     ========================= */
 
     async function copyCode(button) {
-        const index =
-            Number(
-                button.dataset.codeIndex
-            );
+        if (!button) {
+            return;
+        }
 
         const wrapper =
             button.closest(
@@ -1831,6 +1970,10 @@
             return;
         }
 
+        /*
+         * textContent mengambil kode asli,
+         * bukan teks "Salin".
+         */
         const code =
             codeElement.textContent || "";
 
@@ -1851,8 +1994,19 @@
                 textarea.value =
                     code;
 
+                textarea.setAttribute(
+                    "readonly",
+                    ""
+                );
+
                 textarea.style.position =
                     "fixed";
+
+                textarea.style.left =
+                    "-9999px";
+
+                textarea.style.top =
+                    "0";
 
                 textarea.style.opacity =
                     "0";
@@ -1863,12 +2017,23 @@
 
                 textarea.focus();
                 textarea.select();
-
-                document.execCommand(
-                    "copy"
+                textarea.setSelectionRange(
+                    0,
+                    textarea.value.length
                 );
 
+                const success =
+                    document.execCommand(
+                        "copy"
+                    );
+
                 textarea.remove();
+
+                if (!success) {
+                    throw new Error(
+                        "Clipboard tidak tersedia."
+                    );
+                }
             }
 
             button.textContent =
@@ -1878,14 +2043,23 @@
                 "copied"
             );
 
-            setTimeout(() => {
-                button.textContent =
-                    "Salin";
+            button.classList.remove(
+                "failed"
+            );
 
-                button.classList.remove(
-                    "copied"
-                );
-            }, 1600);
+            clearTimeout(
+                button._copyTimer
+            );
+
+            button._copyTimer =
+                setTimeout(() => {
+                    button.textContent =
+                        "Salin";
+
+                    button.classList.remove(
+                        "copied"
+                    );
+                }, 1600);
 
         } catch (error) {
             console.error(
@@ -1896,19 +2070,33 @@
             button.textContent =
                 "Gagal";
 
-            setTimeout(() => {
-                button.textContent =
-                    "Salin";
-            }, 1500);
+            button.classList.add(
+                "failed"
+            );
+
+            button.classList.remove(
+                "copied"
+            );
+
+            clearTimeout(
+                button._copyTimer
+            );
+
+            button._copyTimer =
+                setTimeout(() => {
+                    button.textContent =
+                        "Salin";
+
+                    button.classList.remove(
+                        "failed"
+                    );
+                }, 1600);
         }
     }
 
     /*
-     * Event delegation.
-     *
-     * Karena tombol Salin dibuat secara
-     * dinamis ketika pesan AI dirender,
-     * event dipasang ke document.
+     * Tombol dibuat setelah AI menjawab,
+     * jadi pakai event delegation.
      */
     document.addEventListener(
         "click",
@@ -1921,6 +2109,9 @@
             if (!button) {
                 return;
             }
+
+            event.preventDefault();
+            event.stopPropagation();
 
             copyCode(button);
         }
@@ -2205,10 +2396,13 @@
             attachedImage = {
                 mimeType:
                     file.type,
+
                 data:
                     base64,
+
                 name:
                     file.name,
+
                 size:
                     file.size
             };
