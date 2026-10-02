@@ -34,6 +34,7 @@
                     "[+]": ["ams", "boldsymbol"]
                 }
             },
+
             options: {
                 skipHtmlTags: [
                     "script",
@@ -45,6 +46,7 @@
                 ],
                 ignoreHtmlClass: "math-ignore"
             },
+
             startup: {
                 typeset: false
             }
@@ -126,13 +128,19 @@
             cursor: pointer;
         }
 
+        button:disabled {
+            cursor: default;
+        }
+
         .app {
             width: 100%;
             height: 100dvh;
             display: flex;
         }
 
-        /* SIDEBAR */
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
 
         .sidebar {
             width: var(--sidebar);
@@ -156,25 +164,8 @@
         .brand {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 8px 6px 14px;
-        }
-
-        .brand-left {
-            display: flex;
-            align-items: center;
             gap: 11px;
-        }
-
-        .close-sidebar {
-            display: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: rgba(55, 48, 39, 0.08);
-            color: var(--text);
-            font-size: 16px;
-            place-items: center;
+            padding: 8px 6px 14px;
         }
 
         .brand-logo,
@@ -253,13 +244,52 @@
             transform: scale(.98);
         }
 
+        .history-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+
+            padding: 8px 5px 2px 7px;
+        }
+
         .history-title {
-            padding: 8px 7px 2px;
             font-size: 11px;
             font-weight: 700;
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: .7px;
+        }
+
+        .history-close {
+            width: 28px;
+            height: 28px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 9px;
+
+            background: rgba(255,255,255,.52);
+            border: 1px solid var(--border);
+
+            color: var(--text-soft);
+            font-size: 18px;
+            line-height: 1;
+
+            transition:
+                background .15s ease,
+                color .15s ease,
+                transform .15s ease;
+        }
+
+        .history-close:hover {
+            background: rgba(255,255,255,.85);
+            color: var(--text);
+        }
+
+        .history-close:active {
+            transform: scale(.92);
         }
 
         .history {
@@ -344,7 +374,9 @@
             display: none !important;
         }
 
-        /* MAIN */
+        /* =====================================================
+           MAIN
+        ===================================================== */
 
         .main {
             min-width: 0;
@@ -395,6 +427,7 @@
             border: 1px solid var(--border);
 
             color: var(--text-soft);
+            font-size: 16px;
         }
 
         .top-title {
@@ -428,7 +461,9 @@
             border-radius: 20px;
         }
 
-        /* WELCOME */
+        /* =====================================================
+           WELCOME
+        ===================================================== */
 
         .welcome {
             max-width: 760px;
@@ -503,7 +538,9 @@
             transform: translateY(-1px);
         }
 
-        /* MESSAGE */
+        /* =====================================================
+           MESSAGE
+        ===================================================== */
 
         .message {
             max-width: 820px;
@@ -573,7 +610,9 @@
                 0 5px 16px rgba(111,92,231,.16);
         }
 
-        /* MATH */
+        /* =====================================================
+           MATH
+        ===================================================== */
 
         .math-display {
             width: 100%;
@@ -618,7 +657,9 @@
             color: #fff !important;
         }
 
-        /* CODE */
+        /* =====================================================
+           CODE
+        ===================================================== */
 
         .code-wrapper {
             width: 100%;
@@ -764,7 +805,9 @@
             font-weight: 750;
         }
 
-        /* IMAGE */
+        /* =====================================================
+           IMAGE
+        ===================================================== */
 
         .message-image {
             display: block;
@@ -795,7 +838,9 @@
             text-align: right;
         }
 
-        /* ATTACHMENT */
+        /* =====================================================
+           ATTACHMENT
+        ===================================================== */
 
         .attachment {
             display: none;
@@ -881,7 +926,9 @@
             font-size: 17px;
         }
 
-        /* COMPOSER */
+        /* =====================================================
+           COMPOSER
+        ===================================================== */
 
         .composer-area {
             position: absolute;
@@ -1042,7 +1089,9 @@
             display: none;
         }
 
-        /* TYPING */
+        /* =====================================================
+           TYPING
+        ===================================================== */
 
         .typing {
             display: none;
@@ -1113,9 +1162,12 @@
             }
         }
 
-        /* MOBILE */
+        /* =====================================================
+           MOBILE
+        ===================================================== */
 
         @media (max-width: 720px) {
+
             .sidebar {
                 position: fixed;
                 left: 0;
@@ -1127,7 +1179,7 @@
                 transition:
                     transform .18s ease;
 
-                background: rgba(250,247,241,.92);
+                background: rgba(250,247,241,.94);
 
                 box-shadow:
                     8px 0 30px rgba(40,35,30,.08);
@@ -1135,10 +1187,6 @@
 
             .sidebar.open {
                 transform: translateX(0);
-            }
-
-            .close-sidebar {
-                display: grid;
             }
 
             .mobile-menu {
@@ -1206,6 +1254,11 @@
             .message-bubble mjx-container {
                 font-size: 96% !important;
             }
+
+            .history-close {
+                width: 32px;
+                height: 32px;
+            }
         }
     </style>
 </head>
@@ -1214,17 +1267,29 @@
 
 <div class="app">
 
-    <aside class="sidebar" id="sidebar">
+    <aside
+        class="sidebar"
+        id="sidebar"
+    >
 
         <div class="brand">
-            <div class="brand-left">
-                <div class="brand-logo">P</div>
-                <div class="brand-text">
-                    <div class="brand-title">Pingu</div>
-                    <div class="brand-subtitle">AI Assistant</div>
-                </div>
+
+            <div class="brand-logo">
+                P
             </div>
-            <button class="close-sidebar" id="closeSidebar" type="button" aria-label="Tutup Menu">×</button>
+
+            <div class="brand-text">
+
+                <div class="brand-title">
+                    Pingu
+                </div>
+
+                <div class="brand-subtitle">
+                    AI Assistant
+                </div>
+
+            </div>
+
         </div>
 
         <button
@@ -1236,8 +1301,22 @@
             <span>New chat</span>
         </button>
 
-        <div class="history-title">
-            Riwayat
+        <div class="history-head">
+
+            <div class="history-title">
+                Riwayat
+            </div>
+
+            <button
+                class="history-close"
+                id="historyClose"
+                type="button"
+                aria-label="Kembali"
+                title="Kembali"
+            >
+                ×
+            </button>
+
         </div>
 
         <div
@@ -1246,10 +1325,17 @@
         ></div>
 
         <div class="sidebar-footer">
+
             <div class="status">
+
                 <span class="status-dot"></span>
-                <span id="statusText">Lokal</span>
+
+                <span id="statusText">
+                    Online / Lokal
+                </span>
+
             </div>
+
         </div>
 
     </aside>
@@ -1270,6 +1356,7 @@
                 </button>
 
                 <div>
+
                     <div class="top-title">
                         Pingu
                     </div>
@@ -1280,6 +1367,7 @@
                     >
                         Gemini
                     </div>
+
                 </div>
 
             </div>
@@ -1295,6 +1383,7 @@
                 class="welcome"
                 id="welcome"
             >
+
                 <div class="welcome-logo">
                     P
                 </div>
@@ -1344,6 +1433,7 @@
                     </button>
 
                 </div>
+
             </div>
 
             <div id="messages"></div>
@@ -1352,13 +1442,19 @@
                 class="typing"
                 id="typing"
             >
-                <div class="typing-avatar">P</div>
+
+                <div class="typing-avatar">
+                    P
+                </div>
 
                 <div class="typing-dots">
+
                     <span></span>
                     <span></span>
                     <span></span>
+
                 </div>
+
             </div>
 
         </section>
@@ -1367,6 +1463,7 @@
             class="attachment"
             id="attachment"
         >
+
             <div class="attachment-inner">
 
                 <img
@@ -1402,6 +1499,7 @@
                 </button>
 
             </div>
+
         </div>
 
         <div class="composer-area">
@@ -1480,11 +1578,7 @@
 
 </div>
 
-<!-- =========================================================
-     PINGU APP SCRIPT
-========================================================= -->
-
-<script>
+<script type="module">
 
 /* =========================================================
    ELEMENTS
@@ -1494,14 +1588,15 @@ const $ = id =>
     document.getElementById(id);
 
 const elements = {
+
     sidebar:
         $("sidebar"),
 
     mobileMenu:
         $("mobileMenu"),
 
-    closeSidebar:
-        $("closeSidebar"),
+    historyClose:
+        $("historyClose"),
 
     newChatButton:
         $("newChatButton"),
@@ -1629,9 +1724,7 @@ function makeId() {
    LOCAL STORAGE
 ========================================================= */
 
-function normalizeLocalChats(
-    parsed
-) {
+function normalizeLocalChats(parsed) {
 
     if (
         !Array.isArray(parsed)
@@ -1709,7 +1802,9 @@ function loadChats() {
             );
 
         if (!saved) {
+
             chats = [];
+
             return;
         }
 
@@ -1802,6 +1897,22 @@ function loadActiveChat() {
 
         return null;
     }
+}
+
+
+function saveActiveChat() {
+
+    try {
+
+        if (currentChatId) {
+
+            localStorage.setItem(
+                ACTIVE_CHAT_KEY,
+                currentChatId
+            );
+        }
+
+    } catch {}
 }
 
 
@@ -1945,11 +2056,7 @@ function renderHistory() {
                 renderHistory();
                 renderMessages();
 
-                elements.sidebar
-                    .classList
-                    .remove(
-                        "open"
-                    );
+                closeHistory();
             }
         );
 
@@ -1960,19 +2067,27 @@ function renderHistory() {
 }
 
 
-function saveActiveChat() {
+/* =========================================================
+   HISTORY CLOSE / BACK
+========================================================= */
 
-    try {
+function closeHistory() {
 
-        if (currentChatId) {
+    elements.sidebar
+        .classList
+        .remove(
+            "open"
+        );
+}
 
-            localStorage.setItem(
-                ACTIVE_CHAT_KEY,
-                currentChatId
-            );
-        }
 
-    } catch {}
+function toggleHistory() {
+
+    elements.sidebar
+        .classList
+        .toggle(
+            "open"
+        );
 }
 
 
@@ -1980,9 +2095,7 @@ function saveActiveChat() {
    HTML
 ========================================================= */
 
-function escapeHTML(
-    value
-) {
+function escapeHTML(value) {
 
     return String(
         value ?? ""
@@ -2030,6 +2143,7 @@ function extractMathBlocks(
                 blocks.push({
                     type:
                         "display-math",
+
                     content:
                         String(
                             math || ""
@@ -2051,6 +2165,7 @@ function extractMathBlocks(
                 blocks.push({
                     type:
                         "display-math",
+
                     content:
                         String(
                             math || ""
@@ -2072,6 +2187,7 @@ function extractMathBlocks(
                 blocks.push({
                     type:
                         "inline-math",
+
                     content:
                         String(
                             math || ""
@@ -2097,6 +2213,7 @@ function extractMathBlocks(
                 blocks.push({
                     type:
                         "inline-math",
+
                     content:
                         String(
                             math || ""
@@ -2114,9 +2231,7 @@ function extractMathBlocks(
 }
 
 
-function formatNormalText(
-    text
-) {
+function formatNormalText(text) {
 
     if (!text) {
         return "";
@@ -2149,9 +2264,7 @@ function formatNormalText(
 }
 
 
-function formatText(
-    text
-) {
+function formatText(text) {
 
     let source =
         String(
@@ -2173,6 +2286,7 @@ function formatText(
                     blocks.length;
 
                 blocks.push({
+
                     type:
                         "code",
 
@@ -2189,6 +2303,7 @@ function formatText(
                             /\r?\n$/,
                             ""
                         )
+
                 });
 
                 return `__PINGU_CODE_BLOCK_${index}__`;
@@ -2231,7 +2346,9 @@ function formatText(
                     codePlaceholder,
                     `
                     <div class="code-wrapper">
+
                         <div class="code-header">
+
                             <span class="code-language">
                                 ${escapeHTML(
                                     block.language
@@ -2244,11 +2361,13 @@ function formatText(
                             >
                                 Salin
                             </button>
+
                         </div>
 
                         <pre class="code"><code>${escapeHTML(
                             block.content
                         )}</code></pre>
+
                     </div>
                     `
                 );
@@ -2385,9 +2504,7 @@ async function typesetMath(
    COPY CODE
 ========================================================= */
 
-async function copyCode(
-    button
-) {
+async function copyCode(button) {
 
     const wrapper =
         button.closest(
@@ -2620,6 +2737,7 @@ function renderMessage(
         message.role ===
         "assistant"
     ) {
+
         wrapper.appendChild(
             avatar
         );
@@ -2717,9 +2835,7 @@ function resetAttachment() {
 }
 
 
-function fileToBase64(
-    file
-) {
+function fileToBase64(file) {
 
     return new Promise(
         (
@@ -2764,9 +2880,7 @@ function fileToBase64(
 }
 
 
-async function handleImage(
-    file
-) {
+async function handleImage(file) {
 
     if (!file) {
         return;
@@ -2880,9 +2994,7 @@ function updateAttachmentLabel() {
 }
 
 
-function setMode(
-    mode
-) {
+function setMode(mode) {
 
     currentMode =
         mode === "image"
@@ -3203,9 +3315,7 @@ async function sendMessage() {
 }
 
 
-function setSending(
-    sending
-) {
+function setSending(sending) {
 
     isSending =
         sending;
@@ -3261,10 +3371,12 @@ elements.composer.addEventListener(
     }
 );
 
+
 elements.messageInput.addEventListener(
     "input",
     autoResize
 );
+
 
 elements.messageInput.addEventListener(
     "keydown",
@@ -3283,6 +3395,7 @@ elements.messageInput.addEventListener(
     }
 );
 
+
 elements.imageButton.addEventListener(
     "click",
     () => {
@@ -3290,6 +3403,7 @@ elements.imageButton.addEventListener(
         elements.fileInput.click();
     }
 );
+
 
 elements.fileInput.addEventListener(
     "change",
@@ -3300,6 +3414,7 @@ elements.fileInput.addEventListener(
                 .files?.[0];
 
         if (file) {
+
             handleImage(
                 file
             );
@@ -3307,28 +3422,34 @@ elements.fileInput.addEventListener(
     }
 );
 
+
 elements.removeAttachment.addEventListener(
     "click",
     resetAttachment
 );
 
+
 elements.chatMode.addEventListener(
     "click",
     () => {
+
         setMode(
             "chat"
         );
     }
 );
 
+
 elements.imageMode.addEventListener(
     "click",
     () => {
+
         setMode(
             "image"
         );
     }
 );
+
 
 elements.newChatButton.addEventListener(
     "click",
@@ -3338,37 +3459,79 @@ elements.newChatButton.addEventListener(
 
         elements.messageInput.focus();
 
-        elements.sidebar
-            .classList
-            .remove(
-                "open"
-            );
+        closeHistory();
     }
 );
 
+
+/*
+ * Tombol X pada menu History.
+ */
+elements.historyClose.addEventListener(
+    "click",
+    () => {
+
+        closeHistory();
+
+        elements.messageInput.focus();
+    }
+);
+
+
+/*
+ * Tombol menu mobile.
+ */
 elements.mobileMenu.addEventListener(
     "click",
     () => {
 
-        elements.sidebar
-            .classList
-            .add(
-                "open"
-            );
+        toggleHistory();
     }
 );
 
-elements.closeSidebar.addEventListener(
+
+/*
+ * Klik di luar sidebar pada mobile
+ * juga menutup History.
+ */
+document.addEventListener(
     "click",
-    () => {
+    event => {
 
-        elements.sidebar
-            .classList
-            .remove(
+        if (
+            window.innerWidth > 720
+        ) {
+            return;
+        }
+
+        if (
+            !elements.sidebar.classList.contains(
                 "open"
+            )
+        ) {
+            return;
+        }
+
+        const insideSidebar =
+            elements.sidebar.contains(
+                event.target
             );
+
+        const clickedMenu =
+            elements.mobileMenu.contains(
+                event.target
+            );
+
+        if (
+            !insideSidebar &&
+            !clickedMenu
+        ) {
+
+            closeHistory();
+        }
     }
 );
+
 
 document
     .querySelectorAll(
@@ -3397,7 +3560,7 @@ document
 
 
 /* =========================================================
-   INITIAL LOCAL LOAD
+   INITIAL LOAD
 ========================================================= */
 
 loadChats();
@@ -3437,11 +3600,15 @@ if (!chats.length) {
     renderMessages();
 }
 
+
 setMode(
     "chat"
 );
 
 autoResize();
+
+elements.statusText.textContent =
+    "Online / Lokal";
 
 </script>
 
