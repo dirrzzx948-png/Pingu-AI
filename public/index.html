@@ -39,6 +39,7 @@
 
                 processEscapes: true,
                 processEnvironments: true,
+
                 packages: {
                     "[+]": [
                         "ams",
@@ -1516,6 +1517,7 @@
                     </button>
 
                 </div>
+
             </div>
 
             <div id="messages"></div>
@@ -1663,8 +1665,15 @@
 (() => {
     "use strict";
 
+    /* =========================================================
+       STORAGE
+    ========================================================= */
+
     const STORAGE_KEY =
         "pingu_ai_chats_v2";
+
+    const ACTIVE_CHAT_KEY =
+        "pingu_ai_active_chat_v2";
 
     const elements = {
         sidebar:
@@ -1735,17 +1744,20 @@
     };
 
     let chats = [];
+
     let currentChatId = null;
 
     let attachedImage = null;
+
     let attachedImagePreview = null;
 
     let currentMode = "chat";
+
     let isSending = false;
 
-    /* =========================
-       STORAGE
-    ========================= */
+    /* =========================================================
+       STORAGE HELPERS
+    ========================================================= */
 
     function loadChats() {
         try {
@@ -1762,12 +1774,51 @@
             const parsed =
                 JSON.parse(saved);
 
-            chats =
-                Array.isArray(parsed)
-                    ? parsed
-                    : [];
+            if (!Array.isArray(parsed)) {
+                chats = [];
+                return;
+            }
 
-        } catch {
+            chats =
+                parsed
+                    .filter(chat => {
+                        return (
+                            chat &&
+                            typeof chat === "object" &&
+                            typeof chat.id === "string" &&
+                            Array.isArray(chat.messages)
+                        );
+                    })
+                    .map(chat => ({
+                        id:
+                            chat.id,
+
+                        title:
+                            typeof chat.title === "string"
+                                ? chat.title
+                                : "Chat baru",
+
+                        messages:
+                            Array.isArray(chat.messages)
+                                ? chat.messages
+                                : [],
+
+                        createdAt:
+                            Number(chat.createdAt) ||
+                            Date.now(),
+
+                        updatedAt:
+                            Number(chat.updatedAt) ||
+                            Number(chat.createdAt) ||
+                            Date.now()
+                    }));
+
+        } catch (error) {
+            console.warn(
+                "Gagal membaca history:",
+                error
+            );
+
             chats = [];
         }
     }
@@ -1779,31 +1830,73 @@
                 JSON.stringify(chats)
             );
 
+            if (currentChatId) {
+                localStorage.setItem(
+                    ACTIVE_CHAT_KEY,
+                    currentChatId
+                );
+            }
+
         } catch (error) {
             console.warn(
-                "Tidak dapat menyimpan history:",
+                "Gagal menyimpan history:",
                 error
             );
         }
     }
 
+    function saveActiveChat() {
+        try {
+            if (currentChatId) {
+                localStorage.setItem(
+                    ACTIVE_CHAT_KEY,
+                    currentChatId
+                );
+            }
+        } catch (error) {
+            console.warn(
+                "Gagal menyimpan chat aktif:",
+                error
+            );
+        }
+    }
+
+    function loadActiveChat() {
+        try {
+            return localStorage.getItem(
+                ACTIVE_CHAT_KEY
+            );
+        } catch {
+            return null;
+        }
+    }
+
+    /* =========================================================
+       CHAT
+    ========================================================= */
+
     function createChat() {
+        const now =
+            Date.now();
+
         const chat = {
             id:
-                Date.now().toString(36) +
+                now.toString(36) +
                 Math.random()
                     .toString(36)
                     .slice(2),
 
-            title: "Chat baru",
+            title:
+                "Chat baru",
 
-            messages: [],
+            messages:
+                [],
 
             createdAt:
-                Date.now(),
+                now,
 
             updatedAt:
-                Date.now()
+                now
         };
 
         chats.unshift(chat);
@@ -1821,7 +1914,7 @@
 
     function getCurrentChat() {
         return chats.find(
-            (chat) =>
+            chat =>
                 chat.id ===
                 currentChatId
         );
@@ -1832,18 +1925,34 @@
             getCurrentChat();
 
         if (!chat) {
-            chat = createChat();
+            chat =
+                createChat();
         }
 
         return chat;
     }
 
-    /* =========================
+    /* =========================================================
        HISTORY
-    ========================= */
+    ========================================================= */
+
+    function sortChats() {
+        chats.sort(
+            (a, b) =>
+                Number(
+                    b.updatedAt || 0
+                ) -
+                Number(
+                    a.updatedAt || 0
+                )
+        );
+    }
 
     function renderHistory() {
-        elements.history.innerHTML = "";
+        sortChats();
+
+        elements.history.innerHTML =
+            "";
 
         if (!chats.length) {
             elements.history.innerHTML = `
@@ -1861,7 +1970,8 @@
                     "button"
                 );
 
-            button.type = "button";
+            button.type =
+                "button";
 
             button.className =
                 "history-item" +
@@ -1882,12 +1992,16 @@
                     currentChatId =
                         chat.id;
 
+                    saveActiveChat();
+
                     renderHistory();
                     renderMessages();
 
                     elements.sidebar
                         .classList
-                        .remove("open");
+                        .remove(
+                            "open"
+                        );
                 }
             );
 
@@ -1897,22 +2011,39 @@
         }
     }
 
-    /* =========================
+    /* =========================================================
        HTML ESCAPE
-    ========================= */
+    ========================================================= */
 
     function escapeHTML(value) {
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+        return String(
+            value ?? ""
+        )
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
     }
 
-    /* =========================
-       MATH BLOCK PARSER
-    ========================= */
+    /* =========================================================
+       MATH PARSER
+    ========================================================= */
 
     function extractMathBlocks(
         source,
@@ -1922,129 +2053,152 @@
          * DISPLAY:
          * $$ ... $$
          */
-        source = source.replace(
-            /\$\$([\s\S]*?)\$\$/g,
-            (_, math) => {
-                const index =
-                    blocks.length;
 
-                blocks.push({
-                    type: "display-math",
-                    content:
-                        String(
-                            math || ""
-                        ).trim()
-                });
+        source =
+            source.replace(
+                /\$\$([\s\S]*?)\$\$/g,
+                (_, math) => {
+                    const index =
+                        blocks.length;
 
-                return (
-                    `__PINGU_MATH_BLOCK_${index}__`
-                );
-            }
-        );
+                    blocks.push({
+                        type:
+                            "display-math",
+
+                        content:
+                            String(
+                                math || ""
+                            ).trim()
+                    });
+
+                    return (
+                        `__PINGU_MATH_BLOCK_${index}__`
+                    );
+                }
+            );
 
         /*
          * DISPLAY:
          * \[ ... \]
          */
-        source = source.replace(
-            /\\\[([\s\S]*?)\\\]/g,
-            (_, math) => {
-                const index =
-                    blocks.length;
 
-                blocks.push({
-                    type: "display-math",
-                    content:
-                        String(
-                            math || ""
-                        ).trim()
-                });
+        source =
+            source.replace(
+                /\\\[([\s\S]*?)\\\]/g,
+                (_, math) => {
+                    const index =
+                        blocks.length;
 
-                return (
-                    `__PINGU_MATH_BLOCK_${index}__`
-                );
-            }
-        );
+                    blocks.push({
+                        type:
+                            "display-math",
+
+                        content:
+                            String(
+                                math || ""
+                            ).trim()
+                    });
+
+                    return (
+                        `__PINGU_MATH_BLOCK_${index}__`
+                    );
+                }
+            );
 
         /*
          * INLINE:
          * \( ... \)
          */
-        source = source.replace(
-            /\\\(([\s\S]*?)\\\)/g,
-            (_, math) => {
-                const index =
-                    blocks.length;
 
-                blocks.push({
-                    type: "inline-math",
-                    content:
-                        String(
-                            math || ""
-                        ).trim()
-                });
+        source =
+            source.replace(
+                /\\\(([\s\S]*?)\\\)/g,
+                (_, math) => {
+                    const index =
+                        blocks.length;
 
-                return (
-                    `__PINGU_MATH_BLOCK_${index}__`
-                );
-            }
-        );
+                    blocks.push({
+                        type:
+                            "inline-math",
+
+                        content:
+                            String(
+                                math || ""
+                            ).trim()
+                    });
+
+                    return (
+                        `__PINGU_MATH_BLOCK_${index}__`
+                    );
+                }
+            );
 
         /*
          * INLINE:
          * $ ... $
-         *
-         * Tidak boleh melewati newline.
          */
-        source = source.replace(
-            /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
-            (full, before, math) => {
-                const index =
-                    blocks.length;
 
-                blocks.push({
-                    type: "inline-math",
-                    content:
-                        String(
-                            math || ""
-                        ).trim()
-                });
+        source =
+            source.replace(
+                /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
+                (
+                    full,
+                    before,
+                    math
+                ) => {
+                    const index =
+                        blocks.length;
 
-                return (
-                    before +
-                    `__PINGU_MATH_BLOCK_${index}__`
-                );
-            }
-        );
+                    blocks.push({
+                        type:
+                            "inline-math",
+
+                        content:
+                            String(
+                                math || ""
+                            ).trim()
+                    });
+
+                    return (
+                        before +
+                        `__PINGU_MATH_BLOCK_${index}__`
+                    );
+                }
+            );
 
         return source;
     }
 
-    /* =========================
+    /* =========================================================
        FORMAT TEXT
-    ========================= */
+    ========================================================= */
 
     function formatText(text) {
         let source =
-            String(text ?? "");
+            String(
+                text ?? ""
+            );
 
         const blocks = [];
 
         /*
-         * ==================================================
-         * CODE DIAMBIL PALING PERTAMA
-         * ==================================================
+         * CODE DIAMBIL TERLEBIH DAHULU.
          */
 
         source =
             source.replace(
                 /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g,
-                (_, language, code) => {
+                (
+                    _,
+                    language,
+                    code
+                ) => {
                     const index =
                         blocks.length;
 
                     blocks.push({
-                        type: "code",
+                        type:
+                            "code",
 
                         language:
                             String(
@@ -2068,9 +2222,7 @@
             );
 
         /*
-         * ==================================================
-         * MATH DIAMBIL SETELAH CODE
-         * ==================================================
+         * MATH
          */
 
         source =
@@ -2080,9 +2232,7 @@
             );
 
         /*
-         * ==================================================
-         * TEKS BIASA
-         * ==================================================
+         * TEXT
          */
 
         let output =
@@ -2091,9 +2241,7 @@
             );
 
         /*
-         * ==================================================
-         * KEMBALIKAN PLACEHOLDER
-         * ==================================================
+         * RESTORE BLOCKS
          */
 
         for (
@@ -2139,7 +2287,6 @@
                             <button
                                 class="copy-code"
                                 type="button"
-                                data-code-index="${i}"
                                 aria-label="Salin kode"
                                 title="Salin kode"
                             >
@@ -2162,42 +2309,25 @@
             }
 
             /*
-             * ==================================================
-             * MATH
-             *
-             * PENTING:
-             *
-             * Di sini kita tidak memasukkan
-             * $$...$$ kembali ke HTML.
-             *
-             * Kita membuat placeholder dulu.
-             * Setelah bubble masuk DOM,
-             * replaceMathPlaceholders()
-             * membuat TEXT NODE asli.
-             *
-             * Dengan cara ini:
-             *
-             * \mathbf
-             * &
-             * \begin
-             * \end
-             *
-             * tidak rusak oleh HTML parser.
-             * ==================================================
+             * DISPLAY MATH
              */
 
             if (
                 block.type ===
-                "math-display"
+                "display-math"
             ) {
                 output =
                     output.replace(
                         mathPlaceholder,
-                        `<div class="math-display" data-math-block="${i}"></div>`
+                        `<div class="math-display" data-math-index="${i}"></div>`
                     );
 
                 continue;
             }
+
+            /*
+             * INLINE MATH
+             */
 
             if (
                 block.type ===
@@ -2206,26 +2336,17 @@
                 output =
                     output.replace(
                         mathPlaceholder,
-                        `<span class="math-inline" data-math-block="${i}"></span>`
+                        `<span class="math-inline" data-math-index="${i}"></span>`
                     );
             }
         }
 
-        /*
-         * Simpan data LaTeX sementara.
-         *
-         * Ini dipakai renderMathBlocks()
-         * setelah HTML masuk DOM.
-         */
         return {
-            html: output,
-            mathBlocks: blocks.filter(
-                (block) =>
-                    block.type ===
-                        "math-display" ||
-                    block.type ===
-                        "inline-math"
-            )
+            html:
+                output,
+
+            blocks:
+                blocks
         };
     }
 
@@ -2258,86 +2379,96 @@
         return output;
     }
 
-    /* =========================
-       MATH BLOCK RENDERER
-    ========================= */
+    /* =========================================================
+       RENDER MATH BLOCKS
+    ========================================================= */
 
     function renderMathBlocks(
         bubble,
-        mathBlocks
+        blocks
     ) {
         if (
             !bubble ||
-            !Array.isArray(mathBlocks) ||
-            !mathBlocks.length
+            !Array.isArray(blocks)
         ) {
             return;
         }
 
-        const placeholders =
+        const elements =
             bubble.querySelectorAll(
-                "[data-math-block]"
+                "[data-math-index]"
             );
 
-        let mathIndex = 0;
+        elements.forEach(
+            element => {
+                const index =
+                    Number(
+                        element.dataset
+                            .mathIndex
+                    );
 
-        for (
-            const element of placeholders
-        ) {
-            const block =
-                mathBlocks[mathIndex];
+                const block =
+                    blocks[index];
 
-            if (!block) {
-                break;
-            }
-
-            /*
-             * Hapus isi placeholder.
-             */
-            element.textContent = "";
-
-            /*
-             * Gunakan TEXT NODE asli.
-             *
-             * Ini penting agar karakter seperti:
-             *
-             * &
-             * \
-             * {
-             * }
-             *
-             * diterima MathJax sebagai LaTeX,
-             * bukan sebagai HTML.
-             */
-
-            if (
-                block.type ===
-                "math-display"
-            ) {
-                element.appendChild(
-                    document.createTextNode(
-                        "\\[" +
-                        block.content +
-                        "\\]"
+                if (
+                    !block ||
+                    (
+                        block.type !==
+                            "display-math" &&
+                        block.type !==
+                            "inline-math"
                     )
-                );
-            } else {
-                element.appendChild(
-                    document.createTextNode(
-                        "\\(" +
-                        block.content +
-                        "\\)"
-                    )
-                );
-            }
+                ) {
+                    return;
+                }
 
-            mathIndex++;
-        }
+                /*
+                 * Jangan masukkan LaTeX melalui innerHTML.
+                 *
+                 * Gunakan text node agar:
+                 *
+                 * &
+                 * \
+                 * {
+                 * }
+                 *
+                 * tetap menjadi karakter
+                 * LaTeX asli.
+                 */
+
+                element.textContent =
+                    "";
+
+                const latex =
+                    block.content;
+
+                if (
+                    block.type ===
+                    "display-math"
+                ) {
+                    element.appendChild(
+                        document.createTextNode(
+                            "\\[" +
+                            latex +
+                            "\\]"
+                        )
+                    );
+                } else {
+                    element.appendChild(
+                        document.createTextNode(
+                            "\\(" +
+                            latex +
+                            "\\)"
+                        )
+                    );
+                }
+            }
+        );
     }
 
-    /* =========================
+    /* =========================================================
        MATHJAX TYPESET
-    ========================= */
+    ========================================================= */
 
     async function typesetMath(
         element
@@ -2347,9 +2478,7 @@
         }
 
         try {
-            if (
-                !window.MathJax
-            ) {
+            if (!window.MathJax) {
                 return;
             }
 
@@ -2367,9 +2496,11 @@
                     window.MathJax.typesetClear ===
                     "function"
             ) {
-                window.MathJax.typesetClear(
-                    [element]
-                );
+                try {
+                    window.MathJax.typesetClear(
+                        [element]
+                    );
+                } catch {}
             }
 
             if (
@@ -2390,11 +2521,13 @@
         }
     }
 
-    /* =========================
+    /* =========================================================
        COPY CODE
-    ========================= */
+    ========================================================= */
 
-    async function copyCode(button) {
+    async function copyCode(
+        button
+    ) {
         if (!button) {
             return;
         }
@@ -2418,7 +2551,8 @@
         }
 
         const code =
-            codeElement.textContent || "";
+            codeElement.textContent ||
+            "";
 
         try {
             if (
@@ -2497,14 +2631,17 @@
             );
 
             button._copyTimer =
-                setTimeout(() => {
-                    button.textContent =
-                        "Salin";
+                setTimeout(
+                    () => {
+                        button.textContent =
+                            "Salin";
 
-                    button.classList.remove(
-                        "copied"
-                    );
-                }, 1600);
+                        button.classList.remove(
+                            "copied"
+                        );
+                    },
+                    1600
+                );
 
         } catch (error) {
             console.error(
@@ -2528,20 +2665,23 @@
             );
 
             button._copyTimer =
-                setTimeout(() => {
-                    button.textContent =
-                        "Salin";
+                setTimeout(
+                    () => {
+                        button.textContent =
+                            "Salin";
 
-                    button.classList.remove(
-                        "failed"
-                    );
-                }, 1600);
+                        button.classList.remove(
+                            "failed"
+                        );
+                    },
+                    1600
+                );
         }
     }
 
     document.addEventListener(
         "click",
-        (event) => {
+        event => {
             const button =
                 event.target.closest(
                     ".copy-code"
@@ -2558,9 +2698,9 @@
         }
     );
 
-    /* =========================
+    /* =========================================================
        RENDER MESSAGES
-    ========================= */
+    ========================================================= */
 
     function renderMessages() {
         const chat =
@@ -2571,6 +2711,9 @@
 
         if (
             !chat ||
+            !Array.isArray(
+                chat.messages
+            ) ||
             !chat.messages.length
         ) {
             elements.welcome.style.display =
@@ -2583,7 +2726,8 @@
             "none";
 
         for (
-            const message of chat.messages
+            const message of
+            chat.messages
         ) {
             renderMessage(
                 message,
@@ -2642,14 +2786,6 @@
         bubble.className =
             "message-bubble";
 
-        /*
-         * formatText sekarang mengembalikan:
-         *
-         * {
-         *   html,
-         *   mathBlocks
-         * }
-         */
         const formatted =
             formatText(
                 message.content ||
@@ -2659,18 +2795,18 @@
         bubble.innerHTML =
             formatted.html;
 
-        /*
-         * Buat LaTeX menjadi TEXT NODE
-         * setelah HTML selesai dimasukkan.
-         */
         renderMathBlocks(
             bubble,
-            formatted.mathBlocks
+            formatted.blocks
         );
 
         content.appendChild(
             bubble
         );
+
+        /*
+         * IMAGE DALAM HISTORY
+         */
 
         if (message.image) {
             const image =
@@ -2695,6 +2831,10 @@
             );
         }
 
+        /*
+         * MODEL
+         */
+
         const meta =
             document.createElement(
                 "div"
@@ -2704,13 +2844,16 @@
             "message-meta";
 
         meta.textContent =
-            message.model
-                ? message.model
-                : "";
+            message.model ||
+            "";
 
         content.appendChild(
             meta
         );
+
+        /*
+         * ASSISTANT AVATAR
+         */
 
         if (
             message.role ===
@@ -2730,11 +2873,17 @@
         );
 
         /*
-         * MathJax baru dijalankan setelah
-         * LaTeX benar-benar ada sebagai text node.
+         * MATHJAX
          */
+
         if (
-            formatted.mathBlocks.length
+            formatted.blocks.some(
+                block =>
+                    block.type ===
+                        "display-math" ||
+                    block.type ===
+                        "inline-math"
+            )
         ) {
             typesetMath(
                 bubble
@@ -2747,71 +2896,92 @@
     }
 
     function scrollBottom() {
-        requestAnimationFrame(() => {
-            elements.chatContainer.scrollTop =
-                elements.chatContainer.scrollHeight;
-        });
+        requestAnimationFrame(
+            () => {
+                elements.chatContainer.scrollTop =
+                    elements.chatContainer.scrollHeight;
+            }
+        );
     }
 
-    /* =========================
+    /* =========================================================
        IMAGE
-    ========================= */
+    ========================================================= */
 
     function resetAttachment() {
-        if (attachedImagePreview) {
+        if (
+            attachedImagePreview
+        ) {
             URL.revokeObjectURL(
                 attachedImagePreview
             );
         }
 
-        attachedImage = null;
-        attachedImagePreview = null;
+        attachedImage =
+            null;
+
+        attachedImagePreview =
+            null;
 
         elements.fileInput.value =
             "";
 
         elements.attachment
             .classList
-            .remove("show");
+            .remove(
+                "show"
+            );
 
         elements.attachmentImage.src =
             "";
 
         elements.imageButton
             .classList
-            .remove("active");
+            .remove(
+                "active"
+            );
 
         elements.modeRow
             .classList
-            .remove("show");
+            .remove(
+                "show"
+            );
 
         setMode("chat");
     }
 
-    function fileToBase64(file) {
+    function fileToBase64(
+        file
+    ) {
         return new Promise(
-            (resolve, reject) => {
+            (
+                resolve,
+                reject
+            ) => {
                 const reader =
                     new FileReader();
 
-                reader.onload = () => {
-                    const result =
-                        String(
-                            reader.result ||
-                            ""
+                reader.onload =
+                    () => {
+                        const result =
+                            String(
+                                reader.result ||
+                                ""
+                            );
+
+                        const comma =
+                            result.indexOf(
+                                ","
+                            );
+
+                        resolve(
+                            comma === -1
+                                ? result
+                                : result.slice(
+                                    comma + 1
+                                )
                         );
-
-                    const comma =
-                        result.indexOf(",");
-
-                    resolve(
-                        comma === -1
-                            ? result
-                            : result.slice(
-                                comma + 1
-                            )
-                    );
-                };
+                    };
 
                 reader.onerror =
                     reject;
@@ -2843,7 +3013,9 @@
         }
 
         const maxSize =
-            15 * 1024 * 1024;
+            15 *
+            1024 *
+            1024;
 
         if (
             file.size >
@@ -2862,7 +3034,9 @@
                     file
                 );
 
-            if (attachedImagePreview) {
+            if (
+                attachedImagePreview
+            ) {
                 URL.revokeObjectURL(
                     attachedImagePreview
                 );
@@ -2895,15 +3069,21 @@
 
             elements.attachment
                 .classList
-                .add("show");
+                .add(
+                    "show"
+                );
 
             elements.imageButton
                 .classList
-                .add("active");
+                .add(
+                    "active"
+                );
 
             elements.modeRow
                 .classList
-                .add("show");
+                .add(
+                    "show"
+                );
 
             setMode("chat");
 
@@ -2918,37 +3098,45 @@
 
     function updateAttachmentLabel() {
         elements.attachmentMode.textContent =
-            currentMode === "image"
+            currentMode ===
+            "image"
                 ? "Mode Edit / Buat Gambar"
                 : "Mode Analisis Gambar";
     }
 
-    /* =========================
+    /* =========================================================
        MODE
-    ========================= */
+    ========================================================= */
 
-    function setMode(mode) {
+    function setMode(
+        mode
+    ) {
         currentMode =
             mode === "image"
                 ? "image"
                 : "chat";
 
         elements.chatMode
-            .classList.toggle(
+            .classList
+            .toggle(
                 "active",
-                currentMode === "chat"
+                currentMode ===
+                    "chat"
             );
 
         elements.imageMode
-            .classList.toggle(
+            .classList
+            .toggle(
                 "active",
-                currentMode === "image"
+                currentMode ===
+                    "image"
             );
 
         updateAttachmentLabel();
 
         if (
-            currentMode === "image"
+            currentMode ===
+            "image"
         ) {
             elements.messageInput.placeholder =
                 attachedImage
@@ -2960,9 +3148,9 @@
         }
     }
 
-    /* =========================
-       SEND
-    ========================= */
+    /* =========================================================
+       SEND MESSAGE
+    ========================================================= */
 
     async function sendMessage() {
         if (isSending) {
@@ -2970,9 +3158,13 @@
         }
 
         const text =
-            elements.messageInput.value.trim();
+            elements.messageInput.value
+                .trim();
 
-        if (!text && !attachedImage) {
+        if (
+            !text &&
+            !attachedImage
+        ) {
             return;
         }
 
@@ -2980,12 +3172,14 @@
             ensureChat();
 
         const userMessage = {
-            role: "user",
+            role:
+                "user",
 
             content:
                 text ||
                 (
-                    currentMode === "image"
+                    currentMode ===
+                    "image"
                         ? "Buat gambar berdasarkan gambar yang saya kirim."
                         : "Jelaskan gambar ini."
                 ),
@@ -3004,9 +3198,17 @@
             };
         }
 
+        /*
+         * SIMPAN PESAN USER
+         */
+
         chat.messages.push(
             userMessage
         );
+
+        /*
+         * JUDUL CHAT
+         */
 
         if (
             chat.title ===
@@ -3014,14 +3216,27 @@
         ) {
             chat.title =
                 text
-                    ? text.slice(0, 42)
+                    ? text.slice(
+                        0,
+                        42
+                    )
                     : "Percakapan gambar";
         }
 
         chat.updatedAt =
             Date.now();
 
+        /*
+         * SIMPAN SEBELUM REQUEST API.
+         *
+         * Jadi walaupun API error,
+         * pertanyaan user tetap ada
+         * setelah reload.
+         */
+
         saveChats();
+
+        renderHistory();
 
         elements.welcome.style.display =
             "none";
@@ -3051,14 +3266,17 @@
 
         resetAttachment();
 
-        setSending(true);
+        setSending(
+            true
+        );
 
         try {
             const response =
                 await fetch(
                     "/api/chat",
                     {
-                        method: "POST",
+                        method:
+                            "POST",
 
                         headers: {
                             "Content-Type":
@@ -3069,7 +3287,7 @@
                             JSON.stringify({
                                 messages:
                                     chat.messages.map(
-                                        (item) => ({
+                                        item => ({
                                             role:
                                                 item.role,
 
@@ -3094,8 +3312,9 @@
 
             try {
                 data =
-                    JSON.parse(raw);
-
+                    JSON.parse(
+                        raw
+                    );
             } catch {
                 throw new Error(
                     raw ||
@@ -3113,7 +3332,8 @@
             }
 
             const assistantMessage = {
-                role: "assistant",
+                role:
+                    "assistant",
 
                 content:
                     data.reply ||
@@ -3142,6 +3362,10 @@
                     };
             }
 
+            /*
+             * SIMPAN JAWABAN AI
+             */
+
             chat.messages.push(
                 assistantMessage
             );
@@ -3165,11 +3389,17 @@
             renderHistory();
 
         } catch (error) {
+
+            /*
+             * ERROR JUGA DISIMPAN
+             */
+
             const errorMessage = {
-                role: "assistant",
+                role:
+                    "assistant",
 
                 content:
-                    `Terjadi kesalahan:\n${error.message}`,
+                    `Terjadi kesalahan:\n${error?.message || "Unknown error"}`,
 
                 time:
                     Date.now()
@@ -3179,14 +3409,21 @@
                 errorMessage
             );
 
+            chat.updatedAt =
+                Date.now();
+
             saveChats();
 
             renderMessage(
                 errorMessage
             );
 
+            renderHistory();
+
         } finally {
-            setSending(false);
+            setSending(
+                false
+            );
         }
     }
 
@@ -3200,7 +3437,8 @@
             sending;
 
         elements.typing
-            .classList.toggle(
+            .classList
+            .toggle(
                 "show",
                 sending
             );
@@ -3210,9 +3448,9 @@
         }
     }
 
-    /* =========================
+    /* =========================================================
        TEXTAREA
-    ========================= */
+    ========================================================= */
 
     function autoResize() {
         const textarea =
@@ -3225,16 +3463,17 @@
             Math.min(
                 textarea.scrollHeight,
                 140
-            ) + "px";
+            ) +
+            "px";
     }
 
-    /* =========================
+    /* =========================================================
        EVENTS
-    ========================= */
+    ========================================================= */
 
     elements.composer.addEventListener(
         "submit",
-        (event) => {
+        event => {
             event.preventDefault();
 
             sendMessage();
@@ -3248,7 +3487,7 @@
 
     elements.messageInput.addEventListener(
         "keydown",
-        (event) => {
+        event => {
             if (
                 event.key ===
                     "Enter" &&
@@ -3272,10 +3511,13 @@
         "change",
         () => {
             const file =
-                elements.fileInput.files?.[0];
+                elements.fileInput
+                    .files?.[0];
 
             if (file) {
-                handleImage(file);
+                handleImage(
+                    file
+                );
             }
         }
     );
@@ -3288,27 +3530,34 @@
     elements.chatMode.addEventListener(
         "click",
         () => {
-            setMode("chat");
+            setMode(
+                "chat"
+            );
         }
     );
 
     elements.imageMode.addEventListener(
         "click",
         () => {
-            setMode("image");
+            setMode(
+                "image"
+            );
         }
     );
 
     elements.newChatButton.addEventListener(
         "click",
         () => {
+
             createChat();
 
             elements.messageInput.focus();
 
             elements.sidebar
                 .classList
-                .remove("open");
+                .remove(
+                    "open"
+                );
         }
     );
 
@@ -3317,7 +3566,9 @@
         () => {
             elements.sidebar
                 .classList
-                .toggle("open");
+                .toggle(
+                    "open"
+                );
         }
     );
 
@@ -3325,25 +3576,29 @@
         .querySelectorAll(
             ".suggestion"
         )
-        .forEach((button) => {
-            button.addEventListener(
-                "click",
-                () => {
-                    elements.messageInput.value =
-                        button.dataset.prompt ||
-                        "";
+        .forEach(
+            button => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    autoResize();
+                        elements.messageInput.value =
+                            button.dataset
+                                .prompt ||
+                            "";
 
-                    elements.messageInput
-                        .focus();
-                }
-            );
-        });
+                        autoResize();
 
-    /* =========================
+                        elements.messageInput
+                            .focus();
+                    }
+                );
+            }
+        );
+
+    /* =========================================================
        MATHJAX READY
-    ========================= */
+    ========================================================= */
 
     function typesetExistingMath() {
         document
@@ -3351,7 +3606,8 @@
                 ".message-bubble"
             )
             .forEach(
-                (bubble) => {
+                bubble => {
+
                     if (
                         bubble.querySelector(
                             ".math-display, .math-inline"
@@ -3372,11 +3628,13 @@
         window.MathJax
             .startup
             .promise
-            .then(() => {
-                typesetExistingMath();
-            })
+            .then(
+                () => {
+                    typesetExistingMath();
+                }
+            )
             .catch(
-                (error) => {
+                error => {
                     console.warn(
                         "MathJax startup gagal:",
                         error
@@ -3385,24 +3643,67 @@
             );
     }
 
-    /* =========================
-       INIT
-    ========================= */
+    /* =========================================================
+       INITIALIZATION
+    ========================================================= */
 
     loadChats();
 
+    /*
+     * Kalau belum ada history:
+     * buat satu chat kosong.
+     */
+
     if (!chats.length) {
+
         createChat();
 
     } else {
-        currentChatId =
-            chats[0].id;
+
+        /*
+         * Coba buka chat terakhir yang
+         * sedang aktif sebelum reload.
+         */
+
+        const savedActiveChat =
+            loadActiveChat();
+
+        const savedChatExists =
+            savedActiveChat &&
+            chats.some(
+                chat =>
+                    chat.id ===
+                    savedActiveChat
+            );
+
+        if (savedChatExists) {
+
+            currentChatId =
+                savedActiveChat;
+
+        } else {
+
+            /*
+             * Kalau tidak ada active chat,
+             * buka chat yang paling baru.
+             */
+
+            sortChats();
+
+            currentChatId =
+                chats[0].id;
+        }
+
+        saveActiveChat();
 
         renderHistory();
+
         renderMessages();
     }
 
-    setMode("chat");
+    setMode(
+        "chat"
+    );
 
     autoResize();
 
