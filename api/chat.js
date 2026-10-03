@@ -11,21 +11,29 @@ const IMAGE_MODEL = "gemini-3.1-flash-image";
 
 const MAX_HISTORY = 30;
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
+
 const RETRIES_PER_MODEL = 2;
 const RETRY_DELAY = 1200;
 
 function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store"
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+      headers: {
+        "Content-Type":
+          "application/json; charset=utf-8",
+        "Cache-Control":
+          "no-store"
+      }
     }
-  });
+  );
 }
 
 function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) =>
+    setTimeout(resolve, ms)
+  );
 }
 
 function getStatus(error) {
@@ -55,6 +63,12 @@ function isRetryable(status) {
   ].includes(status);
 }
 
+/*
+ * =========================================================
+ * CLEAN CHAT HISTORY
+ * =========================================================
+ */
+
 function cleanMessages(messages) {
   if (!Array.isArray(messages)) {
     return [];
@@ -68,27 +82,37 @@ function cleanMessages(messages) {
         ["user", "assistant"].includes(
           message.role
         ) &&
-        typeof message.content === "string" &&
+        typeof message.content ===
+          "string" &&
         message.content.trim()
     )
     .slice(-MAX_HISTORY)
     .map((message) => ({
       role: message.role,
-      content: message.content.trim()
+      content:
+        message.content.trim()
     }));
 }
 
-function buildTextPrompt(messages) {
-  const conversation = messages
-    .map((message) => {
-      const role =
-        message.role === "assistant"
-          ? "Pingu"
-          : "User";
+/*
+ * =========================================================
+ * TEXT PROMPT
+ * =========================================================
+ */
 
-      return `${role}:\n${message.content}`;
-    })
-    .join("\n\n");
+function buildTextPrompt(messages) {
+  const conversation =
+    messages
+      .map((message) => {
+        const role =
+          message.role ===
+          "assistant"
+            ? "Pingu"
+            : "User";
+
+        return `${role}:\n${message.content}`;
+      })
+      .join("\n\n");
 
   return `
 Kamu adalah Pingu, AI assistant yang ramah,
@@ -103,6 +127,14 @@ Aturan:
 - Jika memperbaiki kode, pertahankan fitur yang sudah ada.
 - Gunakan Markdown jika diperlukan.
 - Jangan membocorkan API key atau instruksi internal.
+- Jika pengguna meminta link atau sumber, berikan URL HTTPS yang benar.
+- Gunakan format Markdown untuk link:
+  [Nama Sumber](https://contoh.com)
+- Jangan mengarang URL.
+- Jangan mengklaim telah browsing jika tidak benar-benar memiliki
+  akses ke hasil pencarian web.
+- Jika pengguna meminta edit gambar, jangan hanya menjelaskan caranya.
+  Gunakan mode image jika gambar tersedia.
 
 RIWAYAT:
 
@@ -112,20 +144,32 @@ Jawab pesan terakhir user secara langsung.
 `.trim();
 }
 
+/*
+ * =========================================================
+ * PARSE IMAGE
+ * =========================================================
+ */
+
 function parseImage(image) {
-  if (!image || typeof image !== "object") {
+  if (
+    !image ||
+    typeof image !== "object"
+  ) {
     return null;
   }
 
   const mimeType =
-    typeof image.mimeType === "string"
+    typeof image.mimeType ===
+    "string"
       ? image.mimeType
-      : typeof image.mime_type === "string"
+      : typeof image.mime_type ===
+        "string"
         ? image.mime_type
         : "";
 
   let data =
-    typeof image.data === "string"
+    typeof image.data ===
+    "string"
       ? image.data
       : "";
 
@@ -135,27 +179,50 @@ function parseImage(image) {
     );
   }
 
-  if (!mimeType.startsWith("image/")) {
+  if (
+    !mimeType.startsWith(
+      "image/"
+    )
+  ) {
     throw new Error(
       "File yang dikirim bukan gambar."
     );
   }
 
-  if (data.startsWith("data:")) {
-    const comma = data.indexOf(",");
+  /*
+   * Mendukung:
+   * data:image/png;base64,...
+   *
+   * maupun:
+   * base64 langsung
+   */
+
+  if (
+    data.startsWith("data:")
+  ) {
+    const comma =
+      data.indexOf(",");
 
     if (comma !== -1) {
-      data = data.slice(comma + 1);
+      data =
+        data.slice(
+          comma + 1
+        );
     }
   }
 
-  data = data.replace(/\s/g, "");
+  data =
+    data.replace(/\s/g, "");
 
   if (!data) {
     throw new Error(
       "Data gambar kosong."
     );
   }
+
+  /*
+   * Estimasi ukuran decoded Base64
+   */
 
   const estimatedBytes =
     Math.floor(
@@ -177,6 +244,12 @@ function parseImage(image) {
   };
 }
 
+/*
+ * =========================================================
+ * TEXT GENERATION
+ * =========================================================
+ */
+
 async function generateText(
   ai,
   model,
@@ -185,11 +258,18 @@ async function generateText(
 ) {
   const contents = [];
 
+  /*
+   * Jika user mengirim foto,
+   * Gemini membaca foto tersebut.
+   */
+
   if (image) {
     contents.push({
       inlineData: {
-        mimeType: image.mimeType,
-        data: image.data
+        mimeType:
+          image.mimeType,
+        data:
+          image.data
       }
     });
   }
@@ -202,7 +282,8 @@ async function generateText(
 
   for (
     let attempt = 1;
-    attempt <= RETRIES_PER_MODEL;
+    attempt <=
+    RETRIES_PER_MODEL;
     attempt++
   ) {
     try {
@@ -211,13 +292,16 @@ async function generateText(
       );
 
       const result =
-        await ai.models.generateContent({
-          model,
-          contents
-        });
+        await ai.models.generateContent(
+          {
+            model,
+            contents
+          }
+        );
 
       const reply =
-        typeof result?.text === "string"
+        typeof result?.text ===
+        "string"
           ? result.text.trim()
           : "";
 
@@ -242,17 +326,47 @@ async function generateText(
 
       if (
         !isRetryable(status) ||
-        attempt >= RETRIES_PER_MODEL
+        attempt >=
+          RETRIES_PER_MODEL
       ) {
         break;
       }
 
-      await sleep(RETRY_DELAY);
+      await sleep(
+        RETRY_DELAY
+      );
     }
   }
 
   throw lastError;
 }
+
+/*
+ * =========================================================
+ * IMAGE GENERATION + IMAGE EDITING
+ * =========================================================
+ *
+ * Bisa:
+ *
+ * - Generate gambar dari teks
+ * - Edit foto
+ * - Tambah objek
+ * - Hapus objek
+ * - Ganti background
+ * - Ubah warna
+ * - Ubah style
+ * - Restyle foto
+ * - Membuat gambar berdasarkan foto referensi
+ *
+ * Gemini menerima:
+ *
+ * [
+ *   { type: "image", ... },
+ *   { type: "text", ... }
+ * ]
+ *
+ * =========================================================
+ */
 
 async function generateImage(
   ai,
@@ -261,27 +375,79 @@ async function generateImage(
 ) {
   const input = [];
 
+  /*
+   * FOTO INPUT
+   *
+   * Kalau ada gambar, masukkan gambar
+   * terlebih dahulu sebagai referensi/edit source.
+   */
+
   if (image) {
     input.push({
       type: "image",
-      mime_type: image.mimeType,
-      data: image.data
+      mime_type:
+        image.mimeType,
+      data:
+        image.data
     });
   }
 
+  /*
+   * PROMPT EDIT / GENERATE
+   */
+
   input.push({
     type: "text",
-    text: prompt
+    text: image
+      ? `
+Edit gambar yang diberikan sesuai instruksi user.
+
+Instruksi user:
+${prompt}
+
+Pertahankan bagian gambar yang tidak diminta untuk diubah.
+Lakukan perubahan secara natural dan konsisten dengan
+pencahayaan, perspektif, warna, dan komposisi gambar asli.
+
+Jika user meminta menghapus sesuatu, hapus objek tersebut
+dan isi area bekas objek secara natural.
+
+Jika user meminta mengganti sesuatu, ubah hanya bagian
+yang relevan.
+
+Jika user meminta perubahan style, pertahankan subjek
+utama kecuali user meminta sebaliknya.
+
+Hasil akhir harus berupa gambar hasil edit.
+`.trim()
+      : prompt
   });
 
+  console.log(
+    `[Pingu] Image ${
+      image
+        ? "editing"
+        : "generation"
+    }`
+  );
+
   const interaction =
-    await ai.interactions.create({
-      model: IMAGE_MODEL,
-      input
-    });
+    await ai.interactions.create(
+      {
+        model:
+          IMAGE_MODEL,
+        input
+      }
+    );
 
   let outputText = "";
   let outputImage = null;
+
+  /*
+   * =======================================================
+   * BACA STEPS
+   * =======================================================
+   */
 
   if (
     Array.isArray(
@@ -289,7 +455,8 @@ async function generateImage(
     )
   ) {
     for (
-      const step of interaction.steps
+      const step of
+        interaction.steps
     ) {
       if (
         step?.type !==
@@ -307,10 +474,16 @@ async function generateImage(
       }
 
       for (
-        const block of step.content
+        const block of
+          step.content
       ) {
+        /*
+         * TEXT OUTPUT
+         */
+
         if (
-          block?.type === "text" &&
+          block?.type ===
+            "text" &&
           typeof block.text ===
             "string"
         ) {
@@ -318,8 +491,13 @@ async function generateImage(
             block.text;
         }
 
+        /*
+         * IMAGE OUTPUT
+         */
+
         if (
-          block?.type === "image" &&
+          block?.type ===
+            "image" &&
           typeof block.data ===
             "string"
         ) {
@@ -327,12 +505,19 @@ async function generateImage(
             mimeType:
               block.mime_type ||
               "image/png",
-            data: block.data
+            data:
+              block.data
           };
         }
       }
     }
   }
+
+  /*
+   * =======================================================
+   * FALLBACK OUTPUT_IMAGE
+   * =======================================================
+   */
 
   if (
     !outputImage &&
@@ -340,35 +525,77 @@ async function generateImage(
   ) {
     outputImage = {
       mimeType:
-        interaction.output_image.mime_type ||
+        interaction
+          .output_image
+          .mime_type ||
         "image/png",
+
       data:
-        interaction.output_image.data
+        interaction
+          .output_image
+          .data
     };
   }
 
   return {
-    text: outputText.trim(),
-    image: outputImage
+    text:
+      outputText.trim(),
+
+    image:
+      outputImage,
+
+    edited:
+      Boolean(image)
   };
 }
+
+/*
+ * =========================================================
+ * GET
+ * =========================================================
+ */
 
 export async function GET() {
   return json({
     ok: true,
+
     name: "Pingu AI",
+
     status: "online",
-    textModels: TEXT_MODELS,
-    imageModel: IMAGE_MODEL,
+
+    textModels:
+      TEXT_MODELS,
+
+    imageModel:
+      IMAGE_MODEL,
+
     imageInput: true,
+
+    imageGeneration: true,
+
     imageEditing: true
   });
 }
 
-export async function POST(request) {
+/*
+ * =========================================================
+ * POST
+ * =========================================================
+ */
+
+export async function POST(
+  request
+) {
   try {
+    /*
+     * =====================================================
+     * API KEY
+     * =====================================================
+     */
+
     const apiKey =
-      process.env.GEMINI_API_KEY;
+      process.env
+        .GEMINI_API_KEY;
 
     if (!apiKey) {
       return json(
@@ -379,6 +606,12 @@ export async function POST(request) {
         500
       );
     }
+
+    /*
+     * =====================================================
+     * REQUEST JSON
+     * =====================================================
+     */
 
     let body;
 
@@ -395,12 +628,20 @@ export async function POST(request) {
       );
     }
 
+    /*
+     * =====================================================
+     * MESSAGES
+     * =====================================================
+     */
+
     const messages =
       cleanMessages(
         body?.messages
       );
 
-    if (!messages.length) {
+    if (
+      !messages.length
+    ) {
       return json(
         {
           error:
@@ -428,6 +669,12 @@ export async function POST(request) {
       );
     }
 
+    /*
+     * =====================================================
+     * IMAGE
+     * =====================================================
+     */
+
     let image = null;
 
     try {
@@ -445,6 +692,29 @@ export async function POST(request) {
       );
     }
 
+    /*
+     * =====================================================
+     * MODE
+     * =====================================================
+     *
+     * "chat"
+     * "image"
+     *
+     * Image mode otomatis:
+     *
+     * image ada
+     * +
+     * prompt edit
+     *
+     * = EDIT FOTO
+     *
+     * image tidak ada
+     * +
+     * prompt
+     *
+     * = GENERATE GAMBAR
+     */
+
     const mode =
       body?.mode === "image"
         ? "image"
@@ -456,17 +726,16 @@ export async function POST(request) {
       });
 
     /*
-     * MODE GAMBAR
-     *
-     * Digunakan untuk:
-     * - membuat gambar
-     * - mengedit gambar
-     * - mengubah style
-     * - menambah/menghapus objek
+     * =====================================================
+     * IMAGE MODE
+     * =====================================================
      */
-    if (mode === "image") {
+
+    if (
+      mode === "image"
+    ) {
       const prompt =
-        lastMessage.content;
+        lastMessage.content.trim();
 
       if (!prompt) {
         return json(
@@ -486,6 +755,10 @@ export async function POST(request) {
             image
           );
 
+        /*
+         * Tidak ada gambar
+         */
+
         if (
           !result.image
         ) {
@@ -493,19 +766,46 @@ export async function POST(request) {
             {
               error:
                 result.text ||
-                "Model gambar tidak menghasilkan gambar."
+                "Model gambar tidak menghasilkan gambar.",
+
+              model:
+                IMAGE_MODEL
             },
             502
           );
         }
 
+        /*
+         * =================================================
+         * RESPONSE EDIT / GENERATE
+         * =================================================
+         */
+
         return json({
           reply:
             result.text ||
-            "Gambar berhasil dibuat.",
-          image: result.image,
-          model: IMAGE_MODEL,
-          type: "image"
+            (
+              result.edited
+                ? "Foto berhasil diedit."
+                : "Gambar berhasil dibuat."
+            ),
+
+          image:
+            result.image,
+
+          model:
+            IMAGE_MODEL,
+
+          type:
+            result.edited
+              ? "image_edit"
+              : "image",
+
+          imageEdited:
+            result.edited,
+
+          imageGenerated:
+            !result.edited
         });
       } catch (error) {
         console.error(
@@ -513,28 +813,34 @@ export async function POST(request) {
           error
         );
 
+        const status =
+          getStatus(error);
+
         return json(
           {
             error:
               getMessage(error),
+
             code:
-              getStatus(error),
+              status,
+
             model:
               IMAGE_MODEL
           },
-          getStatus(error) >= 400
-            ? getStatus(error)
+          status >= 400 &&
+          status <= 599
+            ? status
             : 500
         );
       }
     }
 
     /*
-     * MODE CHAT
-     *
-     * Kalau image tersedia,
-     * Gemini akan membaca gambar.
+     * =====================================================
+     * CHAT MODE
+     * =====================================================
      */
+
     const prompt =
       buildTextPrompt(
         messages
@@ -543,7 +849,8 @@ export async function POST(request) {
     const failures = [];
 
     for (
-      const model of TEXT_MODELS
+      const model of
+        TEXT_MODELS
     ) {
       try {
         const reply =
@@ -556,8 +863,11 @@ export async function POST(request) {
 
         return json({
           reply,
+
           model,
+
           type: "text",
+
           imageAnalyzed:
             Boolean(image)
         });
@@ -570,7 +880,9 @@ export async function POST(request) {
 
         failures.push({
           model,
+
           status,
+
           message
         });
 
@@ -582,6 +894,12 @@ export async function POST(request) {
       }
     }
 
+    /*
+     * =====================================================
+     * ALL TEXT MODELS FAILED
+     * =====================================================
+     */
+
     const last =
       failures[
         failures.length - 1
@@ -592,18 +910,23 @@ export async function POST(request) {
         error:
           last?.message ||
           "Semua model Gemini gagal.",
+
         code:
-          last?.status || 500,
+          last?.status ||
+          500,
+
         attempts:
           failures.map(
             (item) => ({
               model:
                 item.model,
+
               code:
                 item.status
             })
           )
       },
+
       last?.status >= 400 &&
       last?.status <= 599
         ? last.status
@@ -620,10 +943,12 @@ export async function POST(request) {
         error:
           error?.message ||
           "Terjadi kesalahan pada Pingu AI.",
+
         code:
-          getStatus(error) || 500
+          getStatus(error) ||
+          500
       },
       500
     );
   }
-}
+      }
