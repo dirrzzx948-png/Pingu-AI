@@ -22,11 +22,11 @@
         tex: {  
             inlineMath: [  
                 ["$", "$"],  
-                ["\", "\"]  
+                ["\\(", "\\)"]  
             ],  
             displayMath: [  
                 ["$$", "$$"],  
-                ["\", "\"]  
+                ["\\[", "\\]"]  
             ],  
             processEscapes: true,  
             processEnvironments: true,  
@@ -3070,7 +3070,7 @@ function renderMarkdownLinks(
 ) {  
   
     return text.replace(  
-        /([^]+)\](https?:\/\/[^\s)]+)/gi,  
+        /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,  
         (  
             _,  
             title,  
@@ -3139,7 +3139,7 @@ function extractMathBlocks(
   
     source =  
         source.replace(  
-            /\\([\s\S]*?)\\/g,  
+            /\\\[([\s\S]*?)\\\]/g,  
             (_, math) => {  
   
                 const index =  
@@ -3164,7 +3164,7 @@ function extractMathBlocks(
   
     source =  
         source.replace(  
-            /\\([\s\S]*?)\\/g,  
+            /\\\(([\s\S]*?)\\\)/g,  
             (_, math) => {  
   
                 const index =  
@@ -3275,12 +3275,19 @@ function formatNormalText(
                     return raw;  
                 }  
   
+                const label =  
+                    escapeHTML(  
+                        getDomainName(  
+                            url  
+                        )  
+                    );  
+
                 return `  
                     <a  
                         href="${safe}"  
                         target="_blank"  
                         rel="noopener noreferrer"  
-                    >${escapeHTML(url)}</a>  
+                    >${label}</a>  
                 `;  
             }  
         );  
@@ -3308,6 +3315,25 @@ function formatText(
             text ?? ""  
         );  
   
+    /*  
+     * Buang tag HTML mentah dari model  
+     * agar tidak tampil sebagai script.  
+     */  
+    source =  
+        source.replace(  
+            /<\s*\/?\s*[a-zA-Z][^>]*>/g,  
+            ""  
+        );  
+
+    /*  
+     * Perbaiki markdown link yang putus baris.  
+     */  
+    source =  
+        source.replace(  
+            /\[([^\]\n]{1,200})\]\s*\n+\s*\((https?:\/\/[^\s)]+)\)/g,  
+            "[$1]($2)"  
+        );  
+
     const blocks = [];  
   
   
@@ -3360,7 +3386,7 @@ function formatText(
      */  
     source =  
         source.replace(  
-            /([^]+)\](https?:\/\/[^\s)]+)/gi,  
+            /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,  
             (  
                 _,  
                 title,  
@@ -3576,16 +3602,16 @@ bubble
             ) {  
 
                 element.textContent =  
-                    "\" +  
+                    "\\[" +  
                     block.content +  
-                    "\";  
+                    "\\]";  
 
             } else {  
 
                 element.textContent =  
-                    "\" +  
+                    "\\(" +  
                     block.content +  
-                    "\";  
+                    "\\)";  
             }  
         }  
     );
@@ -4191,7 +4217,9 @@ if (message.model) {
         "message-meta";  
 
     meta.textContent =  
-        message.model;  
+        sanitizeModelName(  
+            message.model  
+        );  
 
     content.appendChild(  
         meta  
@@ -4565,6 +4593,40 @@ elements.messageInput
 
 }
 
+
+/* =========================================================  
+   MODEL NAME  
+========================================================= */  
+
+function sanitizeModelName(name) {  
+
+    const value =  
+        String(  
+            name || ""  
+        ).trim();  
+
+    if (!value) {  
+        return "Pingu AI";  
+    }  
+
+    const lower =  
+        value.toLowerCase();  
+
+    if (  
+        lower.includes("gemini") ||  
+        lower.includes("google") ||  
+        lower.includes("gpt") ||  
+        lower.includes("claude") ||  
+        lower.includes("openai") ||  
+        lower.includes("anthropic")  
+    ) {  
+        return "Pingu AI";  
+    }  
+
+    return value;  
+}  
+
+
 /* =========================================================
 SEND
 ========================================================= */
@@ -4827,11 +4889,9 @@ try {
             "Tidak ada jawaban.",  
 
         model:  
-            data.model  
-                ? String(  
-                    data.model  
-                )  
-                : "Pingu AI",  
+            sanitizeModelName(  
+                data.model  
+            ),  
 
         sources:  
             sources,  
@@ -4880,11 +4940,9 @@ try {
 
 
     elements.modelLabel.textContent =  
-        data.model  
-            ? String(  
-                data.model  
-            )  
-            : "Pingu AI";  
+        sanitizeModelName(  
+            data.model  
+        );  
 
 
     renderHistory();  
