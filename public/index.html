@@ -1,5231 +1,5269 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    >
-
-    <meta
-        name="theme-color"
-        content="#f4efe6"
-    >
-
-    <meta
-        name="description"
-        content="Pingu AI - Asisten AI dengan dukungan gambar, matematika, kode, dan sumber informasi."
-    >
-
-    <title>Pingu AI</title>
-
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [
-                    ["$", "$"],
-                    ["\\(", "\\)"]
-                ],
-                displayMath: [
-                    ["$$", "$$"],
-                    ["\\[", "\\]"]
-                ],
-                processEscapes: true,
-                processEnvironments: true,
-                packages: {
-                    "[+]": ["ams", "boldsymbol"]
-                }
-            },
-
-            options: {
-                skipHtmlTags: [
-                    "script",
-                    "noscript",
-                    "style",
-                    "textarea",
-                    "pre",
-                    "code"
-                ],
-                ignoreHtmlClass: "math-ignore"
-            },
-
-            startup: {
-                typeset: false
-            }
-        };
-    </script>
-
-    <script
-        id="MathJax-script"
-        async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-    ></script>
-
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        :root {
-            --bg: #f4efe6;
-            --bg-soft: #faf7f1;
-
-            --glass: rgba(255,255,255,.62);
-            --glass-strong: rgba(255,255,255,.78);
-            --glass-soft: rgba(255,255,255,.42);
-
-            --border: rgba(55,48,39,.10);
-            --border-light: rgba(255,255,255,.78);
-
-            --text: #292720;
-            --text-soft: #625e56;
-            --muted: #918b82;
-
-            --accent: #6f5ce7;
-            --accent-dark: #5947d0;
-
-            --danger: #d95555;
-
-            --source-bg: rgba(255,255,255,.58);
-            --source-hover: rgba(255,255,255,.82);
-
-            --radius: 18px;
-            --sidebar: 270px;
-        }
-
-        html,
-        body {
-            width: 100%;
-            height: 100%;
-        }
-
-        body {
-            font-family:
-                Inter,
-                ui-sans-serif,
-                system-ui,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                sans-serif;
-
-            background:
-                radial-gradient(
-                    circle at 15% 10%,
-                    rgba(255,255,255,.85),
-                    transparent 30%
-                ),
-                radial-gradient(
-                    circle at 85% 85%,
-                    rgba(224,216,201,.55),
-                    transparent 32%
-                ),
-                var(--bg);
-
-            color: var(--text);
-            overflow: hidden;
-        }
-
-        button,
-        textarea,
-        input {
-            font: inherit;
-        }
-
-        button {
-            border: 0;
-            cursor: pointer;
-        }
-
-        button:disabled {
-            cursor: default;
-        }
-
-        a {
-            color: inherit;
-        }
-
-        .app {
-            width: 100%;
-            height: 100dvh;
-            display: flex;
-        }
-
-        /* =====================================================
-           SIDEBAR
-        ===================================================== */
-
-        .sidebar {
-            width: var(--sidebar);
-            height: 100%;
-            padding: 16px;
-
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-
-            background: rgba(255,255,255,.34);
-            border-right: 1px solid var(--border);
-
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-
-            flex-shrink: 0;
-            z-index: 20;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 8px 6px 14px;
-        }
-
-        .brand-logo,
-        .welcome-logo {
-            display: grid;
-            place-items: center;
-
-            background:
-                linear-gradient(
-                    145deg,
-                    #fff,
-                    #e8e0d3
-                );
-
-            border: 1px solid var(--border-light);
-
-            color: var(--accent);
-
-            box-shadow:
-                0 8px 25px rgba(52,43,31,.08);
-        }
-
-        .brand-logo {
-            width: 38px;
-            height: 38px;
-            border-radius: 13px;
-
-            font-size: 17px;
-            font-weight: 800;
-        }
-
-        .brand-text {
-            min-width: 0;
-        }
-
-        .brand-title {
-            font-size: 16px;
-            font-weight: 750;
-        }
-
-        .brand-subtitle {
-            font-size: 11px;
-            color: var(--muted);
-            margin-top: 2px;
-        }
-
-        .new-chat {
-            width: 100%;
-            min-height: 45px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-
-            border-radius: 14px;
-
-            background: var(--glass-strong);
-            border: 1px solid var(--border-light);
-
-            color: var(--text);
-            font-weight: 650;
-
-            box-shadow:
-                0 5px 18px rgba(55,48,39,.06);
-
-            transition:
-                transform .15s ease,
-                background .15s ease;
-        }
-
-        .new-chat:hover {
-            background: rgba(255,255,255,.9);
-        }
-
-        .new-chat:active {
-            transform: scale(.98);
-        }
-
-        .history-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-
-            padding: 8px 5px 2px 7px;
-        }
-
-        .history-title {
-            font-size: 11px;
-            font-weight: 700;
-
-            color: var(--muted);
-
-            text-transform: uppercase;
-            letter-spacing: .7px;
-        }
-
-        .history-close {
-            width: 28px;
-            height: 28px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 9px;
-
-            background: rgba(255,255,255,.52);
-            border: 1px solid var(--border);
-
-            color: var(--text-soft);
-
-            font-size: 18px;
-            line-height: 1;
-
-            transition:
-                background .15s ease,
-                color .15s ease,
-                transform .15s ease;
-        }
-
-        .history-close:hover {
-            background: rgba(255,255,255,.85);
-            color: var(--text);
-        }
-
-        .history-close:active {
-            transform: scale(.92);
-        }
-
-        .history {
-            flex: 1;
-            min-height: 0;
-
-            overflow-y: auto;
-            padding-right: 2px;
-        }
-
-        .history::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .history::-webkit-scrollbar-thumb {
-            background: rgba(70,60,50,.13);
-            border-radius: 20px;
-        }
-
-        .history-empty {
-            padding: 12px 8px;
-
-            font-size: 12px;
-            line-height: 1.5;
+<!DOCTYPE html>  <html lang="id">  
+<head>  
+    <meta charset="UTF-8">  <meta  
+    name="viewport"  
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"  
+>  
+
+<meta  
+    name="theme-color"  
+    content="#f4efe6"  
+>  
+
+<meta  
+    name="description"  
+    content="Pingu AI - Asisten AI dengan dukungan gambar, matematika, kode, dan sumber informasi."  
+>  
+
+<title>Pingu AI</title>  
+
+<script>  
+    window.MathJax = {  
+        tex: {  
+            inlineMath: [  
+                ["$", "$"],  
+                ["\", "\"]  
+            ],  
+            displayMath: [  
+                ["$$", "$$"],  
+                ["\", "\"]  
+            ],  
+            processEscapes: true,  
+            processEnvironments: true,  
+            packages: {  
+                "[+]": ["ams", "boldsymbol"]  
+            }  
+        },  
+
+        options: {  
+            skipHtmlTags: [  
+                "script",  
+                "noscript",  
+                "style",  
+                "textarea",  
+                "pre",  
+                "code"  
+            ],  
+            ignoreHtmlClass: "math-ignore"  
+        },  
+
+        startup: {  
+            typeset: false  
+        }  
+    };  
+</script>  
+
+<script  
+    id="MathJax-script"  
+    async  
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"  
+></script>  
+
+<style>  
+    * {  
+        box-sizing: border-box;  
+        margin: 0;  
+        padding: 0;  
+    }  
+
+    :root {  
+        --bg: #f4efe6;  
+        --bg-soft: #faf7f1;  
+
+        --glass: rgba(255,255,255,.62);  
+        --glass-strong: rgba(255,255,255,.78);  
+        --glass-soft: rgba(255,255,255,.42);  
+
+        --border: rgba(55,48,39,.10);  
+        --border-light: rgba(255,255,255,.78);  
+
+        --text: #292720;  
+        --text-soft: #625e56;  
+        --muted: #918b82;  
+
+        --accent: #6f5ce7;  
+        --accent-dark: #5947d0;  
+
+        --danger: #d95555;  
+
+        --source-bg: rgba(255,255,255,.58);  
+        --source-hover: rgba(255,255,255,.82);  
+
+        --radius: 18px;  
+        --sidebar: 270px;  
+    }  
+
+    html,  
+    body {  
+        width: 100%;  
+        height: 100%;  
+    }  
+
+    body {  
+        font-family:  
+            Inter,  
+            ui-sans-serif,  
+            system-ui,  
+            -apple-system,  
+            BlinkMacSystemFont,  
+            "Segoe UI",  
+            sans-serif;  
+
+        background:  
+            radial-gradient(  
+                circle at 15% 10%,  
+                rgba(255,255,255,.85),  
+                transparent 30%  
+            ),  
+            radial-gradient(  
+                circle at 85% 85%,  
+                rgba(224,216,201,.55),  
+                transparent 32%  
+            ),  
+            var(--bg);  
+
+        color: var(--text);  
+        overflow: hidden;  
+    }  
+
+    button,  
+    textarea,  
+    input {  
+        font: inherit;  
+    }  
+
+    button {  
+        border: 0;  
+        cursor: pointer;  
+    }  
+
+    button:disabled {  
+        cursor: default;  
+    }  
+
+    a {  
+        color: inherit;  
+    }  
+
+    .app {  
+        width: 100%;  
+        height: 100dvh;  
+        display: flex;  
+    }  
+
+    /* =====================================================  
+       SIDEBAR  
+    ===================================================== */  
+
+    .sidebar {  
+        width: var(--sidebar);  
+        height: 100%;  
+        padding: 16px;  
+
+        display: flex;  
+        flex-direction: column;  
+        gap: 14px;  
+
+        background: rgba(255,255,255,.34);  
+        border-right: 1px solid var(--border);  
+
+        backdrop-filter: blur(10px);  
+        -webkit-backdrop-filter: blur(10px);  
+
+        flex-shrink: 0;  
+        z-index: 20;  
+    }  
+
+    .brand {  
+        display: flex;  
+        align-items: center;  
+        gap: 11px;  
+        padding: 8px 6px 14px;  
+    }  
+
+    .brand-logo,  
+    .welcome-logo {  
+        display: grid;  
+        place-items: center;  
+
+        background:  
+            linear-gradient(  
+                145deg,  
+                #fff,  
+                #e8e0d3  
+            );  
+
+        border: 1px solid var(--border-light);  
+
+        color: var(--accent);  
+
+        box-shadow:  
+            0 8px 25px rgba(52,43,31,.08);  
+    }  
+
+    .brand-logo {  
+        width: 38px;  
+        height: 38px;  
+        border-radius: 13px;  
+
+        font-size: 17px;  
+        font-weight: 800;  
+    }  
+
+    .brand-text {  
+        min-width: 0;  
+    }  
+
+    .brand-title {  
+        font-size: 16px;  
+        font-weight: 750;  
+    }  
+
+    .brand-subtitle {  
+        font-size: 11px;  
+        color: var(--muted);  
+        margin-top: 2px;  
+    }  
+
+    .new-chat {  
+        width: 100%;  
+        min-height: 45px;  
+
+        display: flex;  
+        align-items: center;  
+        justify-content: center;  
+        gap: 8px;  
+
+        border-radius: 14px;  
+
+        background: var(--glass-strong);  
+        border: 1px solid var(--border-light);  
+
+        color: var(--text);  
+        font-weight: 650;  
+
+        box-shadow:  
+            0 5px 18px rgba(55,48,39,.06);  
+
+        transition:  
+            transform .15s ease,  
+            background .15s ease;  
+    }  
+
+    .new-chat:hover {  
+        background: rgba(255,255,255,.9);  
+    }  
+
+    .new-chat:active {  
+        transform: scale(.98);  
+    }  
+
+    .history-head {  
+        display: flex;  
+        align-items: center;  
+        justify-content: space-between;  
+        gap: 8px;  
+
+        padding: 8px 5px 2px 7px;  
+    }  
+
+    .history-title {  
+        font-size: 11px;  
+        font-weight: 700;  
+
+        color: var(--muted);  
+
+        text-transform: uppercase;  
+        letter-spacing: .7px;  
+    }  
+
+    .history-close {  
+        width: 28px;  
+        height: 28px;  
+
+        display: grid;  
+        place-items: center;  
+
+        border-radius: 9px;  
+
+        background: rgba(255,255,255,.52);  
+        border: 1px solid var(--border);  
+
+        color: var(--text-soft);  
 
-            color: var(--muted);
-        }
+        font-size: 18px;  
+        line-height: 1;  
 
-        .history-item-wrap {
-            width: 100%;
+        transition:  
+            background .15s ease,  
+            color .15s ease,  
+            transform .15s ease;  
+    }  
+
+    .history-close:hover {  
+        background: rgba(255,255,255,.85);  
+        color: var(--text);  
+    }  
+
+    .history-close:active {  
+        transform: scale(.92);  
+    }  
+
+    .history {  
+        flex: 1;  
+        min-height: 0;  
+
+        overflow-y: auto;  
+        padding-right: 2px;  
+    }  
+
+    .history::-webkit-scrollbar {  
+        width: 4px;  
+    }  
+
+    .history::-webkit-scrollbar-thumb {  
+        background: rgba(70,60,50,.13);  
+        border-radius: 20px;  
+    }  
 
-            display: flex;
-            align-items: center;
-
-            gap: 4px;
-            margin-bottom: 5px;
-        }
-
-        .history-item {
-            flex: 1;
-            min-width: 0;
+    .history-empty {  
+        padding: 12px 8px;  
 
-            display: flex;
-            align-items: center;
+        font-size: 12px;  
+        line-height: 1.5;  
 
-            padding: 10px 11px;
+        color: var(--muted);  
+    }  
 
-            border-radius: 12px;
+    .history-item-wrap {  
+        width: 100%;  
 
-            background: transparent;
-            color: var(--text-soft);
+        display: flex;  
+        align-items: center;  
 
-            text-align: left;
-            font-size: 12px;
+        gap: 4px;  
+        margin-bottom: 5px;  
+    }  
 
-            transition:
-                background .15s ease,
-                color .15s ease;
-        }
+    .history-item {  
+        flex: 1;  
+        min-width: 0;  
 
-        .history-item:hover {
-            background: rgba(255,255,255,.48);
-            color: var(--text);
-        }
+        display: flex;  
+        align-items: center;  
 
-        .history-item.active {
-            background: rgba(255,255,255,.7);
-            color: var(--text);
+        padding: 10px 11px;  
 
-            border: 1px solid rgba(55,48,39,.07);
-        }
+        border-radius: 12px;  
 
-        .history-delete {
-            width: 30px;
-            height: 30px;
+        background: transparent;  
+        color: var(--text-soft);  
 
-            flex-shrink: 0;
+        text-align: left;  
+        font-size: 12px;  
 
-            display: grid;
-            place-items: center;
+        transition:  
+            background .15s ease,  
+            color .15s ease;  
+    }  
 
-            border-radius: 9px;
+    .history-item:hover {  
+        background: rgba(255,255,255,.48);  
+        color: var(--text);  
+    }  
 
-            background: transparent;
-            color: var(--muted);
+    .history-item.active {  
+        background: rgba(255,255,255,.7);  
+        color: var(--text);  
 
-            font-size: 14px;
+        border: 1px solid rgba(55,48,39,.07);  
+    }  
 
-            transition:
-                background .15s ease,
-                color .15s ease;
-        }
+    .history-delete {  
+        width: 30px;  
+        height: 30px;  
 
-        .history-delete:hover {
-            background: rgba(217,85,85,.12);
-            color: var(--danger);
-        }
+        flex-shrink: 0;  
 
-        .sidebar-footer {
-            padding-top: 8px;
-            border-top: 1px solid rgba(55,48,39,.07);
-        }
+        display: grid;  
+        place-items: center;  
 
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 7px;
+        border-radius: 9px;  
 
-            padding: 7px;
+        background: transparent;  
+        color: var(--muted);  
 
-            font-size: 11px;
-            color: var(--muted);
-        }
+        font-size: 14px;  
 
-        .status-dot {
-            width: 7px;
-            height: 7px;
+        transition:  
+            background .15s ease,  
+            color .15s ease;  
+    }  
 
-            border-radius: 50%;
+    .history-delete:hover {  
+        background: rgba(217,85,85,.12);  
+        color: var(--danger);  
+    }  
 
-            background: #54a86a;
+    .sidebar-footer {  
+        padding-top: 8px;  
+        border-top: 1px solid rgba(55,48,39,.07);  
+    }  
 
-            box-shadow:
-                0 0 0 3px rgba(84,168,106,.12);
-        }
+    .status {  
+        display: flex;  
+        align-items: center;  
+        gap: 7px;  
 
-        .hidden {
-            display: none !important;
-        }
+        padding: 7px;  
 
-        /* =====================================================
-           MAIN
-        ===================================================== */
+        font-size: 11px;  
+        color: var(--muted);  
+    }  
 
-        .main {
-            min-width: 0;
-            height: 100%;
+    .status-dot {  
+        width: 7px;  
+        height: 7px;  
 
-            flex: 1;
+        border-radius: 50%;  
 
-            display: flex;
-            flex-direction: column;
+        background: #54a86a;  
 
-            position: relative;
-        }
+        box-shadow:  
+            0 0 0 3px rgba(84,168,106,.12);  
+    }  
 
-        .topbar {
-            min-height: 62px;
-            flex-shrink: 0;
+    .hidden {  
+        display: none !important;  
+    }  
 
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+    /* =====================================================  
+       MAIN  
+    ===================================================== */  
 
-            padding: 0 18px;
+    .main {  
+        min-width: 0;  
+        height: 100%;  
 
-            border-bottom: 1px solid var(--border);
+        flex: 1;  
 
-            background: rgba(255,255,255,.28);
+        display: flex;  
+        flex-direction: column;  
 
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
+        position: relative;  
+    }  
 
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .topbar {  
+        min-height: 62px;  
+        flex-shrink: 0;  
 
-        .mobile-menu {
-            display: none;
+        display: flex;  
+        align-items: center;  
+        justify-content: space-between;  
 
-            place-items: center;
+        padding: 0 18px;  
 
-            width: 36px;
-            height: 36px;
+        border-bottom: 1px solid var(--border);  
 
-            border-radius: 10px;
+        background: rgba(255,255,255,.28);  
 
-            background: rgba(255,255,255,.56);
-            border: 1px solid var(--border);
+        backdrop-filter: blur(8px);  
+        -webkit-backdrop-filter: blur(8px);  
+    }  
 
-            color: var(--text-soft);
+    .topbar-left {  
+        display: flex;  
+        align-items: center;  
+        gap: 10px;  
+    }  
 
-            font-size: 16px;
-        }
+    .mobile-menu {  
+        display: none;  
 
-        .top-title {
-            font-size: 15px;
-            font-weight: 720;
-        }
+        place-items: center;  
 
-        .top-model {
-            font-size: 11px;
-            color: var(--muted);
-            margin-top: 1px;
-        }
+        width: 36px;  
+        height: 36px;  
 
-        /* =====================================================
-           CHAT
-        ===================================================== */
+        border-radius: 10px;  
 
-        .chat-container {
-            flex: 1;
-            min-height: 0;
+        background: rgba(255,255,255,.56);  
+        border: 1px solid var(--border);  
 
-            overflow-y: auto;
+        color: var(--text-soft);  
 
-            padding:
-                34px
-                max(20px, 5vw)
-                180px;
-        }
+        font-size: 16px;  
+    }  
 
-        .chat-container::-webkit-scrollbar {
-            width: 5px;
-        }
+    .top-title {  
+        font-size: 15px;  
+        font-weight: 720;  
+    }  
 
-        .chat-container::-webkit-scrollbar-thumb {
-            background: rgba(60,50,40,.12);
-            border-radius: 20px;
-        }
+    .top-model {  
+        font-size: 11px;  
+        color: var(--muted);  
+        margin-top: 1px;  
+    }  
 
-        /* =====================================================
-           WELCOME
-        ===================================================== */
+    /* =====================================================  
+       CHAT  
+    ===================================================== */  
 
-        .welcome {
-            max-width: 760px;
+    .chat-container {  
+        flex: 1;  
+        min-height: 0;  
 
-            margin: 8vh auto 0;
+        overflow-y: auto;  
 
-            text-align: center;
-        }
+        padding:  
+            34px  
+            max(20px, 5vw)  
+            180px;  
+    }  
 
-        .welcome-logo {
-            width: 64px;
-            height: 64px;
+    .chat-container::-webkit-scrollbar {  
+        width: 5px;  
+    }  
 
-            margin: 0 auto 17px;
+    .chat-container::-webkit-scrollbar-thumb {  
+        background: rgba(60,50,40,.12);  
+        border-radius: 20px;  
+    }  
 
-            border-radius: 21px;
+    /* =====================================================  
+       WELCOME  
+    ===================================================== */  
 
-            font-size: 25px;
-            font-weight: 850;
-        }
+    .welcome {  
+        max-width: 760px;  
 
-        .welcome h1 {
-            font-size: clamp(27px, 5vw, 42px);
+        margin: 8vh auto 0;  
 
-            line-height: 1.1;
+        text-align: center;  
+    }  
 
-            letter-spacing: -1.4px;
-        }
+    .welcome-logo {  
+        width: 64px;  
+        height: 64px;  
 
-        .welcome p {
-            margin: 12px auto 0;
+        margin: 0 auto 17px;  
 
-            max-width: 560px;
+        border-radius: 21px;  
 
-            color: var(--text-soft);
+        font-size: 25px;  
+        font-weight: 850;  
+    }  
 
-            font-size: 14px;
-            line-height: 1.6;
-        }
+    .welcome h1 {  
+        font-size: clamp(27px, 5vw, 42px);  
 
-        .suggestions {
-            display: grid;
+        line-height: 1.1;  
 
-            grid-template-columns:
-                repeat(
-                    2,
-                    minmax(0,1fr)
-                );
+        letter-spacing: -1.4px;  
+    }  
 
-            gap: 10px;
+    .welcome p {  
+        margin: 12px auto 0;  
 
-            max-width: 650px;
+        max-width: 560px;  
 
-            margin: 30px auto 0;
-        }
+        color: var(--text-soft);  
 
-        .suggestion {
-            padding: 15px;
+        font-size: 14px;  
+        line-height: 1.6;  
+    }  
 
-            border-radius: 15px;
+    .suggestions {  
+        display: grid;  
 
-            text-align: left;
+        grid-template-columns:  
+            repeat(  
+                2,  
+                minmax(0,1fr)  
+            );  
 
-            background: var(--glass);
-            border: 1px solid var(--border-light);
+        gap: 10px;  
 
-            color: var(--text-soft);
+        max-width: 650px;  
 
-            font-size: 12px;
-            line-height: 1.45;
+        margin: 30px auto 0;  
+    }  
 
-            box-shadow:
-                0 5px 18px rgba(55,48,39,.045);
+    .suggestion {  
+        padding: 15px;  
 
-            transition:
-                background .15s ease,
-                transform .15s ease;
-        }
+        border-radius: 15px;  
 
-        .suggestion:hover {
-            background: rgba(255,255,255,.78);
-            transform: translateY(-1px);
-        }
+        text-align: left;  
 
-        /* =====================================================
-           MESSAGE
-        ===================================================== */
+        background: var(--glass);  
+        border: 1px solid var(--border-light);  
 
-        .message {
-            max-width: 820px;
+        color: var(--text-soft);  
 
-            margin: 0 auto 20px;
+        font-size: 12px;  
+        line-height: 1.45;  
 
-            display: flex;
+        box-shadow:  
+            0 5px 18px rgba(55,48,39,.045);  
 
-            gap: 10px;
+        transition:  
+            background .15s ease,  
+            transform .15s ease;  
+    }  
 
-            align-items: flex-start;
-        }
+    .suggestion:hover {  
+        background: rgba(255,255,255,.78);  
+        transform: translateY(-1px);  
+    }  
 
-        .message.user {
-            justify-content: flex-end;
-        }
+    /* =====================================================  
+       MESSAGE  
+    ===================================================== */  
 
-        .message-avatar {
-            width: 30px;
-            height: 30px;
+    .message {  
+        max-width: 820px;  
 
-            flex: 0 0 30px;
+        margin: 0 auto 20px;  
 
-            display: grid;
-            place-items: center;
+        display: flex;  
 
-            border-radius: 10px;
+        gap: 10px;  
 
-            background: rgba(255,255,255,.68);
-            border: 1px solid var(--border-light);
+        align-items: flex-start;  
+    }  
 
-            color: var(--accent);
+    .message.user {  
+        justify-content: flex-end;  
+    }  
 
-            font-size: 11px;
-            font-weight: 800;
-        }
+    .message-avatar {  
+        width: 30px;  
+        height: 30px;  
 
-        .message.user .message-avatar {
-            display: none;
-        }
+        flex: 0 0 30px;  
 
-        .message-content {
-            min-width: 0;
+        display: grid;  
+        place-items: center;  
 
-            max-width:
-                min(
-                    760px,
-                    88%
-                );
-        }
+        border-radius: 10px;  
 
-        .message-bubble {
-            padding: 12px 15px;
+        background: rgba(255,255,255,.68);  
+        border: 1px solid var(--border-light);  
 
-            border-radius: 17px;
+        color: var(--accent);  
 
-            font-size: 14px;
-            line-height: 1.65;
+        font-size: 11px;  
+        font-weight: 800;  
+    }  
 
-            overflow-wrap: anywhere;
-        }
+    .message.user .message-avatar {  
+        display: none;  
+    }  
 
-        .message.assistant .message-bubble {
-            background: rgba(255,255,255,.47);
+    .message-content {  
+        min-width: 0;  
 
-            border:
-                1px solid
-                rgba(255,255,255,.68);
+        max-width:  
+            min(  
+                760px,  
+                88%  
+            );  
+    }  
 
-            color: var(--text);
-        }
+    .message-bubble {  
+        padding: 12px 15px;  
 
-        .message.user .message-bubble {
-            background: var(--accent);
-            color: #fff;
+        border-radius: 17px;  
 
-            border-bottom-right-radius: 5px;
+        font-size: 14px;  
+        line-height: 1.65;  
 
-            box-shadow:
-                0 5px 16px rgba(111,92,231,.16);
-        }
+        overflow-wrap: anywhere;  
+    }  
 
-        .message-bubble a {
-            color: var(--accent-dark);
+    .message.assistant .message-bubble {  
+        background: rgba(255,255,255,.47);  
 
-            text-decoration:
-                underline;
+        border:  
+            1px solid  
+            rgba(255,255,255,.68);  
 
-            text-decoration-thickness:
-                1px;
+        color: var(--text);  
+    }  
 
-            text-underline-offset:
-                2px;
-        }
+    .message.user .message-bubble {  
+        background: var(--accent);  
+        color: #fff;  
 
-        .message.user .message-bubble a {
-            color: #fff;
-        }
+        border-bottom-right-radius: 5px;  
 
-        /* =====================================================
-           MESSAGE EDIT
-        ===================================================== */
+        box-shadow:  
+            0 5px 16px rgba(111,92,231,.16);  
+    }  
 
-        .message-actions {
-            display: flex;
+    .message-bubble a {  
+        color: var(--accent-dark);  
 
-            gap: 6px;
+        text-decoration:  
+            underline;  
 
-            margin-top: 4px;
+        text-decoration-thickness:  
+            1px;  
 
-            justify-content: flex-end;
-        }
+        text-underline-offset:  
+            2px;  
+    }  
 
-        .message-edit-btn {
-            background: transparent;
+    .message.user .message-bubble a {  
+        color: #fff;  
+    }  
 
-            color: var(--muted);
+    /* =====================================================  
+       MESSAGE EDIT  
+    ===================================================== */  
 
-            font-size: 11px;
+    .message-actions {  
+        display: flex;  
 
-            padding:
-                2px 6px;
+        gap: 6px;  
 
-            border-radius: 6px;
+        margin-top: 4px;  
 
-            cursor: pointer;
-        }
+        justify-content: flex-end;  
+    }  
 
-        .message-edit-btn:hover {
-            background: rgba(0,0,0,.05);
-            color: var(--text);
-        }
+    .message-edit-btn {  
+        background: transparent;  
 
-        .message.user .message-edit-btn {
-            color: rgba(255,255,255,.8);
-        }
+        color: var(--muted);  
 
-        .message.user .message-edit-btn:hover {
-            background: rgba(255,255,255,.15);
-            color: #fff;
-        }
+        font-size: 11px;  
 
-        /* =====================================================
-           SOURCES
-        ===================================================== */
+        padding:  
+            2px 6px;  
 
-        .sources {
-            margin-top: 11px;
+        border-radius: 6px;  
 
-            display: flex;
-            flex-direction: column;
+        cursor: pointer;  
+    }  
 
-            gap: 7px;
+    .message-edit-btn:hover {  
+        background: rgba(0,0,0,.05);  
+        color: var(--text);  
+    }  
 
-            max-width: 100%;
-        }
+    .message.user .message-edit-btn {  
+        color: rgba(255,255,255,.8);  
+    }  
 
-        .sources-title {
-            display: flex;
-            align-items: center;
-            gap: 7px;
+    .message.user .message-edit-btn:hover {  
+        background: rgba(255,255,255,.15);  
+        color: #fff;  
+    }  
 
-            color: var(--muted);
+    /* =====================================================  
+       SOURCES  
+    ===================================================== */  
 
-            font-size: 10px;
-            font-weight: 750;
+    .sources {  
+        margin-top: 11px;  
 
-            text-transform: uppercase;
-            letter-spacing: .65px;
-        }
+        display: flex;  
+        flex-direction: column;  
 
-        .sources-title-line {
-            height: 1px;
-            flex: 1;
+        gap: 7px;  
 
-            background:
-                rgba(55,48,39,.08);
-        }
+        max-width: 100%;  
+    }  
 
-        .source-list {
-            display: grid;
+    .sources-title {  
+        display: flex;  
+        align-items: center;  
+        gap: 7px;  
 
-            grid-template-columns:
-                repeat(
-                    2,
-                    minmax(0,1fr)
-                );
+        color: var(--muted);  
 
-            gap: 7px;
-        }
+        font-size: 10px;  
+        font-weight: 750;  
 
-        .source-card {
-            min-width: 0;
+        text-transform: uppercase;  
+        letter-spacing: .65px;  
 
-            display: flex;
-            align-items: center;
+        cursor: pointer;  
+        user-select: none;  
+        padding: 4px 0;  
+        border-radius: 6px;  
+        transition: color .15s ease;  
+    }  
 
-            gap: 9px;
+    .sources-title:hover {  
+        color: var(--text-soft);  
+    }  
 
-            padding: 9px 10px;
+    .sources-title-line {  
+        height: 1px;  
+        flex: 1;  
 
-            border-radius: 11px;
+        background:  
+            rgba(55,48,39,.08);  
+    }  
 
-            background: var(--source-bg);
+    .sources-toggle {  
+        font-size: 11px;  
+        line-height: 1;  
+        color: var(--muted);  
+        transition: transform .2s ease;  
+        flex-shrink: 0;  
+    }  
 
-            border:
-                1px solid
-                rgba(55,48,39,.08);
+    .sources.open .sources-toggle {  
+        transform: rotate(180deg);  
+    }  
 
-            color: var(--text);
+    .source-list {  
+        display: none;  
+        grid-template-columns:  
+            repeat(  
+                2,  
+                minmax(0,1fr)  
+            );  
 
-            text-decoration: none;
+        gap: 7px;  
+    }  
 
-            transition:
-                background .15s ease,
-                border-color .15s ease,
-                transform .15s ease;
-        }
+    .sources.open .source-list {  
+        display: grid;  
+    }  
 
-        .source-card:hover {
-            background: var(--source-hover);
+    .source-card {  
+        min-width: 0;  
 
-            border-color:
-                rgba(111,92,231,.18);
+        display: flex;  
+        align-items: center;  
 
-            transform: translateY(-1px);
-        }
+        gap: 9px;  
 
-        .source-icon {
-            width: 27px;
-            height: 27px;
+        padding: 9px 10px;  
 
-            flex:
-                0 0 27px;
+        border-radius: 11px;  
 
-            display: grid;
-            place-items: center;
+        background: var(--source-bg);  
 
-            border-radius: 8px;
+        border:  
+            1px solid  
+            rgba(55,48,39,.08);  
 
-            background:
-                rgba(111,92,231,.10);
+        color: var(--text);  
 
-            color: var(--accent);
+        text-decoration: none;  
 
-            font-size: 11px;
-            font-weight: 800;
-        }
+        transition:  
+            background .15s ease,  
+            border-color .15s ease,  
+            transform .15s ease;  
+    }  
 
-        .source-info {
-            min-width: 0;
-            flex: 1;
-        }
+    .source-card:hover {  
+        background: var(--source-hover);  
 
-        .source-name {
-            display: block;
+        border-color:  
+            rgba(111,92,231,.18);  
 
-            overflow: hidden;
+        transform: translateY(-1px);  
+    }  
 
-            white-space: nowrap;
+    .source-icon {  
+        width: 27px;  
+        height: 27px;  
 
-            text-overflow: ellipsis;
+        flex:  
+            0 0 27px;  
 
-            font-size: 11px;
-            font-weight: 650;
-        }
+        display: grid;  
+        place-items: center;  
 
-        .source-domain {
-            display: block;
+        border-radius: 8px;  
 
-            margin-top: 2px;
+        background:  
+            rgba(111,92,231,.10);  
 
-            overflow: hidden;
+        color: var(--accent);  
 
-            white-space: nowrap;
+        font-size: 11px;  
+        font-weight: 800;  
+    }  
 
-            text-overflow: ellipsis;
+    .source-info {  
+        min-width: 0;  
+        flex: 1;  
+    }  
 
-            color: var(--muted);
+    .source-name {  
+        display: block;  
 
-            font-size: 9px;
-        }
+        overflow: hidden;  
 
-        .source-arrow {
-            color: var(--muted);
+        white-space: nowrap;  
 
-            font-size: 12px;
+        text-overflow: ellipsis;  
 
-            flex-shrink: 0;
-        }
+        font-size: 11px;  
+        font-weight: 650;  
+    }  
 
-        /* =====================================================
-           MATH
-        ===================================================== */
+    .source-domain {  
+        display: block;  
 
-        .math-display {
-            width: 100%;
+        margin-top: 2px;  
 
-            margin: 15px 0;
+        overflow: hidden;  
 
-            padding: 10px 4px;
+        white-space: nowrap;  
 
-            overflow-x: auto;
-            overflow-y: hidden;
+        text-overflow: ellipsis;  
 
-            text-align: center;
+        color: var(--muted);  
 
-            border-radius: 10px;
-        }
+        font-size: 9px;  
+    }  
 
-        .math-inline {
-            display: inline;
-        }
+    .source-arrow {  
+        color: var(--muted);  
 
-        .math-inline mjx-container {
-            display:
-                inline-block !important;
-        }
+        font-size: 12px;  
 
-        .message-bubble mjx-container {
-            color: inherit !important;
-        }
+        flex-shrink: 0;  
+    }  
 
-        .message-bubble
-        mjx-container[display="true"] {
-            margin:
-                12px 0 !important;
+    /* =====================================================  
+       MATH  
+    ===================================================== */  
 
-            max-width: 100%;
+    .math-display {  
+        width: 100%;  
 
-            overflow-x: auto;
-            overflow-y: hidden;
+        margin: 15px 0;  
 
-            padding: 3px 0;
-        }
+        padding: 10px 4px;  
 
-        .message-bubble
-        mjx-container {
-            font-size:
-                103% !important;
-        }
+        overflow-x: auto;  
+        overflow-y: hidden;  
 
-        .message.user mjx-container {
-            color: #fff !important;
-        }
+        text-align: center;  
 
-        /* =====================================================
-           CODE
-        ===================================================== */
+        border-radius: 10px;  
+    }  
 
-        .code-wrapper {
-            width: 100%;
+    .math-inline {  
+        display: inline;  
+    }  
 
-            margin: 13px 0;
+    .math-inline mjx-container {  
+        display:  
+            inline-block !important;  
+    }  
 
-            overflow: hidden;
+    .message-bubble mjx-container {  
+        color: inherit !important;  
+    }  
 
-            border-radius: 13px;
+    .message-bubble  
+    mjx-container[display="true"] {  
+        margin:  
+            12px 0 !important;  
 
-            background: #25231f;
+        max-width: 100%;  
 
-            border:
-                1px solid
-                rgba(255,255,255,.08);
+        overflow-x: auto;  
+        overflow-y: hidden;  
 
-            box-shadow:
-                0 5px 18px
-                rgba(30,27,23,.12);
+        padding: 3px 0;  
+    }  
 
-            text-align: left;
-        }
+    .message-bubble  
+    mjx-container {  
+        font-size:  
+            103% !important;  
+    }  
 
-        .code-header {
-            min-height: 36px;
+    .message.user mjx-container {  
+        color: #fff !important;  
+    }  
 
-            display: flex;
+    /* =====================================================  
+       CODE  
+    ===================================================== */  
 
-            align-items: center;
+    .code-wrapper {  
+        width: 100%;  
 
-            justify-content:
-                space-between;
+        margin: 13px 0;  
 
-            gap: 10px;
+        overflow: hidden;  
 
-            padding:
-                5px 7px
-                5px 12px;
+        border-radius: 13px;  
 
-            background: #2d2a25;
+        background: #25231f;  
 
-            border-bottom:
-                1px solid
-                rgba(255,255,255,.08);
-        }
+        border:  
+            1px solid  
+            rgba(255,255,255,.08);  
 
-        .code-language {
-            min-width: 0;
+        box-shadow:  
+            0 5px 18px  
+            rgba(30,27,23,.12);  
 
-            color:
-                rgba(238,234,226,.62);
+        text-align: left;  
+    }  
 
-            font-family:
-                ui-monospace,
-                SFMono-Regular,
-                Menlo,
-                Monaco,
-                Consolas,
-                monospace;
+    .code-header {  
+        min-height: 36px;  
 
-            font-size: 10px;
+        display: flex;  
 
-            text-transform:
-                lowercase;
+        align-items: center;  
 
-            white-space: nowrap;
+        justify-content:  
+            space-between;  
 
-            overflow: hidden;
+        gap: 10px;  
 
-            text-overflow: ellipsis;
-        }
+        padding:  
+            5px 7px  
+            5px 12px;  
 
-        .copy-code {
-            min-width: 52px;
-            min-height: 27px;
+        background: #2d2a25;  
 
-            display: inline-flex;
+        border-bottom:  
+            1px solid  
+            rgba(255,255,255,.08);  
+    }  
 
-            align-items: center;
-            justify-content: center;
+    .code-language {  
+        min-width: 0;  
 
-            padding: 0 9px;
+        color:  
+            rgba(238,234,226,.62);  
 
-            flex-shrink: 0;
+        font-family:  
+            ui-monospace,  
+            SFMono-Regular,  
+            Menlo,  
+            Monaco,  
+            Consolas,  
+            monospace;  
 
-            border-radius: 7px;
+        font-size: 10px;  
 
-            background:
-                rgba(255,255,255,.09);
+        text-transform:  
+            lowercase;  
 
-            color:
-                rgba(238,234,226,.88);
+        white-space: nowrap;  
 
-            font-size: 10px;
-            font-weight: 650;
-        }
+        overflow: hidden;  
 
-        .copy-code:hover {
-            background:
-                rgba(255,255,255,.16);
+        text-overflow: ellipsis;  
+    }  
 
-            color: #fff;
-        }
+    .copy-code {  
+        min-width: 52px;  
+        min-height: 27px;  
 
-        .copy-code.copied {
-            background:
-                rgba(111,92,231,.35);
+        display: inline-flex;  
 
-            color: #fff;
-        }
+        align-items: center;  
+        justify-content: center;  
 
-        .copy-code.failed {
-            background:
-                rgba(217,85,85,.25);
+        padding: 0 9px;  
 
-            color: #fff;
-        }
+        flex-shrink: 0;  
 
-        .code {
-            display: block;
+        border-radius: 7px;  
 
-            width: 100%;
+        background:  
+            rgba(255,255,255,.09);  
 
-            margin: 0;
+        color:  
+            rgba(238,234,226,.88);  
 
-            padding: 14px;
+        font-size: 10px;  
+        font-weight: 650;  
+    }  
 
-            overflow-x: auto;
+    .copy-code:hover {  
+        background:  
+            rgba(255,255,255,.16);  
 
-            background: #25231f;
-            color: #eeeae2;
+        color: #fff;  
+    }  
 
-            font-family:
-                ui-monospace,
-                SFMono-Regular,
-                Menlo,
-                Monaco,
-                Consolas,
-                monospace;
+    .copy-code.copied {  
+        background:  
+            rgba(111,92,231,.35);  
 
-            font-size: 12px;
+        color: #fff;  
+    }  
 
-            line-height: 1.55;
+    .copy-code.failed {  
+        background:  
+            rgba(217,85,85,.25);  
 
-            white-space: pre;
+        color: #fff;  
+    }  
 
-            tab-size: 4;
-        }
+    .code {  
+        display: block;  
 
-        .inline-code {
-            display: inline;
+        width: 100%;  
 
-            padding: 2px 5px;
+        margin: 0;  
 
-            border-radius: 5px;
+        padding: 14px;  
 
-            background:
-                rgba(80,70,60,.08);
+        overflow-x: auto;  
 
-            font-family:
-                ui-monospace,
-                SFMono-Regular,
-                Menlo,
-                Monaco,
-                Consolas,
-                monospace;
+        background: #25231f;  
+        color: #eeeae2;  
 
-            font-size: .9em;
-        }
+        font-family:  
+            ui-monospace,  
+            SFMono-Regular,  
+            Menlo,  
+            Monaco,  
+            Consolas,  
+            monospace;  
 
-        .message-bubble strong {
-            font-weight: 750;
-        }
+        font-size: 12px;  
 
-        /* =====================================================
-           IMAGE
-        ===================================================== */
+        line-height: 1.55;  
 
-        .message-image {
-            display: block;
+        white-space: pre;  
 
-            width: auto;
+        tab-size: 4;  
+    }  
 
-            max-width:
-                min(
-                    420px,
-                    100%
-                );
+    .inline-code {  
+        display: inline;  
 
-            max-height: 420px;
+        padding: 2px 5px;  
 
-            margin-top: 9px;
+        border-radius: 5px;  
 
-            border-radius: 14px;
+        background:  
+            rgba(80,70,60,.08);  
 
-            border:
-                1px solid
-                rgba(55,48,39,.08);
+        font-family:  
+            ui-monospace,  
+            SFMono-Regular,  
+            Menlo,  
+            Monaco,  
+            Consolas,  
+            monospace;  
 
-            object-fit: contain;
+        font-size: .9em;  
+    }  
 
-            background:
-                rgba(255,255,255,.4);
-        }
+    .message-bubble strong {  
+        font-weight: 750;  
+    }  
 
-        .message-meta {
-            margin-top: 5px;
+    /* =====================================================  
+       IMAGE  
+    ===================================================== */  
 
-            font-size: 10px;
+    .message-image {  
+        display: block;  
 
-            color: var(--muted);
-        }
+        width: auto;  
 
-        .message.user .message-meta {
-            text-align: right;
-        }
+        max-width:  
+            min(  
+                420px,  
+                100%  
+            );  
 
-        /* =====================================================
-           ATTACHMENT
-        ===================================================== */
+        max-height: 420px;  
 
-        .attachment {
-            display: none;
+        margin-top: 9px;  
 
-            position: fixed;
+        border-radius: 14px;  
 
-            left:
-                calc(
-                    var(--sidebar) + 20px
-                );
+        border:  
+            1px solid  
+            rgba(55,48,39,.08);  
 
-            right: 20px;
+        object-fit: contain;  
 
-            bottom: 92px;
+        background:  
+            rgba(255,255,255,.4);  
+    }  
 
-            max-width: 760px;
+    .message-meta {  
+        margin-top: 5px;  
 
-            margin: 0 auto;
+        font-size: 10px;  
 
-            z-index: 15;
-        }
+        color: var(--muted);  
+    }  
 
-        .attachment.show {
-            display: block;
-        }
+    .message.user .message-meta {  
+        text-align: right;  
+    }  
 
-        .attachment-inner {
-            display: flex;
+    /* =====================================================  
+       ATTACHMENT  
+    ===================================================== */  
 
-            align-items: center;
+    .attachment {  
+        display: none;  
 
-            gap: 10px;
+        position: fixed;  
 
-            width: fit-content;
+        left:  
+            calc(  
+                var(--sidebar) + 20px  
+            );  
 
-            max-width: 100%;
+        right: 20px;  
 
-            padding: 8px;
+        bottom: 92px;  
 
-            border-radius: 15px;
+        max-width: 760px;  
 
-            background:
-                rgba(255,255,255,.76);
+        margin: 0 auto;  
 
-            border:
-                1px solid
-                var(--border-light);
+        z-index: 15;  
+    }  
 
-            box-shadow:
-                0 10px 30px
-                rgba(55,48,39,.12);
+    .attachment.show {  
+        display: block;  
+    }  
 
-            backdrop-filter:
-                blur(10px);
+    .attachment-inner {  
+        display: flex;  
 
-            -webkit-backdrop-filter:
-                blur(10px);
-        }
+        align-items: center;  
 
-        .attachment-image {
-            width: 52px;
-            height: 52px;
+        gap: 10px;  
 
-            object-fit: cover;
+        width: fit-content;  
 
-            border-radius: 10px;
-        }
+        max-width: 100%;  
 
-        .attachment-info {
-            min-width: 0;
-            max-width: 220px;
-        }
+        padding: 8px;  
 
-        .attachment-name {
-            font-size: 12px;
-            font-weight: 650;
+        border-radius: 15px;  
 
-            white-space: nowrap;
+        background:  
+            rgba(255,255,255,.76);  
 
-            overflow: hidden;
+        border:  
+            1px solid  
+            var(--border-light);  
 
-            text-overflow: ellipsis;
-        }
+        box-shadow:  
+            0 10px 30px  
+            rgba(55,48,39,.12);  
 
-        .attachment-mode {
-            margin-top: 3px;
+        backdrop-filter:  
+            blur(10px);  
 
-            font-size: 10px;
+        -webkit-backdrop-filter:  
+            blur(10px);  
+    }  
 
-            color: var(--muted);
-        }
+    .attachment-image {  
+        width: 52px;  
+        height: 52px;  
 
-        .attachment-remove {
-            width: 30px;
-            height: 30px;
+        object-fit: cover;  
 
-            border-radius: 9px;
+        border-radius: 10px;  
+    }  
 
-            background:
-                rgba(217,85,85,.09);
+    .attachment-info {  
+        min-width: 0;  
+        max-width: 220px;  
+    }  
 
-            color: var(--danger);
+    .attachment-name {  
+        font-size: 12px;  
+        font-weight: 650;  
 
-            font-size: 17px;
-        }
+        white-space: nowrap;  
 
-        /* =====================================================
-           COMPOSER
-        ===================================================== */
+        overflow: hidden;  
 
-        .composer-area {
-            position: absolute;
+        text-overflow: ellipsis;  
+    }  
 
-            left: 0;
-            right: 0;
-            bottom: 0;
+    .attachment-mode {  
+        margin-top: 3px;  
 
-            padding:
-                14px
-                max(18px, 4vw)
-                calc(
-                    14px +
-                    env(safe-area-inset-bottom)
-                );
+        font-size: 10px;  
 
-            pointer-events: none;
-        }
+        color: var(--muted);  
+    }  
 
-        .composer {
-            width:
-                min(
-                    820px,
-                    100%
-                );
+    .attachment-remove {  
+        width: 30px;  
+        height: 30px;  
 
-            margin: 0 auto;
+        border-radius: 9px;  
 
-            display: flex;
+        background:  
+            rgba(217,85,85,.09);  
 
-            align-items: flex-end;
+        color: var(--danger);  
 
-            gap: 8px;
+        font-size: 17px;  
+    }  
 
-            padding: 8px;
+    /* =====================================================  
+       COMPOSER  
+    ===================================================== */  
 
-            border-radius: 18px;
+    .composer-area {  
+        position: absolute;  
 
-            background:
-                rgba(255,255,255,.74);
+        left: 0;  
+        right: 0;  
+        bottom: 0;  
 
-            border:
-                1px solid
-                var(--border-light);
+        padding:  
+            14px  
+            max(18px, 4vw)  
+            calc(  
+                14px +  
+                env(safe-area-inset-bottom)  
+            );  
 
-            box-shadow:
-                0 10px 35px
-                rgba(55,48,39,.11);
+        pointer-events: none;  
+    }  
 
-            backdrop-filter:
-                blur(10px);
+    .composer {  
+        width:  
+            min(  
+                820px,  
+                100%  
+            );  
 
-            -webkit-backdrop-filter:
-                blur(10px);
+        margin: 0 auto;  
 
-            pointer-events: auto;
-        }
+        display: flex;  
 
-        .composer-button {
-            width: 40px;
-            height: 40px;
+        align-items: flex-end;  
 
-            flex:
-                0 0 40px;
+        gap: 8px;  
 
-            display: grid;
-            place-items: center;
+        padding: 8px;  
 
-            border-radius: 12px;
+        border-radius: 18px;  
 
-            background:
-                rgba(245,241,234,.8);
+        background:  
+            rgba(255,255,255,.74);  
 
-            border:
-                1px solid
-                rgba(55,48,39,.07);
+        border:  
+            1px solid  
+            var(--border-light);  
 
-            color: var(--text-soft);
+        box-shadow:  
+            0 10px 35px  
+            rgba(55,48,39,.11);  
 
-            font-size: 18px;
-        }
+        backdrop-filter:  
+            blur(10px);  
 
-        .composer-button.active {
-            background:
-                rgba(111,92,231,.12);
+        -webkit-backdrop-filter:  
+            blur(10px);  
 
-            color: var(--accent);
-        }
+        pointer-events: auto;  
+    }  
 
-        .composer-center {
-            min-width: 0;
-            flex: 1;
-        }
+    .composer-button {  
+        width: 40px;  
+        height: 40px;  
 
-        .mode-row {
-            display: none;
+        flex:  
+            0 0 40px;  
 
-            gap: 6px;
+        display: grid;  
+        place-items: center;  
 
-            margin: 0 0 6px;
-        }
+        border-radius: 12px;  
 
-        .mode-row.show {
-            display: flex;
-        }
+        background:  
+            rgba(245,241,234,.8);  
 
-        .mode-button {
-            padding: 5px 9px;
+        border:  
+            1px solid  
+            rgba(55,48,39,.07);  
 
-            border-radius: 8px;
+        color: var(--text-soft);  
 
-            background:
-                rgba(80,70,60,.06);
+        font-size: 18px;  
+    }  
 
-            color: var(--text-soft);
+    .composer-button.active {  
+        background:  
+            rgba(111,92,231,.12);  
 
-            font-size: 10px;
-            font-weight: 650;
-        }
+        color: var(--accent);  
+    }  
 
-        .mode-button.active {
-            background:
-                rgba(111,92,231,.12);
+    .composer-center {  
+        min-width: 0;  
+        flex: 1;  
+    }  
 
-            color: var(--accent);
-        }
+    .mode-row {  
+        display: none;  
 
-        textarea {
-            width: 100%;
+        gap: 6px;  
 
-            min-height: 40px;
-            max-height: 140px;
+        margin: 0 0 6px;  
+    }  
 
-            resize: none;
+    .mode-row.show {  
+        display: flex;  
+    }  
 
-            border: 0;
-            outline: 0;
+    .mode-button {  
+        padding: 5px 9px;  
 
-            background: transparent;
-            color: var(--text);
+        border-radius: 8px;  
 
-            padding: 9px 3px;
+        background:  
+            rgba(80,70,60,.06);  
 
-            font-size: 14px;
-            line-height: 1.45;
-        }
+        color: var(--text-soft);  
 
-        textarea::placeholder {
-            color: #9a948a;
-        }
+        font-size: 10px;  
+        font-weight: 650;  
+    }  
 
-        .send-button {
-            width: 40px;
-            height: 40px;
+    .mode-button.active {  
+        background:  
+            rgba(111,92,231,.12);  
 
-            flex:
-                0 0 40px;
+        color: var(--accent);  
+    }  
 
-            display: grid;
-            place-items: center;
+    textarea {  
+        width: 100%;  
 
-            border-radius: 12px;
+        min-height: 40px;  
+        max-height: 140px;  
 
-            background: var(--accent);
-            color: #fff;
+        resize: none;  
 
-            font-size: 16px;
-        }
+        border: 0;  
+        outline: 0;  
 
-        .send-button:hover {
-            background:
-                var(--accent-dark);
-        }
+        background: transparent;  
+        color: var(--text);  
 
-        .send-button:disabled {
-            opacity: .45;
-            cursor: default;
-        }
+        padding: 9px 3px;  
 
-        .composer-hint {
-            width:
-                min(
-                    820px,
-                    100%
-                );
+        font-size: 14px;  
+        line-height: 1.45;  
+    }  
 
-            margin: 7px auto 0;
+    textarea::placeholder {  
+        color: #9a948a;  
+    }  
 
-            text-align: center;
+    .send-button {  
+        width: 40px;  
+        height: 40px;  
 
-            font-size: 9px;
+        flex:  
+            0 0 40px;  
 
-            color:
-                rgba(98,94,86,.7);
+        display: grid;  
+        place-items: center;  
 
-            pointer-events: auto;
-        }
+        border-radius: 12px;  
 
-        #fileInput {
-            display: none;
-        }
+        background: var(--accent);  
+        color: #fff;  
 
-        /* =====================================================
-           TYPING
-        ===================================================== */
+        font-size: 16px;  
+    }  
 
-        .typing {
-            display: none;
+    .send-button:hover {  
+        background:  
+            var(--accent-dark);  
+    }  
 
-            max-width: 820px;
+    .send-button:disabled {  
+        opacity: .45;  
+        cursor: default;  
+    }  
 
-            margin: 0 auto 18px;
+    .composer-hint {  
+        width:  
+            min(  
+                820px,  
+                100%  
+            );  
 
-            align-items: center;
+        margin: 7px auto 0;  
 
-            gap: 9px;
-        }
+        text-align: center;  
 
-        .typing.show {
-            display: flex;
-        }
+        font-size: 9px;  
 
-        .typing-avatar {
-            width: 30px;
-            height: 30px;
+        color:  
+            rgba(98,94,86,.7);  
 
-            display: grid;
-            place-items: center;
+        pointer-events: auto;  
+    }  
 
-            border-radius: 10px;
+    #fileInput {  
+        display: none;  
+    }  
 
-            background:
-                rgba(255,255,255,.68);
+    /* =====================================================  
+       TYPING  
+    ===================================================== */  
 
-            border:
-                1px solid
-                var(--border-light);
+    .typing {  
+        display: none;  
 
-            color: var(--accent);
+        max-width: 820px;  
 
-            font-size: 10px;
-            font-weight: 800;
-        }
+        margin: 0 auto 18px;  
 
-        .typing-dots {
-            display: flex;
-            gap: 4px;
-        }
+        align-items: center;  
 
-        .typing-dots span {
-            width: 5px;
-            height: 5px;
+        gap: 9px;  
+    }  
 
-            border-radius: 50%;
+    .typing.show {  
+        display: flex;  
+    }  
 
-            background: #8d877d;
+    .typing-avatar {  
+        width: 30px;  
+        height: 30px;  
 
-            animation:
-                typing
-                1s infinite
-                ease-in-out;
-        }
+        display: grid;  
+        place-items: center;  
 
-        .typing-dots span:nth-child(2) {
-            animation-delay: .12s;
-        }
+        border-radius: 10px;  
 
-        .typing-dots span:nth-child(3) {
-            animation-delay: .24s;
-        }
+        background:  
+            rgba(255,255,255,.68);  
 
-        @keyframes typing {
-            0%,60%,100% {
-                transform:
-                    translateY(0);
+        border:  
+            1px solid  
+            var(--border-light);  
 
-                opacity: .4;
-            }
+        color: var(--accent);  
 
-            30% {
-                transform:
-                    translateY(-3px);
+        font-size: 10px;  
+        font-weight: 800;  
+    }  
 
-                opacity: 1;
-            }
-        }
+    .typing-dots {  
+        display: flex;  
+        gap: 4px;  
+    }  
 
-        /* =====================================================
-           MOBILE
-        ===================================================== */
+    .typing-dots span {  
+        width: 5px;  
+        height: 5px;  
 
-        @media (max-width: 720px) {
+        border-radius: 50%;  
 
-            .sidebar {
-                position: fixed;
+        background: #8d877d;  
 
-                left: 0;
-                top: 0;
-                bottom: 0;
+        animation:  
+            typing  
+            1s infinite  
+            ease-in-out;  
+    }  
 
-                transform:
-                    translateX(-100%);
+    .typing-dots span:nth-child(2) {  
+        animation-delay: .12s;  
+    }  
 
-                transition:
-                    transform .18s ease;
+    .typing-dots span:nth-child(3) {  
+        animation-delay: .24s;  
+    }  
 
-                background:
-                    rgba(250,247,241,.94);
+    @keyframes typing {  
+        0%,60%,100% {  
+            transform:  
+                translateY(0);  
 
-                box-shadow:
-                    8px 0 30px
-                    rgba(40,35,30,.08);
-            }
+            opacity: .4;  
+        }  
 
-            .sidebar.open {
-                transform:
-                    translateX(0);
-            }
+        30% {  
+            transform:  
+                translateY(-3px);  
 
-            .mobile-menu {
-                display: grid;
-            }
+            opacity: 1;  
+        }  
+    }  
 
-            .topbar {
-                min-height: 58px;
+    /* =====================================================  
+       MOBILE  
+    ===================================================== */  
 
-                padding:
-                    0 12px;
-            }
+    @media (max-width: 720px) {  
 
-            .chat-container {
-                padding:
-                    22px
-                    13px
-                    165px;
-            }
+        .sidebar {  
+            position: fixed;  
 
-            .welcome {
-                margin-top: 7vh;
-            }
+            left: 0;  
+            top: 0;  
+            bottom: 0;  
 
-            .welcome h1 {
-                font-size: 30px;
-            }
+            transform:  
+                translateX(-100%);  
 
-            .suggestions {
-                grid-template-columns: 1fr;
+            transition:  
+                transform .18s ease;  
 
-                margin-top: 24px;
-            }
+            background:  
+                rgba(250,247,241,.94);  
 
-            .message-content {
-                max-width: 91%;
-            }
+            box-shadow:  
+                8px 0 30px  
+                rgba(40,35,30,.08);  
+        }  
 
-            .attachment {
-                left: 12px;
-                right: 12px;
+        .sidebar.open {  
+            transform:  
+                translateX(0);  
+        }  
 
-                bottom: 91px;
-            }
+        .mobile-menu {  
+            display: grid;  
+        }  
 
-            .composer-area {
-                padding:
-                    10px
-                    10px
-                    calc(
-                        10px +
-                        env(
-                            safe-area-inset-bottom
-                        )
-                    );
-            }
+        .topbar {  
+            min-height: 58px;  
 
-            .composer {
-                border-radius: 16px;
-            }
+            padding:  
+                0 12px;  
+        }  
 
-            .composer-hint {
-                display: none;
-            }
+        .chat-container {  
+            padding:  
+                22px  
+                13px  
+                165px;  
+        }  
 
-            .code {
-                font-size: 11px;
-                padding: 12px;
-            }
+        .welcome {  
+            margin-top: 7vh;  
+        }  
 
-            .message-bubble
-            mjx-container {
-                font-size:
-                    96% !important;
-            }
+        .welcome h1 {  
+            font-size: 30px;  
+        }  
 
-            .history-close {
-                width: 32px;
-                height: 32px;
-            }
+        .suggestions {  
+            grid-template-columns: 1fr;  
 
-            .source-list {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
+            margin-top: 24px;  
+        }  
 
-<body>
+        .message-content {  
+            max-width: 91%;  
+        }  
 
-<div class="app">
+        .attachment {  
+            left: 12px;  
+            right: 12px;  
 
-    <!-- =====================================================
-         SIDEBAR
-    ====================================================== -->
+            bottom: 91px;  
+        }  
 
-    <aside
-        class="sidebar"
-        id="sidebar"
-    >
+        .composer-area {  
+            padding:  
+                10px  
+                10px  
+                calc(  
+                    10px +  
+                    env(  
+                        safe-area-inset-bottom  
+                    )  
+                );  
+        }  
 
-        <div class="brand">
+        .composer {  
+            border-radius: 16px;  
+        }  
 
-            <div class="brand-logo">
-                P
-            </div>
+        .composer-hint {  
+            display: none;  
+        }  
 
-            <div class="brand-text">
+        .code {  
+            font-size: 11px;  
+            padding: 12px;  
+        }  
 
-                <div class="brand-title">
-                    Pingu
-                </div>
+        .message-bubble  
+        mjx-container {  
+            font-size:  
+                96% !important;  
+        }  
 
-                <div class="brand-subtitle">
-                    Asisten Digital
-                </div>
+        .history-close {  
+            width: 32px;  
+            height: 32px;  
+        }  
 
-            </div>
+        .source-list {  
+            grid-template-columns: 1fr;  
+        }  
+    }  
+</style>
 
-        </div>
+</head>  <body>  <div class="app">  <!-- =====================================================  
+     SIDEBAR  
+====================================================== -->  
 
-        <button
-            class="new-chat"
-            id="newChatButton"
-            type="button"
-        >
-            <span>＋</span>
-            <span>New chat</span>
-        </button>
+<aside  
+    class="sidebar"  
+    id="sidebar"  
+>  
 
-        <div class="history-head">
+    <div class="brand">  
 
-            <div class="history-title">
-                Riwayat
-            </div>
+        <div class="brand-logo">  
+            P  
+        </div>  
 
-            <button
-                class="history-close"
-                id="historyClose"
-                type="button"
-                aria-label="Kembali"
-                title="Kembali"
-            >
-                ×
-            </button>
+        <div class="brand-text">  
 
-        </div>
+            <div class="brand-title">  
+                Pingu  
+            </div>  
 
-        <div
-            class="history"
-            id="history"
-        ></div>
+            <div class="brand-subtitle">  
+                Asisten Digital  
+            </div>  
 
-        <div class="sidebar-footer">
+        </div>  
 
-            <div class="status">
+    </div>  
 
-                <span class="status-dot"></span>
+    <button  
+        class="new-chat"  
+        id="newChatButton"  
+        type="button"  
+    >  
+        <span>＋</span>  
+        <span>New chat</span>  
+    </button>  
 
-                <span id="statusText">
-                    Online / Google AI
-                </span>
+    <div class="history-head">  
 
-            </div>
+        <div class="history-title">  
+            Riwayat  
+        </div>  
 
-        </div>
+        <button  
+            class="history-close"  
+            id="historyClose"  
+            type="button"  
+            aria-label="Kembali"  
+            title="Kembali"  
+        >  
+            ×  
+        </button>  
 
-    </aside>
+    </div>  
 
+    <div  
+        class="history"  
+        id="history"  
+    ></div>  
 
-    <!-- =====================================================
-         MAIN
-    ====================================================== -->
+    <div class="sidebar-footer">  
 
-    <main class="main">
+        <div class="status">  
 
-        <header class="topbar">
+            <span class="status-dot"></span>  
 
-            <div class="topbar-left">
+            <span id="statusText">  
+                Online / AI  
+            </span>  
 
-                <button
-                    class="mobile-menu"
-                    id="mobileMenu"
-                    type="button"
-                    aria-label="Menu"
-                >
-                    ☰
-                </button>
+        </div>  
 
-                <div>
+    </div>  
 
-                    <div class="top-title">
-                        Pingu
-                    </div>
+</aside>  
 
-                    <div
-                        class="top-model"
-                        id="modelLabel"
-                    >
-                        Pingu AI
-                    </div>
 
-                </div>
+<!-- =====================================================  
+     MAIN  
+====================================================== -->  
 
-            </div>
+<main class="main">  
 
-        </header>
+    <header class="topbar">  
 
+        <div class="topbar-left">  
 
-        <!-- =================================================
-             CHAT
-        ================================================== -->
+            <button  
+                class="mobile-menu"  
+                id="mobileMenu"  
+                type="button"  
+                aria-label="Menu"  
+            >  
+                ☰  
+            </button>  
 
-        <section
-            class="chat-container"
-            id="chatContainer"
-        >
+            <div>  
 
-            <div
-                class="welcome"
-                id="welcome"
-            >
+                <div class="top-title">  
+                    Pingu  
+                </div>  
 
-                <div class="welcome-logo">
-                    P
-                </div>
+                <div  
+                    class="top-model"  
+                    id="modelLabel"  
+                >  
+                    Pingu AI  
+                </div>  
 
-                <h1>
-                    Halo, saya Pingu.
-                </h1>
+            </div>  
 
-                <p>
-                    Tanyakan apa saja, kirim gambar,
-                    atau gunakan Pingu untuk menganalisis
-                    dan mengedit gambar.
-                </p>
+        </div>  
 
-                <div class="suggestions">
+    </header>  
 
-                    <button
-                        class="suggestion"
-                        type="button"
-                        data-prompt="Jelaskan apa yang bisa kamu lakukan."
-                    >
-                        Apa yang bisa kamu lakukan?
-                    </button>
 
-                    <button
-                        class="suggestion"
-                        type="button"
-                        data-prompt="Bantu saya membuat sebuah website modern."
-                    >
-                        Bantu membuat website
-                    </button>
+    <!-- =================================================  
+         CHAT  
+    ================================================== -->  
 
-                    <button
-                        class="suggestion"
-                        type="button"
-                        data-prompt="Jelaskan cara kerja kecerdasan buatan dengan sederhana."
-                    >
-                        Jelaskan AI dengan sederhana
-                    </button>
+    <section  
+        class="chat-container"  
+        id="chatContainer"  
+    >  
 
-                    <button
-                        class="suggestion"
-                        type="button"
-                        data-prompt="Bantu saya memperbaiki kode JavaScript."
-                    >
-                        Bantu perbaiki kode
-                    </button>
+        <div  
+            class="welcome"  
+            id="welcome"  
+        >  
 
-                </div>
+            <div class="welcome-logo">  
+                P  
+            </div>  
 
-            </div>
+            <h1>  
+                Halo, saya Pingu.  
+            </h1>  
 
-            <div id="messages"></div>
+            <p>  
+                Tanyakan apa saja, kirim gambar,  
+                atau gunakan Pingu untuk menganalisis  
+                dan mengedit gambar.  
+            </p>  
 
-            <div
-                class="typing"
-                id="typing"
-            >
+            <div class="suggestions">  
 
-                <div class="typing-avatar">
-                    P
-                </div>
+                <button  
+                    class="suggestion"  
+                    type="button"  
+                    data-prompt="Jelaskan apa yang bisa kamu lakukan."  
+                >  
+                    Apa yang bisa kamu lakukan?  
+                </button>  
 
-                <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
+                <button  
+                    class="suggestion"  
+                    type="button"  
+                    data-prompt="Bantu saya membuat sebuah website modern."  
+                >  
+                    Bantu membuat website  
+                </button>  
 
-            </div>
+                <button  
+                    class="suggestion"  
+                    type="button"  
+                    data-prompt="Jelaskan cara kerja kecerdasan buatan dengan sederhana."  
+                >  
+                    Jelaskan AI dengan sederhana  
+                </button>  
 
-        </section>
+                <button  
+                    class="suggestion"  
+                    type="button"  
+                    data-prompt="Bantu saya memperbaiki kode JavaScript."  
+                >  
+                    Bantu perbaiki kode  
+                </button>  
 
+            </div>  
 
-        <!-- =================================================
-             ATTACHMENT
-        ================================================== -->
+        </div>  
 
-        <div
-            class="attachment"
-            id="attachment"
-        >
+        <div id="messages"></div>  
 
-            <div class="attachment-inner">
+        <div  
+            class="typing"  
+            id="typing"  
+        >  
 
-                <img
-                    class="attachment-image"
-                    id="attachmentImage"
-                    alt="Preview gambar"
-                >
+            <div class="typing-avatar">  
+                P  
+            </div>  
 
-                <div class="attachment-info">
+            <div class="typing-dots">  
+                <span></span>  
+                <span></span>  
+                <span></span>  
+            </div>  
 
-                    <div
-                        class="attachment-name"
-                        id="attachmentName"
-                    >
-                        image
-                    </div>
+        </div>  
 
-                    <div
-                        class="attachment-mode"
-                        id="attachmentMode"
-                    >
-                        Analisis gambar
-                    </div>
+    </section>  
 
-                </div>
 
-                <button
-                    class="attachment-remove"
-                    id="removeAttachment"
-                    type="button"
-                >
-                    ×
-                </button>
+    <!-- =================================================  
+         ATTACHMENT  
+    ================================================== -->  
 
-            </div>
+    <div  
+        class="attachment"  
+        id="attachment"  
+    >  
 
-        </div>
+        <div class="attachment-inner">  
 
+            <img  
+                class="attachment-image"  
+                id="attachmentImage"  
+                alt="Preview gambar"  
+            >  
 
-        <!-- =================================================
-             COMPOSER
-        ================================================== -->
+            <div class="attachment-info">  
 
-        <div class="composer-area">
+                <div  
+                    class="attachment-name"  
+                    id="attachmentName"  
+                >  
+                    image  
+                </div>  
 
-            <form
-                class="composer"
-                id="composer"
-            >
+                <div  
+                    class="attachment-mode"  
+                    id="attachmentMode"  
+                >  
+                    Analisis gambar  
+                </div>  
 
-                <button
-                    class="composer-button"
-                    id="imageButton"
-                    type="button"
-                    aria-label="Kirim gambar"
-                >
-                    +
-                </button>
+            </div>  
 
-                <input
-                    id="fileInput"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif"
-                >
+            <button  
+                class="attachment-remove"  
+                id="removeAttachment"  
+                type="button"  
+            >  
+                ×  
+            </button>  
 
-                <div class="composer-center">
+        </div>  
 
-                    <div
-                        class="mode-row"
-                        id="modeRow"
-                    >
+    </div>  
 
-                        <button
-                            class="mode-button active"
-                            id="chatMode"
-                            type="button"
-                        >
-                            Analisis
-                        </button>
 
-                        <button
-                            class="mode-button"
-                            id="imageMode"
-                            type="button"
-                        >
-                            Edit / Buat
-                        </button>
+    <!-- =================================================  
+         COMPOSER  
+    ================================================== -->  
 
-                    </div>
+    <div class="composer-area">  
 
-                    <textarea
-                        id="messageInput"
-                        rows="1"
-                        maxlength="12000"
-                        placeholder="Tulis pesan..."
-                    ></textarea>
+        <form  
+            class="composer"  
+            id="composer"  
+        >  
 
-                </div>
+            <button  
+                class="composer-button"  
+                id="imageButton"  
+                type="button"  
+                aria-label="Kirim gambar"  
+            >  
+                +  
+            </button>  
 
-                <button
-                    class="send-button"
-                    id="sendButton"
-                    type="submit"
-                >
-                    ↑
-                </button>
+            <input  
+                id="fileInput"  
+                type="file"  
+                accept="image/png,image/jpeg,image/webp,image/gif"  
+            >  
 
-            </form>
+            <div class="composer-center">  
 
-            <div class="composer-hint">
-                Pingu dapat membaca gambar dan menampilkan sumber informasi.
-            </div>
+                <div  
+                    class="mode-row"  
+                    id="modeRow"  
+                >  
 
-        </div>
+                    <button  
+                        class="mode-button active"  
+                        id="chatMode"  
+                        type="button"  
+                    >  
+                        Analisis  
+                    </button>  
 
-    </main>
+                    <button  
+                        class="mode-button"  
+                        id="imageMode"  
+                        type="button"  
+                    >  
+                        Edit / Buat  
+                    </button>  
 
-</div>
+                </div>  
 
+                <textarea  
+                    id="messageInput"  
+                    rows="1"  
+                    maxlength="12000"  
+                    placeholder="Tulis pesan..."  
+                ></textarea>  
 
-<script type="module">
+            </div>  
 
-/* =========================================================
-   SYSTEM PROMPT
-========================================================= */
+            <button  
+                class="send-button"  
+                id="sendButton"  
+                type="submit"  
+            >  
+                ↑  
+            </button>  
 
-const CREATOR_SYSTEM_PROMPT =
-"Kamu adalah Pingu AI, sebuah kecerdasan buatan mandiri yang dikembangkan dan diciptakan sepenuhnya oleh Hoidir sebagai pembuat utama. Jika pengguna bertanya siapa yang membuatmu, siapa penciptamu, atau siapa pembuat script ini, jawab bahwa kamu diciptakan dan dikembangkan oleh Hoidir. Jika pengguna meminta sumber, referensi, website resmi, atau link, berikan URL yang benar-benar relevan jika kamu mengetahuinya. Jangan membuat-buat URL. Jika tidak mengetahui URL yang benar, katakan bahwa kamu tidak dapat memverifikasinya. Jika API menyediakan kemampuan pencarian atau sumber eksternal, gunakan sumber tersebut dan tampilkan referensinya.";
+        </form>  
 
+        <div class="composer-hint">  
+            Pingu dapat membaca gambar dan menampilkan sumber informasi.  
+        </div>  
 
-/* =========================================================
-   ELEMENTS
-========================================================= */
+    </div>  
 
-const $ = id =>
-    document.getElementById(id);
+</main>
 
-const elements = {
-
-    sidebar:
-        $("sidebar"),
-
-    mobileMenu:
-        $("mobileMenu"),
-
-    historyClose:
-        $("historyClose"),
-
-    newChatButton:
-        $("newChatButton"),
-
-    history:
-        $("history"),
-
-    welcome:
-        $("welcome"),
-
-    messages:
-        $("messages"),
-
-    chatContainer:
-        $("chatContainer"),
-
-    typing:
-        $("typing"),
-
-    composer:
-        $("composer"),
-
-    messageInput:
-        $("messageInput"),
-
-    sendButton:
-        $("sendButton"),
-
-    imageButton:
-        $("imageButton"),
-
-    fileInput:
-        $("fileInput"),
-
-    attachment:
-        $("attachment"),
-
-    attachmentImage:
-        $("attachmentImage"),
-
-    attachmentName:
-        $("attachmentName"),
-
-    attachmentMode:
-        $("attachmentMode"),
-
-    removeAttachment:
-        $("removeAttachment"),
-
-    modeRow:
-        $("modeRow"),
-
-    chatMode:
-        $("chatMode"),
-
-    imageMode:
-        $("imageMode"),
-
-    modelLabel:
-        $("modelLabel"),
-
-    statusText:
-        $("statusText")
+</div>  <script type="module">  
+  
+/* =========================================================  
+   SYSTEM PROMPT  
+========================================================= */  
+  
+const CREATOR_SYSTEM_PROMPT =  
+"Kamu adalah Pingu AI, sebuah kecerdasan buatan mandiri yang dikembangkan dan diciptakan sepenuhnya oleh Hoidir sebagai pembuat utama. Jika pengguna bertanya siapa yang membuatmu, siapa penciptamu, atau siapa pembuat script ini, jawab bahwa kamu diciptakan dan dikembangkan oleh Hoidir. Jika pengguna meminta sumber, referensi, website resmi, atau link, berikan URL yang benar-benar relevan jika kamu mengetahuinya. Jangan membuat-buat URL. Jika tidak mengetahui URL yang benar, katakan bahwa kamu tidak dapat memverifikasinya. Jika API menyediakan kemampuan pencarian atau sumber eksternal, gunakan sumber tersebut dan tampilkan referensinya.";  
+  
+  
+/* =========================================================  
+   ELEMENTS  
+========================================================= */  
+  
+const $ = id =>  
+    document.getElementById(id);  
+  
+const elements = {  
+  
+    sidebar:  
+        $("sidebar"),  
+  
+    mobileMenu:  
+        $("mobileMenu"),  
+  
+    historyClose:  
+        $("historyClose"),  
+  
+    newChatButton:  
+        $("newChatButton"),  
+  
+    history:  
+        $("history"),  
+  
+    welcome:  
+        $("welcome"),  
+  
+    messages:  
+        $("messages"),  
+  
+    chatContainer:  
+        $("chatContainer"),  
+  
+    typing:  
+        $("typing"),  
+  
+    composer:  
+        $("composer"),  
+  
+    messageInput:  
+        $("messageInput"),  
+  
+    sendButton:  
+        $("sendButton"),  
+  
+    imageButton:  
+        $("imageButton"),  
+  
+    fileInput:  
+        $("fileInput"),  
+  
+    attachment:  
+        $("attachment"),  
+  
+    attachmentImage:  
+        $("attachmentImage"),  
+  
+    attachmentName:  
+        $("attachmentName"),  
+  
+    attachmentMode:  
+        $("attachmentMode"),  
+  
+    removeAttachment:  
+        $("removeAttachment"),  
+  
+    modeRow:  
+        $("modeRow"),  
+  
+    chatMode:  
+        $("chatMode"),  
+  
+    imageMode:  
+        $("imageMode"),  
+  
+    modelLabel:  
+        $("modelLabel"),  
+  
+    statusText:  
+        $("statusText")  
+};  
+  
+  
+/* =========================================================  
+   CONSTANTS  
+========================================================= */  
+  
+const STORAGE_KEY =  
+    "pingu_ai_chats_v2";  
+  
+const ACTIVE_CHAT_KEY =  
+    "pingu_ai_active_chat_v2";  
+  
+  
+/* =========================================================  
+   STATE  
+========================================================= */  
+  
+let chats = [];  
+  
+let currentChatId =  
+    null;  
+  
+let attachedImage =  
+    null;  
+  
+let attachedImagePreview =  
+    null;  
+  
+let currentMode =  
+    "chat";  
+  
+let isSending =  
+    false;  
+  
+  
+/* =========================================================  
+   ID  
+========================================================= */  
+  
+function makeId() {  
+  
+    if (  
+        typeof crypto !==  
+            "undefined" &&  
+        typeof crypto.randomUUID ===  
+            "function"  
+    ) {  
+  
+        return crypto.randomUUID();  
+    }  
+  
+    return (  
+        Date.now().toString(36) +  
+        Math.random()  
+            .toString(36)  
+            .slice(2)  
+    );  
+}  
+  
+  
+/* =========================================================  
+   LOCAL STORAGE  
+========================================================= */  
+  
+function normalizeSources(sources) {  
+  
+    if (!Array.isArray(sources)) {  
+        return [];  
+    }  
+  
+    return sources  
+        .map(source => {  
+  
+            if (  
+                typeof source ===  
+                "string"  
+            ) {  
+  
+                return {  
+                    title:  
+                        getDomainName(source),  
+  
+                    url:  
+                        source  
+                };  
+            }  
+  
+            if (  
+                source &&  
+                typeof source ===  
+                "object"  
+            ) {  
+  
+                const url =  
+                    source.url ||  
+                    source.link ||  
+                    source.href ||  
+                    "";  
+  
+                if (!url) {  
+                    return null;  
+                }  
+  
+                return {  
+                    title:  
+                        source.title ||  
+                        source.name ||  
+                        source.label ||  
+                        getDomainName(url),  
+  
+                    url:  
+                        url  
+                };  
+            }  
+  
+            return null;  
+        })  
+        .filter(Boolean)  
+        .filter(source =>  
+            isValidHttpUrl(  
+                source.url  
+            )  
+        )  
+        .slice(0, 12);  
+}  
+  
+  
+function normalizeLocalChats(parsed) {  
+  
+    if (  
+        !Array.isArray(parsed)  
+    ) {  
+  
+        return [];  
+    }  
+  
+    return parsed  
+        .filter(chat =>  
+            chat &&  
+            typeof chat ===  
+                "object" &&  
+            typeof chat.id ===  
+                "string" &&  
+            Array.isArray(  
+                chat.messages  
+            )  
+        )  
+        .map(chat => ({  
+  
+            id:  
+                chat.id,  
+  
+            title:  
+                typeof chat.title ===  
+                    "string"  
+                    ? chat.title  
+                    : "Chat baru",  
+  
+            messages:  
+                chat.messages.map(  
+                    message => ({  
+  
+                        ...message,  
+  
+                        id:  
+                            message.id ||  
+                            makeId(),  
+  
+                        time:  
+                            Number(  
+                                message.time  
+                            ) ||  
+                            Date.now(),  
+  
+                        sources:  
+                            normalizeSources(  
+                                message.sources  
+                            )  
+  
+                    })  
+                ),  
+  
+            createdAt:  
+                Number(  
+                    chat.createdAt  
+                ) ||  
+                Date.now(),  
+  
+            updatedAt:  
+                Number(  
+                    chat.updatedAt  
+                ) ||  
+                Number(  
+                    chat.createdAt  
+                ) ||  
+                Date.now()  
+  
+        }));  
+}  
+  
+  
+function loadChats() {  
+  
+    try {  
+  
+        const saved =  
+            localStorage.getItem(  
+                STORAGE_KEY  
+            );  
+  
+        if (!saved) {  
+  
+            chats = [];  
+  
+            return;  
+        }  
+  
+        chats =  
+            normalizeLocalChats(  
+                JSON.parse(saved)  
+            );  
+  
+    } catch (error) {  
+  
+        console.warn(  
+            "Gagal membaca history:",  
+            error  
+        );  
+  
+        chats = [];  
+    }  
+}  
+  
+  
+function saveChats() {  
+  
+    try {  
+  
+        localStorage.setItem(  
+            STORAGE_KEY,  
+            JSON.stringify(chats)  
+        );  
+  
+        if (currentChatId) {  
+  
+            localStorage.setItem(  
+                ACTIVE_CHAT_KEY,  
+                currentChatId  
+            );  
+        }  
+  
+    } catch (error) {  
+  
+        console.warn(  
+            "Local history penuh atau gagal disimpan:",  
+            error  
+        );  
+  
+        try {  
+  
+            const textOnly =  
+                chats.map(chat => ({  
+  
+                    ...chat,  
+  
+                    messages:  
+                        chat.messages.map(  
+                            message => {  
+  
+                                const copy =  
+                                    {  
+                                        ...message  
+                                    };  
+  
+                                delete copy.image;  
+  
+                                return copy;  
+                            }  
+                        )  
+  
+                }));  
+  
+            localStorage.setItem(  
+                STORAGE_KEY,  
+                JSON.stringify(  
+                    textOnly  
+                )  
+            );  
+  
+        } catch {}  
+    }  
+}  
+  
+  
+function loadActiveChat() {  
+  
+    try {  
+  
+        return localStorage.getItem(  
+            ACTIVE_CHAT_KEY  
+        );  
+  
+    } catch {  
+  
+        return null;  
+    }  
+}  
+  
+  
+function saveActiveChat() {  
+  
+    try {  
+  
+        if (currentChatId) {  
+  
+            localStorage.setItem(  
+                ACTIVE_CHAT_KEY,  
+                currentChatId  
+            );  
+        }  
+  
+    } catch {}  
+}  
+  
+  
+/* =========================================================  
+   CHAT  
+========================================================= */  
+  
+function createChat() {  
+  
+    const now =  
+        Date.now();  
+  
+    const chat = {  
+  
+        id:  
+            makeId(),  
+  
+        title:  
+            "Chat baru",  
+  
+        messages:  
+            [],  
+  
+        createdAt:  
+            now,  
+  
+        updatedAt:  
+            now  
+    };  
+  
+    chats.unshift(  
+        chat  
+    );  
+  
+    currentChatId =  
+        chat.id;  
+  
+    saveChats();  
+  
+    renderHistory();  
+    renderMessages();  
+  
+    return chat;  
+}  
+  
+  
+function getCurrentChat() {  
+  
+    return chats.find(  
+        chat =>  
+            chat.id ===  
+            currentChatId  
+    );  
+}  
+  
+  
+function ensureChat() {  
+  
+    let chat =  
+        getCurrentChat();  
+  
+    if (!chat) {  
+        chat =  
+            createChat();  
+    }  
+  
+    return chat;  
+}  
+  
+  
+function sortChats() {  
+  
+    chats.sort(  
+        (a, b) =>  
+            Number(  
+                b.updatedAt || 0  
+            ) -  
+            Number(  
+                a.updatedAt || 0  
+            )  
+    );  
+}  
+  
+  
+/* =========================================================  
+   HISTORY  
+========================================================= */  
+  
+function renderHistory() {  
+  
+    sortChats();  
+  
+    elements.history.innerHTML =  
+        "";  
+  
+    if (!chats.length) {  
+  
+        elements.history.innerHTML = `  
+            <div class="history-empty">  
+                Belum ada percakapan.  
+            </div>  
+        `;  
+  
+        return;  
+    }  
+  
+    for (  
+        const chat of chats  
+    ) {  
+  
+        const wrap =  
+            document.createElement(  
+                "div"  
+            );  
+  
+        wrap.className =  
+            "history-item-wrap";  
+  
+        const button =  
+            document.createElement(  
+                "button"  
+            );  
+  
+        button.type =  
+            "button";  
+  
+        button.className =  
+            "history-item" +  
+            (  
+                chat.id ===  
+                currentChatId  
+                    ? " active"  
+                    : ""  
+            );  
+  
+        button.textContent =  
+            chat.title ||  
+            "Chat baru";  
+  
+        button.addEventListener(  
+            "click",  
+            () => {  
+  
+                currentChatId =  
+                    chat.id;  
+  
+                saveActiveChat();  
+  
+                renderHistory();  
+                renderMessages();  
+  
+                closeHistory();  
+            }  
+        );  
+  
+        const deleteBtn =  
+            document.createElement(  
+                "button"  
+            );  
+  
+        deleteBtn.type =  
+            "button";  
+  
+        deleteBtn.className =  
+            "history-delete";  
+  
+        deleteBtn.title =  
+            "Hapus percakapan";  
+  
+        deleteBtn.innerHTML =  
+            "×";  
+  
+        deleteBtn.addEventListener(  
+            "click",  
+            event => {  
+  
+                event.stopPropagation();  
+  
+                chats =  
+                    chats.filter(  
+                        c =>  
+                            c.id !==  
+                            chat.id  
+                    );  
+  
+                if (  
+                    currentChatId ===  
+                    chat.id  
+                ) {  
+  
+                    if (  
+                        chats.length >  
+                        0  
+                    ) {  
+  
+                        currentChatId =  
+                            chats[0].id;  
+  
+                    } else {  
+  
+                        createChat();  
+                    }  
+                }  
+  
+                saveChats();  
+                saveActiveChat();  
+  
+                renderHistory();  
+                renderMessages();  
+            }  
+        );  
+  
+        wrap.appendChild(  
+            button  
+        );  
+  
+        wrap.appendChild(  
+            deleteBtn  
+        );  
+  
+        elements.history.appendChild(  
+            wrap  
+        );  
+    }  
+}  
+  
+  
+/* =========================================================  
+   HISTORY CLOSE  
+========================================================= */  
+  
+function closeHistory() {  
+  
+    elements.sidebar  
+        .classList  
+        .remove(  
+            "open"  
+        );  
+}  
+  
+  
+function toggleHistory() {  
+  
+    elements.sidebar  
+        .classList  
+        .toggle(  
+            "open"  
+        );  
+}  
+  
+  
+/* =========================================================  
+   URL / SOURCE HELPERS  
+========================================================= */  
+  
+function isValidHttpUrl(value) {  
+  
+    try {  
+  
+        const url =  
+            new URL(  
+                String(value)  
+            );  
+  
+        return (  
+            url.protocol ===  
+                "http:" ||  
+            url.protocol ===  
+                "https:"  
+        );  
+  
+    } catch {  
+  
+        return false;  
+    }  
+}  
+  
+  
+function cleanUrl(value) {  
+  
+    let url =  
+        String(  
+            value || ""  
+        ).trim();  
+  
+    url =  
+        url.replace(  
+            /[),.;!?]+$/g,  
+            ""  
+        );  
+  
+    return url;  
+}  
+  
+  
+function getDomainName(url) {  
+  
+    try {  
+  
+        const parsed =  
+            new URL(  
+                url  
+            );  
+  
+        return parsed.hostname  
+            .replace(  
+                /^www\./,  
+                ""  
+            );  
+  
+    } catch {  
+  
+        return "Sumber";  
+    }  
+}  
+  
+  
+function getSourceTitle(url) {  
+  
+    const domain =  
+        getDomainName(  
+            url  
+        );  
+  
+    if (  
+        domain ===  
+        "kompas.tv"  
+    ) {  
+  
+        return "Kompas TV";  
+  
+    }  
+  
+    if (  
+        domain ===  
+        "youtube.com" ||  
+        domain ===  
+        "youtu.be"  
+    ) {  
+  
+        return "YouTube";  
+  
+    }  
+  
+    if (  
+        domain ===  
+        "wikipedia.org"  
+    ) {  
+  
+        return "Wikipedia";  
+  
+    }  
+  
+    if (  
+        domain ===  
+        "github.com"  
+    ) {  
+  
+        return "GitHub";  
+    }  
+  
+    return domain;  
+}  
+  
+  
+/*  
+ * Mengambil URL dari teks AI.  
+ */  
+function extractUrls(text) {  
+  
+    const source =  
+        String(  
+            text || ""  
+        );  
+  
+    const matches =  
+        source.match(  
+            /https?:\/\/[^\s<>"']+/gi  
+        ) || [];  
+  
+    const unique =  
+        [];  
+  
+    for (  
+        const raw of matches  
+    ) {  
+  
+        const url =  
+            cleanUrl(  
+                raw  
+            );  
+  
+        if (  
+            !isValidHttpUrl(  
+                url  
+            )  
+        ) {  
+            continue;  
+        }  
+  
+        if (  
+            !unique.some(  
+                item =>  
+                    item.url ===  
+                    url  
+            )  
+        ) {  
+  
+            unique.push({  
+  
+                title:  
+                    getSourceTitle(  
+                        url  
+                    ),  
+  
+                url:  
+                    url  
+            });  
+        }  
+    }  
+  
+    return unique.slice(  
+        0,  
+        12  
+    );  
+}  
+  
+  
+/*  
+ * Mengambil sumber dari beberapa  
+ * kemungkinan struktur response API.  
+ */  
+function extractSources(data) {  
+  
+    if (!data) {  
+        return [];  
+    }  
+  
+    const candidates = [];  
+  
+    if (  
+        Array.isArray(  
+            data.sources  
+        )  
+    ) {  
+  
+        candidates.push(  
+            ...data.sources  
+        );  
+    }  
+  
+    if (  
+        Array.isArray(  
+            data.references  
+        )  
+    ) {  
+  
+        candidates.push(  
+            ...data.references  
+        );  
+    }  
+  
+    if (  
+        Array.isArray(  
+            data.citations  
+        )  
+    ) {  
+  
+        candidates.push(  
+            ...data.citations  
+        );  
+    }  
+  
+    if (  
+        data.source &&  
+        typeof data.source ===  
+            "object"  
+    ) {  
+  
+        candidates.push(  
+            data.source  
+        );  
+    }  
+  
+    const normalized =  
+        normalizeSources(  
+            candidates  
+        );  
+  
+    const replyUrls =  
+        extractUrls(  
+            data.reply ||  
+            data.text ||  
+            data.content ||  
+            ""  
+        );  
+  
+    const combined =  
+        [  
+            ...normalized,  
+            ...replyUrls  
+        ];  
+  
+    const unique =  
+        [];  
+  
+    for (  
+        const item of combined  
+    ) {  
+  
+        if (  
+            !unique.some(  
+                source =>  
+                    source.url ===  
+                    item.url  
+            )  
+        ) {  
+  
+            unique.push(  
+                item  
+            );  
+        }  
+    }  
+  
+    return unique.slice(  
+        0,  
+        12  
+    );  
+}  
+  
+  
+/* =========================================================  
+   HTML  
+========================================================= */  
+  
+function escapeHTML(value) {  
+  
+    return String(  
+        value ?? ""  
+    )  
+        .replace(  
+            /&/g,  
+            "&amp;"  
+        )  
+        .replace(  
+            /</g,  
+            "&lt;"  
+        )  
+        .replace(  
+            />/g,  
+            "&gt;"  
+        )  
+        .replace(  
+            /"/g,  
+            "&quot;"  
+        )  
+        .replace(  
+            /'/g,  
+            "&#039;"  
+        );  
+}  
+  
+  
+/*  
+ * Escape URL sebelum dimasukkan  
+ * ke atribut HTML.  
+ */  
+function safeHref(url) {  
+  
+    const clean =  
+        cleanUrl(  
+            url  
+        );  
+  
+    if (  
+        !isValidHttpUrl(  
+            clean  
+        )  
+    ) {  
+  
+        return "#";  
+    }  
+  
+    return escapeHTML(  
+        clean  
+    );  
+}  
+  
+  
+/* =========================================================  
+   MARKDOWN LINKS  
+========================================================= */  
+  
+function renderMarkdownLinks(  
+    text  
+) {  
+  
+    return text.replace(  
+        /([^]+)\](https?:\/\/[^\s)]+)/gi,  
+        (  
+            _,  
+            title,  
+            url  
+        ) => {  
+  
+            const safe =  
+                safeHref(  
+                    url  
+                );  
+  
+            if (  
+                safe === "#"  
+            ) {  
+  
+                return escapeHTML(  
+                    title  
+                );  
+            }  
+  
+            return `  
+                <a  
+                    href="${safe}"  
+                    target="_blank"  
+                    rel="noopener noreferrer"  
+                >${escapeHTML(title)}</a>  
+            `;  
+        }  
+    );  
+}  
+  
+  
+/* =========================================================  
+   MATH  
+========================================================= */  
+  
+function extractMathBlocks(  
+    source,  
+    blocks  
+) {  
+  
+    source =  
+        source.replace(  
+            /\$\$([\s\S]*?)\$\$/g,  
+            (_, math) => {  
+  
+                const index =  
+                    blocks.length;  
+  
+                blocks.push({  
+  
+                    type:  
+                        "display-math",  
+  
+                    content:  
+                        String(  
+                            math || ""  
+                        ).trim()  
+                });  
+  
+                return `  
+                    __PINGU_MATH_BLOCK_${index}__  
+                `;  
+            }  
+        );  
+  
+    source =  
+        source.replace(  
+            /\\([\s\S]*?)\\/g,  
+            (_, math) => {  
+  
+                const index =  
+                    blocks.length;  
+  
+                blocks.push({  
+  
+                    type:  
+                        "display-math",  
+  
+                    content:  
+                        String(  
+                            math || ""  
+                        ).trim()  
+                });  
+  
+                return `  
+                    __PINGU_MATH_BLOCK_${index}__  
+                `;  
+            }  
+        );  
+  
+    source =  
+        source.replace(  
+            /\\([\s\S]*?)\\/g,  
+            (_, math) => {  
+  
+                const index =  
+                    blocks.length;  
+  
+                blocks.push({  
+  
+                    type:  
+                        "inline-math",  
+  
+                    content:  
+                        String(  
+                            math || ""  
+                        ).trim()  
+                });  
+  
+                return `  
+                    __PINGU_MATH_BLOCK_${index}__  
+                `;  
+            }  
+        );  
+  
+    source =  
+        source.replace(  
+            /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,  
+            (  
+                full,  
+                before,  
+                math  
+            ) => {  
+  
+                const index =  
+                    blocks.length;  
+  
+                blocks.push({  
+  
+                    type:  
+                        "inline-math",  
+  
+                    content:  
+                        String(  
+                            math || ""  
+                        ).trim()  
+                });  
+  
+                return (  
+                    before +  
+                    `__PINGU_MATH_BLOCK_${index}__`  
+                );  
+            }  
+        );  
+  
+    return source;  
+}  
+  
+  
+/* =========================================================  
+   NORMAL TEXT  
+========================================================= */  
+  
+function formatNormalText(  
+    text  
+) {  
+  
+    if (!text) {  
+        return "";  
+    }  
+  
+    let output =  
+        escapeHTML(  
+            text  
+        );  
+  
+    output =  
+        output.replace(  
+            /`([^`\n]+)`/g,  
+            '<span class="inline-code">$1</span>'  
+        );  
+  
+    output =  
+        output.replace(  
+            /\*\*([^*\n]+)\*\*/g,  
+            "<strong>$1</strong>"  
+        );  
+  
+    /*  
+     * URL langsung menjadi link.  
+     */  
+    output =  
+        output.replace(  
+            /(https?:\/\/[^\s<>"']+)/gi,  
+            raw => {  
+  
+                const url =  
+                    cleanUrl(  
+                        raw  
+                    );  
+  
+                const safe =  
+                    safeHref(  
+                        url  
+                    );  
+  
+                if (  
+                    safe === "#"  
+                ) {  
+  
+                    return raw;  
+                }  
+  
+                return `  
+                    <a  
+                        href="${safe}"  
+                        target="_blank"  
+                        rel="noopener noreferrer"  
+                    >${escapeHTML(url)}</a>  
+                `;  
+            }  
+        );  
+  
+    output =  
+        output.replace(  
+            /\r?\n/g,  
+            "<br>"  
+        );  
+  
+    return output;  
+}  
+  
+  
+/* =========================================================  
+   FORMAT TEXT  
+========================================================= */  
+  
+function formatText(  
+    text  
+) {  
+  
+    let source =  
+        String(  
+            text ?? ""  
+        );  
+  
+    const blocks = [];  
+  
+  
+    /*  
+     * Code block.  
+     */  
+    source =  
+        source.replace(  
+            /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g,  
+            (  
+                _,  
+                language,  
+                code  
+            ) => {  
+  
+                const index =  
+                    blocks.length;  
+  
+                blocks.push({  
+  
+                    type:  
+                        "code",  
+  
+                    language:  
+                        String(  
+                            language || ""  
+                        ).trim() ||  
+                        "code",  
+  
+                    content:  
+                        String(  
+                            code || ""  
+                        ).replace(  
+                            /\r?\n$/,  
+                            ""  
+                        )  
+  
+                });  
+  
+                return `  
+                    __PINGU_CODE_BLOCK_${index}__  
+                `;  
+            }  
+        );  
+  
+  
+    /*  
+     * Markdown links sebelum  
+     * escape HTML.  
+     */  
+    source =  
+        source.replace(  
+            /([^]+)\](https?:\/\/[^\s)]+)/gi,  
+            (  
+                _,  
+                title,  
+                url  
+            ) => {  
+  
+                const index =  
+                    blocks.length;  
+  
+                blocks.push({  
+  
+                    type:  
+                        "link",  
+  
+                    title:  
+                        title,  
+  
+                    url:  
+                        cleanUrl(  
+                            url  
+                        )  
+  
+                });  
+  
+                return `  
+                    __PINGU_LINK_BLOCK_${index}__  
+                `;  
+            }  
+        );  
+  
+  
+    /*  
+     * Math.  
+     */  
+    source =  
+        extractMathBlocks(  
+            source,  
+            blocks  
+        );  
+  
+  
+    let output =  
+        formatNormalText(  
+            source  
+        );  
+  
+  
+    /*  
+     * Render semua placeholder.  
+     */  
+    for (  
+        let i = 0;  
+        i < blocks.length;  
+        i++  
+    ) {  
+  
+        const block =  
+            blocks[i];  
+  
+        const codePlaceholder =  
+            `__PINGU_CODE_BLOCK_${i}__`;  
+  
+        const mathPlaceholder =  
+            `__PINGU_MATH_BLOCK_${i}__`;  
+  
+        const linkPlaceholder =  
+            `__PINGU_LINK_BLOCK_${i}__`;  
+  
+  
+        if (  
+            block.type ===  
+            "code"  
+        ) {  
+  
+            output =  
+                output.replace(  
+                    codePlaceholder,  
+                    `  
+                    <div class="code-wrapper">  
+  
+                        <div class="code-header">  
+  
+                            <span class="code-language">  
+                                ${escapeHTML(  
+                                    block.language  
+                                )}  
+                            </span>  
+  
+                            <button  
+                                class="copy-code"  
+                                type="button"  
+                            >  
+                                Salin  
+                            </button>  
+  
+                        </div>  
+  
+                        <pre class="code"><code>${escapeHTML(  
+                            block.content  
+                        )}</code></pre>  </div>  
+                `  
+            );  
+
+    } else if (  
+        block.type ===  
+        "display-math"  
+    ) {  
+
+        output =  
+            output.replace(  
+                mathPlaceholder,  
+                `<div class="math-display" data-math-index="${i}"></div>`  
+            );  
+
+    } else if (  
+        block.type ===  
+        "inline-math"  
+    ) {  
+
+        output =  
+            output.replace(  
+                mathPlaceholder,  
+                `<span class="math-inline" data-math-index="${i}"></span>`  
+            );  
+
+    } else if (  
+        block.type ===  
+        "link"  
+    ) {  
+
+        const safe =  
+            safeHref(  
+                block.url  
+            );  
+
+        if (  
+            safe === "#"  
+        ) {  
+
+            output =  
+                output.replace(  
+                    linkPlaceholder,  
+                    escapeHTML(  
+                        block.title  
+                    )  
+                );  
+
+        } else {  
+
+            output =  
+                output.replace(  
+                    linkPlaceholder,  
+                    `  
+                    <a  
+                        href="${safe}"  
+                        target="_blank"  
+                        rel="noopener noreferrer"  
+                    >${escapeHTML(  
+                        block.title  
+                    )}</a>  
+                    `  
+                );  
+        }  
+    }  
+}  
+
+
+return {  
+
+    html:  
+        output,  
+
+    blocks  
 };
 
+}
 
 /* =========================================================
-   CONSTANTS
-========================================================= */
-
-const STORAGE_KEY =
-    "pingu_ai_chats_v2";
-
-const ACTIVE_CHAT_KEY =
-    "pingu_ai_active_chat_v2";
-
-
-/* =========================================================
-   STATE
-========================================================= */
-
-let chats = [];
-
-let currentChatId =
-    null;
-
-let attachedImage =
-    null;
-
-let attachedImagePreview =
-    null;
-
-let currentMode =
-    "chat";
-
-let isSending =
-    false;
-
-
-/* =========================================================
-   ID
-========================================================= */
-
-function makeId() {
-
-    if (
-        typeof crypto !==
-            "undefined" &&
-        typeof crypto.randomUUID ===
-            "function"
-    ) {
-
-        return crypto.randomUUID();
-    }
-
-    return (
-        Date.now().toString(36) +
-        Math.random()
-            .toString(36)
-            .slice(2)
-    );
-}
-
-
-/* =========================================================
-   LOCAL STORAGE
-========================================================= */
-
-function normalizeSources(sources) {
-
-    if (!Array.isArray(sources)) {
-        return [];
-    }
-
-    return sources
-        .map(source => {
-
-            if (
-                typeof source ===
-                "string"
-            ) {
-
-                return {
-                    title:
-                        getDomainName(source),
-
-                    url:
-                        source
-                };
-            }
-
-            if (
-                source &&
-                typeof source ===
-                "object"
-            ) {
-
-                const url =
-                    source.url ||
-                    source.link ||
-                    source.href ||
-                    "";
-
-                if (!url) {
-                    return null;
-                }
-
-                return {
-                    title:
-                        source.title ||
-                        source.name ||
-                        source.label ||
-                        getDomainName(url),
-
-                    url:
-                        url
-                };
-            }
-
-            return null;
-        })
-        .filter(Boolean)
-        .filter(source =>
-            isValidHttpUrl(
-                source.url
-            )
-        )
-        .slice(0, 12);
-}
-
-
-function normalizeLocalChats(parsed) {
-
-    if (
-        !Array.isArray(parsed)
-    ) {
-
-        return [];
-    }
-
-    return parsed
-        .filter(chat =>
-            chat &&
-            typeof chat ===
-                "object" &&
-            typeof chat.id ===
-                "string" &&
-            Array.isArray(
-                chat.messages
-            )
-        )
-        .map(chat => ({
-
-            id:
-                chat.id,
-
-            title:
-                typeof chat.title ===
-                    "string"
-                    ? chat.title
-                    : "Chat baru",
-
-            messages:
-                chat.messages.map(
-                    message => ({
-
-                        ...message,
-
-                        id:
-                            message.id ||
-                            makeId(),
-
-                        time:
-                            Number(
-                                message.time
-                            ) ||
-                            Date.now(),
-
-                        sources:
-                            normalizeSources(
-                                message.sources
-                            )
-
-                    })
-                ),
-
-            createdAt:
-                Number(
-                    chat.createdAt
-                ) ||
-                Date.now(),
-
-            updatedAt:
-                Number(
-                    chat.updatedAt
-                ) ||
-                Number(
-                    chat.createdAt
-                ) ||
-                Date.now()
-
-        }));
-}
-
-
-function loadChats() {
-
-    try {
-
-        const saved =
-            localStorage.getItem(
-                STORAGE_KEY
-            );
-
-        if (!saved) {
-
-            chats = [];
-
-            return;
-        }
-
-        chats =
-            normalizeLocalChats(
-                JSON.parse(saved)
-            );
-
-    } catch (error) {
-
-        console.warn(
-            "Gagal membaca history:",
-            error
-        );
-
-        chats = [];
-    }
-}
-
-
-function saveChats() {
-
-    try {
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(chats)
-        );
-
-        if (currentChatId) {
-
-            localStorage.setItem(
-                ACTIVE_CHAT_KEY,
-                currentChatId
-            );
-        }
-
-    } catch (error) {
-
-        console.warn(
-            "Local history penuh atau gagal disimpan:",
-            error
-        );
-
-        try {
-
-            const textOnly =
-                chats.map(chat => ({
-
-                    ...chat,
-
-                    messages:
-                        chat.messages.map(
-                            message => {
-
-                                const copy =
-                                    {
-                                        ...message
-                                    };
-
-                                delete copy.image;
-
-                                return copy;
-                            }
-                        )
-
-                }));
-
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify(
-                    textOnly
-                )
-            );
-
-        } catch {}
-    }
-}
-
-
-function loadActiveChat() {
-
-    try {
-
-        return localStorage.getItem(
-            ACTIVE_CHAT_KEY
-        );
-
-    } catch {
-
-        return null;
-    }
-}
-
-
-function saveActiveChat() {
-
-    try {
-
-        if (currentChatId) {
-
-            localStorage.setItem(
-                ACTIVE_CHAT_KEY,
-                currentChatId
-            );
-        }
-
-    } catch {}
-}
-
-
-/* =========================================================
-   CHAT
-========================================================= */
-
-function createChat() {
-
-    const now =
-        Date.now();
-
-    const chat = {
-
-        id:
-            makeId(),
-
-        title:
-            "Chat baru",
-
-        messages:
-            [],
-
-        createdAt:
-            now,
-
-        updatedAt:
-            now
-    };
-
-    chats.unshift(
-        chat
-    );
-
-    currentChatId =
-        chat.id;
-
-    saveChats();
-
-    renderHistory();
-    renderMessages();
-
-    return chat;
-}
-
-
-function getCurrentChat() {
-
-    return chats.find(
-        chat =>
-            chat.id ===
-            currentChatId
-    );
-}
-
-
-function ensureChat() {
-
-    let chat =
-        getCurrentChat();
-
-    if (!chat) {
-        chat =
-            createChat();
-    }
-
-    return chat;
-}
-
-
-function sortChats() {
-
-    chats.sort(
-        (a, b) =>
-            Number(
-                b.updatedAt || 0
-            ) -
-            Number(
-                a.updatedAt || 0
-            )
-    );
-}
-
-
-/* =========================================================
-   HISTORY
-========================================================= */
-
-function renderHistory() {
-
-    sortChats();
-
-    elements.history.innerHTML =
-        "";
-
-    if (!chats.length) {
-
-        elements.history.innerHTML = `
-            <div class="history-empty">
-                Belum ada percakapan.
-            </div>
-        `;
-
-        return;
-    }
-
-    for (
-        const chat of chats
-    ) {
-
-        const wrap =
-            document.createElement(
-                "div"
-            );
-
-        wrap.className =
-            "history-item-wrap";
-
-        const button =
-            document.createElement(
-                "button"
-            );
-
-        button.type =
-            "button";
-
-        button.className =
-            "history-item" +
-            (
-                chat.id ===
-                currentChatId
-                    ? " active"
-                    : ""
-            );
-
-        button.textContent =
-            chat.title ||
-            "Chat baru";
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                currentChatId =
-                    chat.id;
-
-                saveActiveChat();
-
-                renderHistory();
-                renderMessages();
-
-                closeHistory();
-            }
-        );
-
-        const deleteBtn =
-            document.createElement(
-                "button"
-            );
-
-        deleteBtn.type =
-            "button";
-
-        deleteBtn.className =
-            "history-delete";
-
-        deleteBtn.title =
-            "Hapus percakapan";
-
-        deleteBtn.innerHTML =
-            "×";
-
-        deleteBtn.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                chats =
-                    chats.filter(
-                        c =>
-                            c.id !==
-                            chat.id
-                    );
-
-                if (
-                    currentChatId ===
-                    chat.id
-                ) {
-
-                    if (
-                        chats.length >
-                        0
-                    ) {
-
-                        currentChatId =
-                            chats[0].id;
-
-                    } else {
-
-                        createChat();
-                    }
-                }
-
-                saveChats();
-                saveActiveChat();
-
-                renderHistory();
-                renderMessages();
-            }
-        );
-
-        wrap.appendChild(
-            button
-        );
-
-        wrap.appendChild(
-            deleteBtn
-        );
-
-        elements.history.appendChild(
-            wrap
-        );
-    }
-}
-
-
-/* =========================================================
-   HISTORY CLOSE
-========================================================= */
-
-function closeHistory() {
-
-    elements.sidebar
-        .classList
-        .remove(
-            "open"
-        );
-}
-
-
-function toggleHistory() {
-
-    elements.sidebar
-        .classList
-        .toggle(
-            "open"
-        );
-}
-
-
-/* =========================================================
-   URL / SOURCE HELPERS
-========================================================= */
-
-function isValidHttpUrl(value) {
-
-    try {
-
-        const url =
-            new URL(
-                String(value)
-            );
-
-        return (
-            url.protocol ===
-                "http:" ||
-            url.protocol ===
-                "https:"
-        );
-
-    } catch {
-
-        return false;
-    }
-}
-
-
-function cleanUrl(value) {
-
-    let url =
-        String(
-            value || ""
-        ).trim();
-
-    url =
-        url.replace(
-            /[),.;!?]+$/g,
-            ""
-        );
-
-    return url;
-}
-
-
-function getDomainName(url) {
-
-    try {
-
-        const parsed =
-            new URL(
-                url
-            );
-
-        return parsed.hostname
-            .replace(
-                /^www\./,
-                ""
-            );
-
-    } catch {
-
-        return "Sumber";
-    }
-}
-
-
-function getSourceTitle(url) {
-
-    const domain =
-        getDomainName(
-            url
-        );
-
-    if (
-        domain ===
-        "kompas.tv"
-    ) {
-
-        return "Kompas TV";
-
-    }
-
-    if (
-        domain ===
-        "youtube.com" ||
-        domain ===
-        "youtu.be"
-    ) {
-
-        return "YouTube";
-
-    }
-
-    if (
-        domain ===
-        "wikipedia.org"
-    ) {
-
-        return "Wikipedia";
-
-    }
-
-    if (
-        domain ===
-        "github.com"
-    ) {
-
-        return "GitHub";
-    }
-
-    return domain;
-}
-
-
-/*
- * Mengambil URL dari teks AI.
- */
-function extractUrls(text) {
-
-    const source =
-        String(
-            text || ""
-        );
-
-    const matches =
-        source.match(
-            /https?:\/\/[^\s<>"']+/gi
-        ) || [];
-
-    const unique =
-        [];
-
-    for (
-        const raw of matches
-    ) {
-
-        const url =
-            cleanUrl(
-                raw
-            );
-
-        if (
-            !isValidHttpUrl(
-                url
-            )
-        ) {
-            continue;
-        }
-
-        if (
-            !unique.some(
-                item =>
-                    item.url ===
-                    url
-            )
-        ) {
-
-            unique.push({
-
-                title:
-                    getSourceTitle(
-                        url
-                    ),
-
-                url:
-                    url
-            });
-        }
-    }
-
-    return unique.slice(
-        0,
-        12
-    );
-}
-
-
-/*
- * Mengambil sumber dari beberapa
- * kemungkinan struktur response API.
- */
-function extractSources(data) {
-
-    if (!data) {
-        return [];
-    }
-
-    const candidates = [];
-
-    if (
-        Array.isArray(
-            data.sources
-        )
-    ) {
-
-        candidates.push(
-            ...data.sources
-        );
-    }
-
-    if (
-        Array.isArray(
-            data.references
-        )
-    ) {
-
-        candidates.push(
-            ...data.references
-        );
-    }
-
-    if (
-        Array.isArray(
-            data.citations
-        )
-    ) {
-
-        candidates.push(
-            ...data.citations
-        );
-    }
-
-    if (
-        data.source &&
-        typeof data.source ===
-            "object"
-    ) {
-
-        candidates.push(
-            data.source
-        );
-    }
-
-    const normalized =
-        normalizeSources(
-            candidates
-        );
-
-    const replyUrls =
-        extractUrls(
-            data.reply ||
-            data.text ||
-            data.content ||
-            ""
-        );
-
-    const combined =
-        [
-            ...normalized,
-            ...replyUrls
-        ];
-
-    const unique =
-        [];
-
-    for (
-        const item of combined
-    ) {
-
-        if (
-            !unique.some(
-                source =>
-                    source.url ===
-                    item.url
-            )
-        ) {
-
-            unique.push(
-                item
-            );
-        }
-    }
-
-    return unique.slice(
-        0,
-        12
-    );
-}
-
-
-/* =========================================================
-   HTML
-========================================================= */
-
-function escapeHTML(value) {
-
-    return String(
-        value ?? ""
-    )
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-}
-
-
-/*
- * Escape URL sebelum dimasukkan
- * ke atribut HTML.
- */
-function safeHref(url) {
-
-    const clean =
-        cleanUrl(
-            url
-        );
-
-    if (
-        !isValidHttpUrl(
-            clean
-        )
-    ) {
-
-        return "#";
-    }
-
-    return escapeHTML(
-        clean
-    );
-}
-
-
-/* =========================================================
-   MARKDOWN LINKS
-========================================================= */
-
-function renderMarkdownLinks(
-    text
-) {
-
-    return text.replace(
-        /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,
-        (
-            _,
-            title,
-            url
-        ) => {
-
-            const safe =
-                safeHref(
-                    url
-                );
-
-            if (
-                safe === "#"
-            ) {
-
-                return escapeHTML(
-                    title
-                );
-            }
-
-            return `
-                <a
-                    href="${safe}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >${escapeHTML(title)}</a>
-            `;
-        }
-    );
-}
-
-
-/* =========================================================
-   MATH
-========================================================= */
-
-function extractMathBlocks(
-    source,
-    blocks
-) {
-
-    source =
-        source.replace(
-            /\$\$([\s\S]*?)\$\$/g,
-            (_, math) => {
-
-                const index =
-                    blocks.length;
-
-                blocks.push({
-
-                    type:
-                        "display-math",
-
-                    content:
-                        String(
-                            math || ""
-                        ).trim()
-                });
-
-                return `
-                    __PINGU_MATH_BLOCK_${index}__
-                `;
-            }
-        );
-
-    source =
-        source.replace(
-            /\\\[([\s\S]*?)\\\]/g,
-            (_, math) => {
-
-                const index =
-                    blocks.length;
-
-                blocks.push({
-
-                    type:
-                        "display-math",
-
-                    content:
-                        String(
-                            math || ""
-                        ).trim()
-                });
-
-                return `
-                    __PINGU_MATH_BLOCK_${index}__
-                `;
-            }
-        );
-
-    source =
-        source.replace(
-            /\\\(([\s\S]*?)\\\)/g,
-            (_, math) => {
-
-                const index =
-                    blocks.length;
-
-                blocks.push({
-
-                    type:
-                        "inline-math",
-
-                    content:
-                        String(
-                            math || ""
-                        ).trim()
-                });
-
-                return `
-                    __PINGU_MATH_BLOCK_${index}__
-                `;
-            }
-        );
-
-    source =
-        source.replace(
-            /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
-            (
-                full,
-                before,
-                math
-            ) => {
-
-                const index =
-                    blocks.length;
-
-                blocks.push({
-
-                    type:
-                        "inline-math",
-
-                    content:
-                        String(
-                            math || ""
-                        ).trim()
-                });
-
-                return (
-                    before +
-                    `__PINGU_MATH_BLOCK_${index}__`
-                );
-            }
-        );
-
-    return source;
-}
-
-
-/* =========================================================
-   NORMAL TEXT
-========================================================= */
-
-function formatNormalText(
-    text
-) {
-
-    if (!text) {
-        return "";
-    }
-
-    let output =
-        escapeHTML(
-            text
-        );
-
-    output =
-        output.replace(
-            /`([^`\n]+)`/g,
-            '<span class="inline-code">$1</span>'
-        );
-
-    output =
-        output.replace(
-            /\*\*([^*\n]+)\*\*/g,
-            "<strong>$1</strong>"
-        );
-
-    /*
-     * URL langsung menjadi link.
-     */
-    output =
-        output.replace(
-            /(https?:\/\/[^\s<>"']+)/gi,
-            raw => {
-
-                const url =
-                    cleanUrl(
-                        raw
-                    );
-
-                const safe =
-                    safeHref(
-                        url
-                    );
-
-                if (
-                    safe === "#"
-                ) {
-
-                    return raw;
-                }
-
-                return `
-                    <a
-                        href="${safe}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >${escapeHTML(url)}</a>
-                `;
-            }
-        );
-
-    output =
-        output.replace(
-            /\r?\n/g,
-            "<br>"
-        );
-
-    return output;
-}
-
-
-/* =========================================================
-   FORMAT TEXT
-========================================================= */
-
-function formatText(
-    text
-) {
-
-    let source =
-        String(
-            text ?? ""
-        );
-
-    const blocks = [];
-
-
-    /*
-     * Code block.
-     */
-    source =
-        source.replace(
-            /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g,
-            (
-                _,
-                language,
-                code
-            ) => {
-
-                const index =
-                    blocks.length;
-
-                blocks.push({
-
-                    type:
-                        "code",
-
-                    language:
-                        String(
-                            language || ""
-                        ).trim() ||
-                        "code",
-
-                    content:
-                        String(
-                            code || ""
-                        ).replace(
-                            /\r?\n$/,
-                            ""
-                        )
-
-                });
-
-                return `
-                    __PINGU_CODE_BLOCK_${index}__
-                `;
-            }
-        );
-
-
-    /*
-     * Markdown links sebelum
-     * escape HTML.
-     */
-    source =
-        source.replace(
-            /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,
-            (
-                _,
-                title,
-                url
-            ) => {
-
-                const index =
-                    blocks.length;
-
-                blocks.push({
-
-                    type:
-                        "link",
-
-                    title:
-                        title,
-
-                    url:
-                        cleanUrl(
-                            url
-                        )
-
-                });
-
-                return `
-                    __PINGU_LINK_BLOCK_${index}__
-                `;
-            }
-        );
-
-
-    /*
-     * Math.
-     */
-    source =
-        extractMathBlocks(
-            source,
-            blocks
-        );
-
-
-    let output =
-        formatNormalText(
-            source
-        );
-
-
-    /*
-     * Render semua placeholder.
-     */
-    for (
-        let i = 0;
-        i < blocks.length;
-        i++
-    ) {
-
-        const block =
-            blocks[i];
-
-        const codePlaceholder =
-            `__PINGU_CODE_BLOCK_${i}__`;
-
-        const mathPlaceholder =
-            `__PINGU_MATH_BLOCK_${i}__`;
-
-        const linkPlaceholder =
-            `__PINGU_LINK_BLOCK_${i}__`;
-
-
-        if (
-            block.type ===
-            "code"
-        ) {
-
-            output =
-                output.replace(
-                    codePlaceholder,
-                    `
-                    <div class="code-wrapper">
-
-                        <div class="code-header">
-
-                            <span class="code-language">
-                                ${escapeHTML(
-                                    block.language
-                                )}
-                            </span>
-
-                            <button
-                                class="copy-code"
-                                type="button"
-                            >
-                                Salin
-                            </button>
-
-                        </div>
-
-                        <pre class="code"><code>${escapeHTML(
-                            block.content
-                        )}</code></pre>
-
-                    </div>
-                    `
-                );
-
-        } else if (
-            block.type ===
-            "display-math"
-        ) {
-
-            output =
-                output.replace(
-                    mathPlaceholder,
-                    `<div class="math-display" data-math-index="${i}"></div>`
-                );
-
-        } else if (
-            block.type ===
-            "inline-math"
-        ) {
-
-            output =
-                output.replace(
-                    mathPlaceholder,
-                    `<span class="math-inline" data-math-index="${i}"></span>`
-                );
-
-        } else if (
-            block.type ===
-            "link"
-        ) {
-
-            const safe =
-                safeHref(
-                    block.url
-                );
-
-            if (
-                safe === "#"
-            ) {
-
-                output =
-                    output.replace(
-                        linkPlaceholder,
-                        escapeHTML(
-                            block.title
-                        )
-                    );
-
-            } else {
-
-                output =
-                    output.replace(
-                        linkPlaceholder,
-                        `
-                        <a
-                            href="${safe}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >${escapeHTML(
-                            block.title
-                        )}</a>
-                        `
-                    );
-            }
-        }
-    }
-
-
-    return {
-
-        html:
-            output,
-
-        blocks
-    };
-}
-
-
-/* =========================================================
-   MATH RENDER
+MATH RENDER
 ========================================================= */
 
 function renderMathBlocks(
-    bubble,
-    blocks
+bubble,
+blocks
 ) {
 
-    if (!bubble) {
-        return;
-    }
+if (!bubble) {  
+    return;  
+}  
 
-    bubble
-        .querySelectorAll(
-            "[data-math-index]"
-        )
-        .forEach(
-            element => {
+bubble  
+    .querySelectorAll(  
+        "[data-math-index]"  
+    )  
+    .forEach(  
+        element => {  
 
-                const block =
-                    blocks[
-                        Number(
-                            element.dataset
-                                .mathIndex
-                        )
-                    ];
+            const block =  
+                blocks[  
+                    Number(  
+                        element.dataset  
+                            .mathIndex  
+                    )  
+                ];  
 
-                if (!block) {
-                    return;
-                }
+            if (!block) {  
+                return;  
+            }  
 
-                if (
-                    block.type ===
-                    "display-math"
-                ) {
+            if (  
+                block.type ===  
+                "display-math"  
+            ) {  
 
-                    element.textContent =
-                        "\\[" +
-                        block.content +
-                        "\\]";
+                element.textContent =  
+                    "\" +  
+                    block.content +  
+                    "\";  
 
-                } else {
+            } else {  
 
-                    element.textContent =
-                        "\\(" +
-                        block.content +
-                        "\\)";
-                }
-            }
-        );
+                element.textContent =  
+                    "\" +  
+                    block.content +  
+                    "\";  
+            }  
+        }  
+    );
+
 }
-
 
 async function typesetMath(
-    element
+element
 ) {
 
-    if (!element) {
-        return;
-    }
+if (!element) {  
+    return;  
+}  
 
-    try {
+try {  
 
-        if (!window.MathJax) {
-            return;
-        }
+    if (!window.MathJax) {  
+        return;  
+    }  
 
-        if (
-            window.MathJax.startup &&
-            window.MathJax.startup.promise
-        ) {
+    if (  
+        window.MathJax.startup &&  
+        window.MathJax.startup.promise  
+    ) {  
 
-            await window.MathJax
-                .startup
-                .promise;
-        }
+        await window.MathJax  
+            .startup  
+            .promise;  
+    }  
 
-        if (
-            typeof
-                window.MathJax.typesetPromise ===
-                "function"
-        ) {
+    if (  
+        typeof  
+            window.MathJax.typesetPromise ===  
+            "function"  
+    ) {  
 
-            await window.MathJax
-                .typesetPromise(
-                    [element]
-                );
-        }
+        await window.MathJax  
+            .typesetPromise(  
+                [element]  
+            );  
+    }  
 
-    } catch (error) {
+} catch (error) {  
 
-        console.warn(
-            "MathJax gagal:",
-            error
-        );
-    }
+    console.warn(  
+        "MathJax gagal:",  
+        error  
+    );  
 }
 
+}
 
 /* =========================================================
-   SOURCE UI
+SOURCE UI
 ========================================================= */
 
 function createSourcesElement(
-    sources
+sources
 ) {
 
-    const normalized =
-        normalizeSources(
-            sources
-        );
+const normalized =  
+    normalizeSources(  
+        sources  
+    );  
 
-    if (
-        !normalized.length
-    ) {
+if (  
+    !normalized.length  
+) {  
 
-        return null;
-    }
+    return null;  
+}  
 
-    const wrapper =
-        document.createElement(
-            "div"
-        );
+const wrapper =  
+    document.createElement(  
+        "div"  
+    );  
 
-    wrapper.className =
-        "sources";
+wrapper.className =  
+    "sources";  
 
-    const title =
-        document.createElement(
-            "div"
-        );
+const title =  
+    document.createElement(  
+        "div"  
+    );  
 
-    title.className =
-        "sources-title";
+title.className =  
+    "sources-title";  
 
-    title.innerHTML = `
-        <span>Sumber</span>
-        <span class="sources-title-line"></span>
-    `;
+title.setAttribute(  
+    "role",  
+    "button"  
+);  
 
-    wrapper.appendChild(
-        title
-    );
+title.setAttribute(  
+    "aria-expanded",  
+    "false"  
+);  
 
-    const list =
-        document.createElement(
-            "div"
-        );
+title.innerHTML = `  
+    <span>Sumber</span>  
+    <span class="sources-title-line"></span>  
+    <span class="sources-toggle">^</span>  
+`;  
 
-    list.className =
-        "source-list";
+title.addEventListener(  
+    "click",  
+    () => {  
 
-    for (
-        const source of normalized
-    ) {
+        const isOpen =  
+            wrapper.classList  
+                .toggle(  
+                    "open"  
+                );  
 
-        const url =
-            cleanUrl(
-                source.url
-            );
+        title.setAttribute(  
+            "aria-expanded",  
+            isOpen  
+                ? "true"  
+                : "false"  
+        );  
+    }  
+);  
 
-        if (
-            !isValidHttpUrl(
-                url
-            )
-        ) {
-            continue;
-        }
+wrapper.appendChild(  
+    title  
+);  
 
-        const card =
-            document.createElement(
-                "a"
-            );
+const list =  
+    document.createElement(  
+        "div"  
+    );  
 
-        card.className =
-            "source-card";
+list.className =  
+    "source-list";  
 
-        card.href =
-            url;
+for (  
+    const source of normalized  
+) {  
 
-        card.target =
-            "_blank";
+    const url =  
+        cleanUrl(  
+            source.url  
+        );  
 
-        card.rel =
-            "noopener noreferrer";
+    if (  
+        !isValidHttpUrl(  
+            url  
+        )  
+    ) {  
+        continue;  
+    }  
 
-        const icon =
-            document.createElement(
-                "span"
-            );
+    const card =  
+        document.createElement(  
+            "a"  
+        );  
 
-        icon.className =
-            "source-icon";
+    card.className =  
+        "source-card";  
 
-        icon.textContent =
-            "↗";
+    card.href =  
+        url;  
 
-        const info =
-            document.createElement(
-                "span"
-            );
+    card.target =  
+        "_blank";  
 
-        info.className =
-            "source-info";
+    card.rel =  
+        "noopener noreferrer";  
 
-        const name =
-            document.createElement(
-                "span"
-            );
+    const icon =  
+        document.createElement(  
+            "span"  
+        );  
 
-        name.className =
-            "source-name";
+    icon.className =  
+        "source-icon";  
 
-        name.textContent =
-            source.title ||
-            getSourceTitle(
-                url
-            );
+    icon.textContent =  
+        "↗";  
 
-        const domain =
-            document.createElement(
-                "span"
-            );
+    const info =  
+        document.createElement(  
+            "span"  
+        );  
 
-        domain.className =
-            "source-domain";
+    info.className =  
+        "source-info";  
 
-        domain.textContent =
-            getDomainName(
-                url
-            );
+    const name =  
+        document.createElement(  
+            "span"  
+        );  
 
-        info.appendChild(
-            name
-        );
+    name.className =  
+        "source-name";  
 
-        info.appendChild(
-            domain
-        );
+    name.textContent =  
+        source.title ||  
+        getSourceTitle(  
+            url  
+        );  
 
-        const arrow =
-            document.createElement(
-                "span"
-            );
+    const domain =  
+        document.createElement(  
+            "span"  
+        );  
 
-        arrow.className =
-            "source-arrow";
+    domain.className =  
+        "source-domain";  
 
-        arrow.textContent =
-            "›";
+    domain.textContent =  
+        getDomainName(  
+            url  
+        );  
 
-        card.appendChild(
-            icon
-        );
+    info.appendChild(  
+        name  
+    );  
 
-        card.appendChild(
-            info
-        );
+    info.appendChild(  
+        domain  
+    );  
 
-        card.appendChild(
-            arrow
-        );
+    const arrow =  
+        document.createElement(  
+            "span"  
+        );  
 
-        list.appendChild(
-            card
-        );
-    }
+    arrow.className =  
+        "source-arrow";  
 
-    if (!list.children.length) {
-        return null;
-    }
+    arrow.textContent =  
+        "›";  
 
-    wrapper.appendChild(
-        list
-    );
+    card.appendChild(  
+        icon  
+    );  
 
-    return wrapper;
+    card.appendChild(  
+        info  
+    );  
+
+    card.appendChild(  
+        arrow  
+    );  
+
+    list.appendChild(  
+        card  
+    );  
+}  
+
+if (!list.children.length) {  
+    return null;  
+}  
+
+wrapper.appendChild(  
+    list  
+);  
+
+return wrapper;
+
 }
 
-
 /* =========================================================
-   COPY CODE
+COPY CODE
 ========================================================= */
 
 async function copyCode(
-    button
+button
 ) {
 
-    const wrapper =
-        button.closest(
-            ".code-wrapper"
-        );
+const wrapper =  
+    button.closest(  
+        ".code-wrapper"  
+    );  
 
-    const code =
-        wrapper
-            ?.querySelector(
-                "code"
-            )
-            ?.textContent ||
-        "";
+const code =  
+    wrapper  
+        ?.querySelector(  
+            "code"  
+        )  
+        ?.textContent ||  
+    "";  
 
-    try {
+try {  
 
-        await navigator
-            .clipboard
-            .writeText(
-                code
-            );
+    await navigator  
+        .clipboard  
+        .writeText(  
+            code  
+        );  
 
-        button.textContent =
-            "Tersalin";
+    button.textContent =  
+        "Tersalin";  
 
-        button.classList.add(
-            "copied"
-        );
+    button.classList.add(  
+        "copied"  
+    );  
 
-        setTimeout(
-            () => {
+    setTimeout(  
+        () => {  
 
-                button.textContent =
-                    "Salin";
+            button.textContent =  
+                "Salin";  
 
-                button.classList.remove(
-                    "copied"
-                );
+            button.classList.remove(  
+                "copied"  
+            );  
 
-            },
-            1500
-        );
+        },  
+        1500  
+    );  
 
-    } catch {
+} catch {  
 
-        button.textContent =
-            "Gagal";
+    button.textContent =  
+        "Gagal";  
 
-        button.classList.add(
-            "failed"
-        );
+    button.classList.add(  
+        "failed"  
+    );  
 
-        setTimeout(
-            () => {
+    setTimeout(  
+        () => {  
 
-                button.textContent =
-                    "Salin";
+            button.textContent =  
+                "Salin";  
 
-                button.classList.remove(
-                    "failed"
-                );
+            button.classList.remove(  
+                "failed"  
+            );  
 
-            },
-            1500
-        );
-    }
+        },  
+        1500  
+    );  
 }
 
+}
 
 document.addEventListener(
-    "click",
-    event => {
+"click",
+event => {
 
-        const button =
-            event.target.closest(
-                ".copy-code"
-            );
+const button =  
+        event.target.closest(  
+            ".copy-code"  
+        );  
 
-        if (button) {
+    if (button) {  
 
-            copyCode(
-                button
-            );
-        }
-    }
+        copyCode(  
+            button  
+        );  
+    }  
+}
+
 );
 
-
 /* =========================================================
-   RENDER MESSAGE
+RENDER MESSAGE
 ========================================================= */
 
 function renderMessages() {
 
-    const chat =
-        getCurrentChat();
+const chat =  
+    getCurrentChat();  
 
-    elements.messages.innerHTML =
-        "";
+elements.messages.innerHTML =  
+    "";  
 
-    if (
-        !chat ||
-        !chat.messages.length
-    ) {
+if (  
+    !chat ||  
+    !chat.messages.length  
+) {  
 
-        elements.welcome.style.display =
-            "block";
+    elements.welcome.style.display =  
+        "block";  
 
-        return;
-    }
+    return;  
+}  
 
-    elements.welcome.style.display =
-        "none";
+elements.welcome.style.display =  
+    "none";  
 
-    for (
-        const message of
-        chat.messages
-    ) {
+for (  
+    const message of  
+    chat.messages  
+) {  
 
-        renderMessage(
-            message,
-            false
-        );
-    }
+    renderMessage(  
+        message,  
+        false  
+    );  
+}  
 
-    scrollBottom();
+scrollBottom();
+
 }
-
 
 function renderMessage(
-    message,
-    scroll = true
+message,
+scroll = true
 ) {
 
-    const wrapper =
-        document.createElement(
-            "div"
-        );
+const wrapper =  
+    document.createElement(  
+        "div"  
+    );  
 
-    wrapper.className =
-        "message " +
-        (
-            message.role ===
-            "user"
-                ? "user"
-                : "assistant"
-        );
+wrapper.className =  
+    "message " +  
+    (  
+        message.role ===  
+        "user"  
+            ? "user"  
+            : "assistant"  
+    );  
 
 
-    const avatar =
-        document.createElement(
-            "div"
-        );
+const avatar =  
+    document.createElement(  
+        "div"  
+    );  
 
-    avatar.className =
-        "message-avatar";
+avatar.className =  
+    "message-avatar";  
 
-    avatar.textContent =
-        "P";
+avatar.textContent =  
+    "P";  
 
 
-    const content =
-        document.createElement(
-            "div"
-        );
+const content =  
+    document.createElement(  
+        "div"  
+    );  
 
-    content.className =
-        "message-content";
+content.className =  
+    "message-content";  
 
 
-    const bubble =
-        document.createElement(
-            "div"
-        );
+const bubble =  
+    document.createElement(  
+        "div"  
+    );  
 
-    bubble.className =
-        "message-bubble";
+bubble.className =  
+    "message-bubble";  
 
 
-    const formatted =
-        formatText(
-            message.content ||
-            ""
-        );
+const formatted =  
+    formatText(  
+        message.content ||  
+        ""  
+    );  
 
 
-    bubble.innerHTML =
-        formatted.html;
+bubble.innerHTML =  
+    formatted.html;  
 
 
-    renderMathBlocks(
-        bubble,
-        formatted.blocks
-    );
+renderMathBlocks(  
+    bubble,  
+    formatted.blocks  
+);  
 
 
-    content.appendChild(
-        bubble
-    );
+content.appendChild(  
+    bubble  
+);  
 
 
-    /*
-     * Gambar.
-     */
-    if (message.image) {
+/*  
+ * Gambar.  
+ */  
+if (message.image) {  
 
-        const image =
-            document.createElement(
-                "img"
-            );
+    const image =  
+        document.createElement(  
+            "img"  
+        );  
 
-        image.className =
-            "message-image";
+    image.className =  
+        "message-image";  
 
-        image.src =
-            `data:${message.image.mimeType};base64,${message.image.data}`;
+    image.src =  
+        `data:${message.image.mimeType};base64,${message.image.data}`;  
 
-        image.alt =
-            "Gambar";
+    image.alt =  
+        "Gambar";  
 
-        image.loading =
-            "lazy";
+    image.loading =  
+        "lazy";  
 
-        content.appendChild(
-            image
-        );
-    }
+    content.appendChild(  
+        image  
+    );  
+}  
 
 
-    /*
-     * Edit user message.
-     */
-    if (
-        message.role ===
-        "user"
-    ) {
+/*  
+ * Edit user message.  
+ */  
+if (  
+    message.role ===  
+    "user"  
+) {  
 
-        const actionsDiv =
-            document.createElement(
-                "div"
-            );
+    const actionsDiv =  
+        document.createElement(  
+            "div"  
+        );  
 
-        actionsDiv.className =
-            "message-actions";
+    actionsDiv.className =  
+        "message-actions";  
 
 
-        const editBtn =
-            document.createElement(
-                "button"
-            );
+    const editBtn =  
+        document.createElement(  
+            "button"  
+        );  
 
-        editBtn.type =
-            "button";
+    editBtn.type =  
+        "button";  
 
-        editBtn.className =
-            "message-edit-btn";
+    editBtn.className =  
+        "message-edit-btn";  
 
-        editBtn.textContent =
-            "Edit";
+    editBtn.textContent =  
+        "Edit";  
 
 
-        editBtn.addEventListener(
-            "click",
-            () => {
+    editBtn.addEventListener(  
+        "click",  
+        () => {  
 
-                elements
-                    .messageInput
-                    .value =
-                        message.content;
+            elements  
+                .messageInput  
+                .value =  
+                    message.content;  
 
-                autoResize();
+            autoResize();  
 
-                elements
-                    .messageInput
-                    .focus();
+            elements  
+                .messageInput  
+                .focus();  
 
 
-                const chat =
-                    getCurrentChat();
+            const chat =  
+                getCurrentChat();  
 
-                if (chat) {
+            if (chat) {  
 
-                    const index =
-                        chat.messages
-                            .findIndex(
-                                m =>
-                                    m.id ===
-                                    message.id
-                            );
+                const index =  
+                    chat.messages  
+                        .findIndex(  
+                            m =>  
+                                m.id ===  
+                                message.id  
+                        );  
 
-                    if (
-                        index !==
-                        -1
-                    ) {
+                if (  
+                    index !==  
+                    -1  
+                ) {  
 
-                        chat.messages =
-                            chat.messages
-                                .slice(
-                                    0,
-                                    index
-                                );
-
-                        saveChats();
-
-                        renderMessages();
-                    }
-                }
-            }
-        );
+                    chat.messages =  
+                        chat.messages  
+                            .slice(  
+                                0,  
+                                index  
+                            );  
+
+                    saveChats();  
+
+                    renderMessages();  
+                }  
+            }  
+        }  
+    );  
 
 
-        actionsDiv.appendChild(
-            editBtn
-        );
-
-        content.appendChild(
-            actionsDiv
-        );
-    }
-
-
-    /*
-     * Model.
-     */
-    if (message.model) {
-
-        const meta =
-            document.createElement(
-                "div"
-            );
-
-        meta.className =
-            "message-meta";
-
-        meta.textContent =
-            message.model;
-
-        content.appendChild(
-            meta
-        );
-    }
-
-
-    /*
-     * Sources.
-     *
-     * Hanya tampil untuk AI.
-     */
-    if (
-        message.role ===
-            "assistant" &&
-        Array.isArray(
-            message.sources
-        ) &&
-        message.sources.length
-    ) {
-
-        const sourcesElement =
-            createSourcesElement(
-                message.sources
-            );
-
-        if (sourcesElement) {
-
-            content.appendChild(
-                sourcesElement
-            );
-        }
-    }
-
-
-    if (
-        message.role ===
-        "assistant"
-    ) {
-
-        wrapper.appendChild(
-            avatar
-        );
-    }
-
-    wrapper.appendChild(
-        content
-    );
-
-    elements.messages.appendChild(
-        wrapper
-    );
-
-
-    /*
-     * MathJax.
-     */
-    if (
-        formatted.blocks.some(
-            block =>
-                block.type ===
-                    "display-math" ||
-                block.type ===
-                    "inline-math"
-        )
-    ) {
-
-        typesetMath(
-            bubble
-        );
-    }
-
-
-    if (scroll) {
-        scrollBottom();
-    }
+    actionsDiv.appendChild(  
+        editBtn  
+    );  
+
+    content.appendChild(  
+        actionsDiv  
+    );  
+}  
+
+
+/*  
+ * Model.  
+ */  
+if (message.model) {  
+
+    const meta =  
+        document.createElement(  
+            "div"  
+        );  
+
+    meta.className =  
+        "message-meta";  
+
+    meta.textContent =  
+        message.model;  
+
+    content.appendChild(  
+        meta  
+    );  
+}  
+
+
+/*  
+ * Sources.  
+ *  
+ * Hanya tampil untuk AI.  
+ */  
+if (  
+    message.role ===  
+        "assistant" &&  
+    Array.isArray(  
+        message.sources  
+    ) &&  
+    message.sources.length  
+) {  
+
+    const sourcesElement =  
+        createSourcesElement(  
+            message.sources  
+        );  
+
+    if (sourcesElement) {  
+
+        content.appendChild(  
+            sourcesElement  
+        );  
+    }  
+}  
+
+
+if (  
+    message.role ===  
+    "assistant"  
+) {  
+
+    wrapper.appendChild(  
+        avatar  
+    );  
+}  
+
+wrapper.appendChild(  
+    content  
+);  
+
+elements.messages.appendChild(  
+    wrapper  
+);  
+
+
+/*  
+ * MathJax.  
+ */  
+if (  
+    formatted.blocks.some(  
+        block =>  
+            block.type ===  
+                "display-math" ||  
+            block.type ===  
+                "inline-math"  
+    )  
+) {  
+
+    typesetMath(  
+        bubble  
+    );  
+}  
+
+
+if (scroll) {  
+    scrollBottom();  
 }
 
+}
 
 function scrollBottom() {
 
-    requestAnimationFrame(
-        () => {
+requestAnimationFrame(  
+    () => {  
 
-            elements
-                .chatContainer
-                .scrollTop =
-                    elements
-                        .chatContainer
-                        .scrollHeight;
-        }
-    );
+        elements  
+            .chatContainer  
+            .scrollTop =  
+                elements  
+                    .chatContainer  
+                    .scrollHeight;  
+    }  
+);
+
 }
 
-
 /* =========================================================
-   IMAGE
+IMAGE
 ========================================================= */
 
 function resetAttachment() {
 
-    if (
-        attachedImagePreview
-    ) {
+if (  
+    attachedImagePreview  
+) {  
 
-        URL.revokeObjectURL(
-            attachedImagePreview
-        );
-    }
+    URL.revokeObjectURL(  
+        attachedImagePreview  
+    );  
+}  
 
-    attachedImage =
-        null;
+attachedImage =  
+    null;  
 
-    attachedImagePreview =
-        null;
+attachedImagePreview =  
+    null;  
 
-    elements.fileInput.value =
-        "";
+elements.fileInput.value =  
+    "";  
 
-    elements.attachment
-        .classList
-        .remove(
-            "show"
-        );
+elements.attachment  
+    .classList  
+    .remove(  
+        "show"  
+    );  
 
-    elements.attachmentImage.src =
-        "";
+elements.attachmentImage.src =  
+    "";  
 
-    elements.imageButton
-        .classList
-        .remove(
-            "active"
-        );
+elements.imageButton  
+    .classList  
+    .remove(  
+        "active"  
+    );  
 
-    elements.modeRow
-        .classList
-        .remove(
-            "show"
-        );
+elements.modeRow  
+    .classList  
+    .remove(  
+        "show"  
+    );  
 
-    setMode(
-        "chat"
-    );
+setMode(  
+    "chat"  
+);
+
 }
-
 
 function fileToBase64(
-    file
+file
 ) {
 
-    return new Promise(
-        (
-            resolve,
-            reject
-        ) => {
+return new Promise(  
+    (  
+        resolve,  
+        reject  
+    ) => {  
 
-            const reader =
-                new FileReader();
+        const reader =  
+            new FileReader();  
 
-            reader.onload =
-                () => {
+        reader.onload =  
+            () => {  
 
-                    const result =
-                        String(
-                            reader.result ||
-                            ""
-                        );
+                const result =  
+                    String(  
+                        reader.result ||  
+                        ""  
+                    );  
 
-                    const comma =
-                        result.indexOf(
-                            ","
-                        );
+                const comma =  
+                    result.indexOf(  
+                        ","  
+                    );  
 
-                    resolve(
-                        comma === -1
-                            ? result
-                            : result.slice(
-                                comma + 1
-                            )
-                    );
-                };
+                resolve(  
+                    comma === -1  
+                        ? result  
+                        : result.slice(  
+                            comma + 1  
+                        )  
+                );  
+            };  
 
-            reader.onerror =
-                reject;
+        reader.onerror =  
+            reject;  
 
-            reader.readAsDataURL(
-                file
-            );
-        }
-    );
+        reader.readAsDataURL(  
+            file  
+        );  
+    }  
+);
+
 }
-
 
 async function handleImage(
-    file
+file
 ) {
 
-    if (!file) {
-        return;
-    }
+if (!file) {  
+    return;  
+}  
 
-    if (
-        !file.type.startsWith(
-            "image/"
-        )
-    ) {
+if (  
+    !file.type.startsWith(  
+        "image/"  
+    )  
+) {  
 
-        alert(
-            "File yang dipilih bukan gambar."
-        );
+    alert(  
+        "File yang dipilih bukan gambar."  
+    );  
 
-        return;
-    }
+    return;  
+}  
 
-    if (
-        file.size >
-        15 * 1024 * 1024
-    ) {
+if (  
+    file.size >  
+    15 * 1024 * 1024  
+) {  
 
-        alert(
-            "Ukuran gambar terlalu besar. Maksimal 15 MB."
-        );
+    alert(  
+        "Ukuran gambar terlalu besar. Maksimal 15 MB."  
+    );  
 
-        return;
-    }
+    return;  
+}  
 
-    try {
+try {  
 
-        const base64 =
-            await fileToBase64(
-                file
-            );
-
-
-        if (
-            attachedImagePreview
-        ) {
-
-            URL.revokeObjectURL(
-                attachedImagePreview
-            );
-        }
+    const base64 =  
+        await fileToBase64(  
+            file  
+        );  
 
 
-        attachedImage = {
+    if (  
+        attachedImagePreview  
+    ) {  
 
-            mimeType:
-                file.type,
-
-            data:
-                base64,
-
-            name:
-                file.name,
-
-            size:
-                file.size
-        };
+        URL.revokeObjectURL(  
+            attachedImagePreview  
+        );  
+    }  
 
 
-        attachedImagePreview =
-            URL.createObjectURL(
-                file
-            );
+    attachedImage = {  
+
+        mimeType:  
+            file.type,  
+
+        data:  
+            base64,  
+
+        name:  
+            file.name,  
+
+        size:  
+            file.size  
+    };  
 
 
-        elements
-            .attachmentImage
-            .src =
-                attachedImagePreview;
+    attachedImagePreview =  
+        URL.createObjectURL(  
+            file  
+        );  
 
 
-        elements
-            .attachmentName
-            .textContent =
-                file.name;
+    elements  
+        .attachmentImage  
+        .src =  
+            attachedImagePreview;  
 
 
-        elements
-            .attachment
-            .classList
-            .add(
-                "show"
-            );
+    elements  
+        .attachmentName  
+        .textContent =  
+            file.name;  
 
 
-        elements
-            .imageButton
-            .classList
-            .add(
-                "active"
-            );
+    elements  
+        .attachment  
+        .classList  
+        .add(  
+            "show"  
+        );  
 
 
-        elements
-            .modeRow
-            .classList
-            .add(
-                "show"
-            );
+    elements  
+        .imageButton  
+        .classList  
+        .add(  
+            "active"  
+        );  
 
 
-        setMode(
-            "chat"
-        );
+    elements  
+        .modeRow  
+        .classList  
+        .add(  
+            "show"  
+        );  
 
-    } catch {
 
-        alert(
-            "Gagal membaca gambar."
-        );
-    }
+    setMode(  
+        "chat"  
+    );  
+
+} catch {  
+
+    alert(  
+        "Gagal membaca gambar."  
+    );  
 }
 
+}
 
 function updateAttachmentLabel() {
 
-    elements
-        .attachmentMode
-        .textContent =
-            currentMode ===
-            "image"
-                ? "Mode Edit / Buat Gambar"
-                : "Mode Analisis Gambar";
-}
+elements  
+    .attachmentMode  
+    .textContent =  
+        currentMode ===  
+        "image"  
+            ? "Mode Edit / Buat Gambar"  
+            : "Mode Analisis Gambar";
 
+}
 
 function setMode(
-    mode
+mode
 ) {
 
-    currentMode =
-        mode === "image"
-            ? "image"
-            : "chat";
+currentMode =  
+    mode === "image"  
+        ? "image"  
+        : "chat";  
 
 
-    elements.chatMode
-        .classList
-        .toggle(
-            "active",
-            currentMode ===
-                "chat"
-        );
+elements.chatMode  
+    .classList  
+    .toggle(  
+        "active",  
+        currentMode ===  
+            "chat"  
+    );  
 
 
-    elements.imageMode
-        .classList
-        .toggle(
-            "active",
-            currentMode ===
-                "image"
-        );
+elements.imageMode  
+    .classList  
+    .toggle(  
+        "active",  
+        currentMode ===  
+            "image"  
+    );  
 
 
-    updateAttachmentLabel();
+updateAttachmentLabel();  
 
 
-    elements.messageInput
-        .placeholder =
-            currentMode ===
-                "image"
+elements.messageInput  
+    .placeholder =  
+        currentMode ===  
+            "image"  
 
-                ? (
-                    attachedImage
-                        ? "Contoh: ubah background menjadi sunset..."
-                        : "Contoh: buat gambar kota futuristik..."
-                )
+            ? (  
+                attachedImage  
+                    ? "Contoh: ubah background menjadi sunset..."  
+                    : "Contoh: buat gambar kota futuristik..."  
+            )  
 
-                : "Tulis pesan...";
+            : "Tulis pesan...";
+
 }
 
-
 /* =========================================================
-   SEND
+SEND
 ========================================================= */
 
 async function sendMessage() {
 
-    if (isSending) {
-        return;
-    }
+if (isSending) {  
+    return;  
+}  
 
 
-    const text =
-        elements.messageInput
-            .value
-            .trim();
+const text =  
+    elements.messageInput  
+        .value  
+        .trim();  
 
 
-    if (
-        !text &&
-        !attachedImage
-    ) {
+if (  
+    !text &&  
+    !attachedImage  
+) {  
 
-        return;
-    }
+    return;  
+}  
 
 
-    const chat =
-        ensureChat();
+const chat =  
+    ensureChat();  
 
 
-    const userMessage = {
+const userMessage = {  
 
-        id:
-            makeId(),
+    id:  
+        makeId(),  
 
-        role:
-            "user",
+    role:  
+        "user",  
 
-        content:
-            text ||
-            (
-                currentMode ===
-                "image"
+    content:  
+        text ||  
+        (  
+            currentMode ===  
+            "image"  
 
-                    ? "Buat gambar berdasarkan gambar yang saya kirim."
+                ? "Buat gambar berdasarkan gambar yang saya kirim."  
 
-                    : "Jelaskan gambar ini."
-            ),
+                : "Jelaskan gambar ini."  
+        ),  
 
-        time:
-            Date.now()
-    };
+    time:  
+        Date.now()  
+};  
 
 
-    if (attachedImage) {
+if (attachedImage) {  
 
-        userMessage.image = {
+    userMessage.image = {  
 
-            mimeType:
-                attachedImage.mimeType,
+        mimeType:  
+            attachedImage.mimeType,  
 
-            data:
-                attachedImage.data
-        };
-    }
+        data:  
+            attachedImage.data  
+    };  
+}  
 
 
-    chat.messages.push(
-        userMessage
-    );
+chat.messages.push(  
+    userMessage  
+);  
 
 
-    if (
-        chat.title ===
-        "Chat baru"
-    ) {
+if (  
+    chat.title ===  
+    "Chat baru"  
+) {  
 
-        chat.title =
-            text
+    chat.title =  
+        text  
 
-                ? text.slice(
-                    0,
-                    42
-                )
+            ? text.slice(  
+                0,  
+                42  
+            )  
 
-                : "Percakapan gambar";
-    }
+            : "Percakapan gambar";  
+}  
 
 
-    chat.updatedAt =
-        Date.now();
+chat.updatedAt =  
+    Date.now();  
 
 
-    saveChats();
+saveChats();  
 
-    renderHistory();
+renderHistory();  
 
 
-    elements.welcome.style.display =
-        "none";
+elements.welcome.style.display =  
+    "none";  
 
 
-    renderMessage(
-        userMessage
-    );
+renderMessage(  
+    userMessage  
+);  
 
 
-    const requestImage =
-        attachedImage
+const requestImage =  
+    attachedImage  
 
-            ? {
+        ? {  
 
-                mimeType:
-                    attachedImage.mimeType,
+            mimeType:  
+                attachedImage.mimeType,  
 
-                data:
-                    attachedImage.data
+            data:  
+                attachedImage.data  
 
-            }
+        }  
 
-            : null;
+        : null;  
 
 
-    const requestMode =
-        currentMode;
+const requestMode =  
+    currentMode;  
 
 
-    elements.messageInput.value =
-        "";
+elements.messageInput.value =  
+    "";  
 
 
-    autoResize();
+autoResize();  
 
 
-    resetAttachment();
+resetAttachment();  
 
 
-    setSending(
-        true
-    );
+setSending(  
+    true  
+);  
 
 
-    try {
+try {  
 
-        /*
-         * Kirim history percakapan
-         * + system prompt.
-         */
-        const messagesWithSystem = [
+    /*  
+     * Kirim history percakapan  
+     * + system prompt.  
+     */  
+    const messagesWithSystem = [  
 
-            {
-                role:
-                    "system",
+        {  
+            role:  
+                "system",  
 
-                content:
-                    CREATOR_SYSTEM_PROMPT
-            },
+            content:  
+                CREATOR_SYSTEM_PROMPT  
+        },  
 
-            ...chat.messages.map(
-                item => ({
+        ...chat.messages.map(  
+            item => ({  
 
-                    role:
-                        item.role,
+                role:  
+                    item.role,  
 
-                    content:
-                        item.content
+                content:  
+                    item.content  
 
-                })
-            )
-        ];
+            })  
+        )  
+    ];  
 
 
-        const response =
-            await fetch(
-                "/api/chat",
-                {
+    const response =  
+        await fetch(  
+            "/api/chat",  
+            {  
 
-                    method:
-                        "POST",
+                method:  
+                    "POST",  
 
-                    headers: {
+                headers: {  
 
-                        "Content-Type":
-                            "application/json"
-                    },
+                    "Content-Type":  
+                        "application/json"  
+                },  
 
-                    body:
-                        JSON.stringify({
+                body:  
+                    JSON.stringify({  
 
-                            messages:
-                                messagesWithSystem,
+                        messages:  
+                            messagesWithSystem,  
 
-                            image:
-                                requestImage,
+                        image:  
+                            requestImage,  
 
-                            mode:
-                                requestMode
+                        mode:  
+                            requestMode  
 
-                        })
-                }
-            );
+                    })  
+            }  
+        );  
 
 
-        const raw =
-            await response.text();
+    const raw =  
+        await response.text();  
 
 
-        let data;
+    let data;  
 
 
-        try {
+    try {  
 
-            data =
-                JSON.parse(
-                    raw
-                );
+        data =  
+            JSON.parse(  
+                raw  
+            );  
 
-        } catch {
+    } catch {  
 
-            throw new Error(
-                raw ||
-                `HTTP ${response.status}`
-            );
-        }
+        throw new Error(  
+            raw ||  
+            `HTTP ${response.status}`  
+        );  
+    }  
 
 
-        if (!response.ok) {
+    if (!response.ok) {  
 
-            throw new Error(
-                data?.error ||
-                `HTTP ${response.status}`
-            );
-        }
+        throw new Error(  
+            data?.error ||  
+            `HTTP ${response.status}`  
+        );  
+    }  
 
 
-        /*
-         * Ambil sumber dari:
-         *
-         * data.sources
-         * data.references
-         * data.citations
-         * URL yang ada di data.reply
-         */
-        const sources =
-            extractSources(
-                data
-            );
+    /*  
+     * Ambil sumber dari:  
+     *  
+     * data.sources  
+     * data.references  
+     * data.citations  
+     * URL yang ada di data.reply  
+     */  
+    const sources =  
+        extractSources(  
+            data  
+        );  
 
 
-        const assistantMessage = {
+    const assistantMessage = {  
 
-            id:
-                makeId(),
+        id:  
+            makeId(),  
 
-            role:
-                "assistant",
+        role:  
+            "assistant",  
 
-            content:
-                data.reply ||
-                "Tidak ada jawaban.",
+        content:  
+            data.reply ||  
+            "Tidak ada jawaban.",  
 
-            model:
-                data.model
-                    ? String(
-                        data.model
-                    )
-                    : "Google AI",
+        model:  
+            data.model  
+                ? String(  
+                    data.model  
+                )  
+                : "Pingu AI",  
 
-            sources:
-                sources,
+        sources:  
+            sources,  
 
-            time:
-                Date.now()
-        };
+        time:  
+            Date.now()  
+    };  
 
 
-        /*
-         * Jika backend mengirim
-         * gambar hasil generasi.
-         */
-        if (
-            data.image &&
-            data.image.data
-        ) {
+    /*  
+     * Jika backend mengirim  
+     * gambar hasil generasi.  
+     */  
+    if (  
+        data.image &&  
+        data.image.data  
+    ) {  
 
-            assistantMessage.image = {
+        assistantMessage.image = {  
 
-                mimeType:
-                    data.image.mimeType ||
-                    "image/png",
+            mimeType:  
+                data.image.mimeType ||  
+                "image/png",  
 
-                data:
-                    data.image.data
-            };
-        }
+            data:  
+                data.image.data  
+        };  
+    }  
 
 
-        chat.messages.push(
-            assistantMessage
-        );
+    chat.messages.push(  
+        assistantMessage  
+    );  
 
 
-        chat.updatedAt =
-            Date.now();
+    chat.updatedAt =  
+        Date.now();  
 
 
-        saveChats();
+    saveChats();  
 
 
-        renderMessage(
-            assistantMessage
-        );
+    renderMessage(  
+        assistantMessage  
+    );  
 
 
-        elements.modelLabel.textContent =
-            data.model
-                ? String(
-                    data.model
-                )
-                : "Google AI";
+    elements.modelLabel.textContent =  
+        data.model  
+            ? String(  
+                data.model  
+            )  
+            : "Pingu AI";  
 
 
-        renderHistory();
+    renderHistory();  
 
 
-    } catch (error) {
+} catch (error) {  
 
-        const errorMessage = {
+    const errorMessage = {  
 
-            id:
-                makeId(),
+        id:  
+            makeId(),  
 
-            role:
-                "assistant",
+        role:  
+            "assistant",  
 
-            content:
-                `Terjadi kesalahan:\n${
-                    error?.message ||
-                    "Unknown error"
-                }`,
+        content:  
+            `Terjadi kesalahan:\n${  
+                error?.message ||  
+                "Unknown error"  
+            }`,  
 
-            model:
-                "Pingu AI",
+        model:  
+            "Pingu AI",  
 
-            sources:
-                [],
+        sources:  
+            [],  
 
-            time:
-                Date.now()
-        };
+        time:  
+            Date.now()  
+    };  
 
 
-        chat.messages.push(
-            errorMessage
-        );
+    chat.messages.push(  
+        errorMessage  
+    );  
 
 
-        chat.updatedAt =
-            Date.now();
+    chat.updatedAt =  
+        Date.now();  
 
 
-        saveChats();
+    saveChats();  
 
 
-        renderMessage(
-            errorMessage
-        );
+    renderMessage(  
+        errorMessage  
+    );  
 
 
-        renderHistory();
+    renderHistory();  
 
-    } finally {
+} finally {  
 
-        setSending(
-            false
-        );
-    }
+    setSending(  
+        false  
+    );  
 }
 
+}
 
 /* =========================================================
-   SEND STATE
+SEND STATE
 ========================================================= */
 
 function setSending(
-    sending
+sending
 ) {
 
-    isSending =
-        sending;
+isSending =  
+    sending;  
 
 
-    elements.sendButton.disabled =
-        sending;
+elements.sendButton.disabled =  
+    sending;  
 
 
-    elements.typing
-        .classList
-        .toggle(
-            "show",
-            sending
-        );
+elements.typing  
+    .classList  
+    .toggle(  
+        "show",  
+        sending  
+    );  
 
 
-    if (sending) {
+if (sending) {  
 
-        scrollBottom();
-    }
+    scrollBottom();  
 }
 
+}
 
 /* =========================================================
-   TEXTAREA
+TEXTAREA
 ========================================================= */
 
 function autoResize() {
 
-    const textarea =
-        elements.messageInput;
+const textarea =  
+    elements.messageInput;  
 
 
-    textarea.style.height =
-        "auto";
+textarea.style.height =  
+    "auto";  
 
 
-    textarea.style.height =
-        Math.min(
-            textarea.scrollHeight,
-            140
-        ) +
-        "px";
+textarea.style.height =  
+    Math.min(  
+        textarea.scrollHeight,  
+        140  
+    ) +  
+    "px";
+
 }
 
-
 /* =========================================================
-   EVENTS
+EVENTS
 ========================================================= */
 
 elements.composer.addEventListener(
-    "submit",
-    event => {
+"submit",
+event => {
 
-        event.preventDefault();
+event.preventDefault();  
 
-        sendMessage();
-    }
+    sendMessage();  
+}
+
 );
-
 
 elements.messageInput.addEventListener(
-    "input",
-    autoResize
+"input",
+autoResize
 );
-
 
 elements.messageInput.addEventListener(
-    "keydown",
-    event => {
+"keydown",
+event => {
 
-        if (
-            event.key ===
-                "Enter" &&
-            !event.shiftKey
-        ) {
+if (  
+        event.key ===  
+            "Enter" &&  
+        !event.shiftKey  
+    ) {  
 
-            event.preventDefault();
+        event.preventDefault();  
 
-            sendMessage();
-        }
-    }
+        sendMessage();  
+    }  
+}
+
 );
-
 
 elements.imageButton.addEventListener(
-    "click",
-    () => {
+"click",
+() => {
 
-        elements.fileInput.click();
-    }
+elements.fileInput.click();  
+}
+
 );
-
 
 elements.fileInput.addEventListener(
-    "change",
-    () => {
+"change",
+() => {
 
-        const file =
-            elements.fileInput
-                .files?.[0];
+const file =  
+        elements.fileInput  
+            .files?.[0];  
 
-        if (file) {
+    if (file) {  
 
-            handleImage(
-                file
-            );
-        }
-    }
+        handleImage(  
+            file  
+        );  
+    }  
+}
+
 );
-
 
 elements.removeAttachment.addEventListener(
-    "click",
-    resetAttachment
+"click",
+resetAttachment
 );
-
 
 elements.chatMode.addEventListener(
-    "click",
-    () => {
+"click",
+() => {
 
-        setMode(
-            "chat"
-        );
-    }
+setMode(  
+        "chat"  
+    );  
+}
+
 );
-
 
 elements.imageMode.addEventListener(
-    "click",
-    () => {
+"click",
+() => {
 
-        setMode(
-            "image"
-        );
-    }
+setMode(  
+        "image"  
+    );  
+}
+
 );
-
 
 elements.newChatButton.addEventListener(
-    "click",
-    () => {
+"click",
+() => {
 
-        createChat();
+createChat();  
 
-        elements.messageInput.focus();
+    elements.messageInput.focus();  
 
-        closeHistory();
-    }
+    closeHistory();  
+}
+
 );
-
 
 elements.historyClose.addEventListener(
-    "click",
-    () => {
+"click",
+() => {
 
-        closeHistory();
+closeHistory();  
 
-        elements.messageInput.focus();
-    }
+    elements.messageInput.focus();  
+}
+
 );
-
 
 elements.mobileMenu.addEventListener(
-    "click",
-    () => {
+"click",
+() => {
 
-        toggleHistory();
-    }
+toggleHistory();  
+}
+
 );
 
+/*
+
+- Klik di luar sidebar
+
+- pada mobile menutup history.
+  */
+  document.addEventListener(
+  "click",
+  event => {
+
+  if (  
+       window.innerWidth >  
+       720  
+   ) {  
+
+       return;  
+   }  
+
+
+   if (  
+       !elements.sidebar  
+           .classList  
+           .contains(  
+               "open"  
+           )  
+   ) {  
+
+       return;  
+   }  
+
+
+   const insideSidebar =  
+       elements.sidebar.contains(  
+           event.target  
+       );  
+
+
+   const clickedMenu =  
+       elements.mobileMenu.contains(  
+           event.target  
+       );  
+
+
+   if (  
+       !insideSidebar &&  
+       !clickedMenu  
+   ) {  
+
+       closeHistory();  
+   }
+
+  }
+  );
 
 /*
- * Klik di luar sidebar
- * pada mobile menutup history.
- */
-document.addEventListener(
-    "click",
-    event => {
 
-        if (
-            window.innerWidth >
-            720
-        ) {
+- Suggestions.
+  */
+  document
+  .querySelectorAll(
+  ".suggestion"
+  )
+  .forEach(
+  button => {
 
-            return;
-        }
+  button.addEventListener(  
+           "click",  
+           () => {  
 
+               elements  
+                   .messageInput  
+                   .value =  
+                       button.dataset  
+                           .prompt ||  
+                       "";  
 
-        if (
-            !elements.sidebar
-                .classList
-                .contains(
-                    "open"
-                )
-        ) {
+               autoResize();  
 
-            return;
-        }
+               elements  
+                   .messageInput  
+                   .focus();  
+           }  
+       );  
+   }
 
-
-        const insideSidebar =
-            elements.sidebar.contains(
-                event.target
-            );
-
-
-        const clickedMenu =
-            elements.mobileMenu.contains(
-                event.target
-            );
-
-
-        if (
-            !insideSidebar &&
-            !clickedMenu
-        ) {
-
-            closeHistory();
-        }
-    }
-);
-
-
-/*
- * Suggestions.
- */
-document
-    .querySelectorAll(
-        ".suggestion"
-    )
-    .forEach(
-        button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    elements
-                        .messageInput
-                        .value =
-                            button.dataset
-                                .prompt ||
-                            "";
-
-                    autoResize();
-
-                    elements
-                        .messageInput
-                        .focus();
-                }
-            );
-        }
-    );
-
+  );
 
 /* =========================================================
-   INITIAL LOAD
+INITIAL LOAD
 ========================================================= */
 
 loadChats();
 
-
 if (!chats.length) {
 
-    createChat();
+createChat();
 
 } else {
 
-    const saved =
-        loadActiveChat();
+const saved =  
+    loadActiveChat();  
 
 
-    if (
-        saved &&
-        chats.some(
-            chat =>
-                chat.id ===
-                saved
-        )
-    ) {
+if (  
+    saved &&  
+    chats.some(  
+        chat =>  
+            chat.id ===  
+            saved  
+    )  
+) {  
 
-        currentChatId =
-            saved;
+    currentChatId =  
+        saved;  
 
-    } else {
+} else {  
 
-        sortChats();
+    sortChats();  
 
-        currentChatId =
-            chats[0].id;
-    }
+    currentChatId =  
+        chats[0].id;  
+}  
 
 
-    saveActiveChat();
+saveActiveChat();  
 
-    renderHistory();
+renderHistory();  
 
-    renderMessages();
+renderMessages();
+
 }
 
-
 setMode(
-    "chat"
+"chat"
 );
-
 
 autoResize();
 
-
 elements.statusText.textContent =
-    "Online / Google AI";
+"Online / AI";
 
-</script>
-
-</body>
+</script>  </body>  
 </html>
