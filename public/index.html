@@ -465,7 +465,8 @@
 
         border-bottom: 1px solid var(--border);  
 
-        background: rgba(255,255,255,.28);  
+        background: rgba(255,255,255,.38);
+        box-shadow: 0 1px 0 rgba(255,255,255,.55);
 
         backdrop-filter: blur(8px);  
         -webkit-backdrop-filter: blur(8px);  
@@ -544,8 +545,8 @@
     }  
 
     .welcome-logo {  
-        width: 64px;  
-        height: 64px;  
+        width: 72px;  
+        height: 72px;  
 
         margin: 0 auto 17px;  
 
@@ -1526,6 +1527,111 @@
         display: none;  
     }  
 
+    /* =====================================================
+       PINGU AI AVATAR / MOTION
+    ===================================================== */
+
+    .pingu-visual {
+        width: 100%;
+        height: 100%;
+        display: block;
+        overflow: visible;
+        transform-origin: 50% 72%;
+        animation: pingu-idle 4.8s ease-in-out infinite;
+        will-change: transform;
+    }
+
+    .pingu-visual .pingu-head,
+    .pingu-visual .pingu-wing-left,
+    .pingu-visual .pingu-wing-right,
+    .pingu-visual .pingu-eye,
+    .pingu-visual .pingu-pencil {
+        transform-box: fill-box;
+    }
+
+    .pingu-visual .pingu-head { transform-origin: 50% 70%; }
+    .pingu-visual .pingu-wing-left,
+    .pingu-visual .pingu-wing-right { transform-origin: 50% 35%; }
+    .pingu-visual .pingu-eye { transform-origin: center; }
+    .pingu-visual .pingu-pencil { transform-origin: 10% 90%; opacity: 0; }
+
+    .pingu-visual.idle { animation: pingu-idle 4.8s ease-in-out infinite; }
+    .pingu-visual.thinking { animation: pingu-think 1.9s ease-in-out infinite; }
+    .pingu-visual.writing { animation: pingu-writing 1.35s ease-in-out infinite; }
+
+    .pingu-visual.writing .pingu-head { animation: pingu-head-write 1.35s ease-in-out infinite; }
+    .pingu-visual.writing .pingu-wing-right { animation: pingu-write-wing .72s ease-in-out infinite; }
+    .pingu-visual.writing .pingu-wing-left { animation: pingu-support-wing 1.35s ease-in-out infinite; }
+    .pingu-visual.writing .pingu-pencil { opacity: 1; animation: pingu-pencil .72s ease-in-out infinite; }
+    .pingu-visual.thinking .pingu-head { animation: pingu-head-think 1.9s ease-in-out infinite; }
+    .pingu-visual.idle .pingu-eye,
+    .pingu-visual.thinking .pingu-eye,
+    .pingu-visual.writing .pingu-eye { animation: pingu-blink 5.8s ease-in-out infinite; }
+
+    @keyframes pingu-idle {
+        0%,100% { transform: translate3d(0,0,0) rotate(0deg); }
+        25% { transform: translate3d(0,-2px,0) rotate(-.7deg); }
+        50% { transform: translate3d(0,-3px,0) rotate(0deg); }
+        75% { transform: translate3d(0,-1px,0) rotate(.7deg); }
+    }
+
+    @keyframes pingu-think {
+        0%,100% { transform: translate3d(0,0,0) rotate(-1deg) scale(1); }
+        50% { transform: translate3d(0,-2px,0) rotate(1.2deg) scale(1.015); }
+    }
+
+    @keyframes pingu-writing {
+        0%,100% { transform: translate3d(0,0,0) rotate(-.8deg); }
+        25% { transform: translate3d(0,-1px,0) rotate(.4deg); }
+        50% { transform: translate3d(0,1px,0) rotate(.8deg); }
+        75% { transform: translate3d(0,-1px,0) rotate(-.2deg); }
+    }
+
+    @keyframes pingu-head-write {
+        0%,100% { transform: rotate(0deg); }
+        50% { transform: rotate(4deg) translateY(1px); }
+    }
+
+    @keyframes pingu-head-think {
+        0%,100% { transform: rotate(0deg); }
+        50% { transform: rotate(-3deg); }
+    }
+
+    @keyframes pingu-write-wing {
+        0%,100% { transform: rotate(7deg) translate(0,0); }
+        50% { transform: rotate(-13deg) translate(-2px,2px); }
+    }
+
+    @keyframes pingu-support-wing {
+        0%,100% { transform: rotate(-2deg); }
+        50% { transform: rotate(5deg); }
+    }
+
+    @keyframes pingu-pencil {
+        0%,100% { transform: rotate(-8deg) translate(0,0); }
+        50% { transform: rotate(10deg) translate(-2px,2px); }
+    }
+
+    @keyframes pingu-blink {
+        0%,91%,100% { transform: scaleY(1); }
+        94% { transform: scaleY(.12); }
+        96% { transform: scaleY(1); }
+    }
+
+    .message.assistant { animation: assistant-in .32s cubic-bezier(.2,.8,.2,1) both; }
+    .message.assistant .message-bubble { transition: transform .22s ease, box-shadow .22s ease, background .22s ease; }
+    .message.assistant:hover .message-bubble { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(55,48,39,.055); }
+    .welcome-logo, .message-avatar, .typing-avatar { overflow: visible; }
+
+    @keyframes assistant-in {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .pingu-visual, .pingu-visual *, .message.assistant, .typing-dots span { animation: none !important; }
+    }
+
     /* =====================================================  
        TYPING  
     ===================================================== */  
@@ -1547,30 +1653,35 @@
     }  
 
     .typing-avatar {  
-        width: 30px;  
-        height: 30px;  
-
+        width: 34px;  
+        height: 34px;  
         display: grid;  
         place-items: center;  
-
-        border-radius: 10px;  
-
-        background:  
-            rgba(255,255,255,.68);  
-
-        border:  
-            1px solid  
-            var(--border-light);  
-
+        border-radius: 11px;  
+        background: linear-gradient(145deg, rgba(255,255,255,.86), rgba(232,224,211,.72));  
+        border: 1px solid var(--border-light);  
         color: var(--accent);  
-
         font-size: 10px;  
         font-weight: 800;  
+        box-shadow: 0 5px 16px rgba(55,48,39,.07);  
+        overflow: visible;  
     }  
 
+    .typing-label {
+        font-size: 11px;
+        color: var(--muted);
+        margin-right: 1px;
+        white-space: nowrap;
+    }
+
     .typing-dots {  
-        display: flex;  
-        gap: 4px;  
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 7px 9px;
+        border-radius: 10px;
+        background: rgba(255,255,255,.42);
+        border: 1px solid rgba(255,255,255,.58);
     }  
 
     .typing-dots span {  
@@ -1859,8 +1970,26 @@
             id="welcome"  
         >  
 
-            <div class="welcome-logo">  
-                P  
+            <div class="welcome-logo" aria-hidden="true">
+                <svg class="pingu-visual idle" viewBox="0 0 100 100" role="img" aria-label="Pingu">
+                    <g class="pingu-body">
+                        <ellipse cx="50" cy="61" rx="31" ry="34" fill="#202027"/>
+                        <ellipse cx="50" cy="67" rx="20" ry="23" fill="#f7f7f2"/>
+                        <ellipse cx="39" cy="88" rx="10" ry="5" fill="#f29a35"/>
+                        <ellipse cx="61" cy="88" rx="10" ry="5" fill="#f29a35"/>
+                    </g>
+                    <g class="pingu-wing-left"><path d="M27 53C15 56 13 72 24 78C29 80 33 74 35 66Z" fill="#17181d"/></g>
+                    <g class="pingu-wing-right"><path d="M73 53C85 56 87 72 76 78C71 80 67 74 65 66Z" fill="#17181d"/></g>
+                    <g class="pingu-head">
+                        <ellipse cx="50" cy="39" rx="29" ry="27" fill="#202027"/>
+                        <ellipse cx="39" cy="38" rx="11" ry="14" fill="#f7f7f2"/>
+                        <ellipse cx="61" cy="38" rx="11" ry="14" fill="#f7f7f2"/>
+                        <ellipse class="pingu-eye" cx="42" cy="38" rx="3" ry="4" fill="#202027"/>
+                        <ellipse class="pingu-eye" cx="58" cy="38" rx="3" ry="4" fill="#202027"/>
+                        <path d="M43 47L50 53L57 47L50 44Z" fill="#f29a35"/>
+                    </g>
+                    <path class="pingu-pencil" d="M69 66L88 84L84 88L65 70Z" fill="#6f5ce7"/>
+                </svg>
             </div>  
 
             <h1>  
@@ -1918,9 +2047,29 @@
             id="typing"  
         >  
 
-            <div class="typing-avatar">  
-                P  
-            </div>  
+            <div class="typing-avatar" aria-hidden="true">
+                <svg class="pingu-visual writing" viewBox="0 0 100 100">
+                    <g class="pingu-body">
+                        <ellipse cx="50" cy="61" rx="31" ry="34" fill="#202027"/>
+                        <ellipse cx="50" cy="67" rx="20" ry="23" fill="#f7f7f2"/>
+                        <ellipse cx="39" cy="88" rx="10" ry="5" fill="#f29a35"/>
+                        <ellipse cx="61" cy="88" rx="10" ry="5" fill="#f29a35"/>
+                    </g>
+                    <g class="pingu-wing-left"><path d="M27 53C15 56 13 72 24 78C29 80 33 74 35 66Z" fill="#17181d"/></g>
+                    <g class="pingu-wing-right"><path d="M73 53C85 56 87 72 76 78C71 80 67 74 65 66Z" fill="#17181d"/></g>
+                    <g class="pingu-head">
+                        <ellipse cx="50" cy="39" rx="29" ry="27" fill="#202027"/>
+                        <ellipse cx="39" cy="38" rx="11" ry="14" fill="#f7f7f2"/>
+                        <ellipse cx="61" cy="38" rx="11" ry="14" fill="#f7f7f2"/>
+                        <ellipse class="pingu-eye" cx="42" cy="38" rx="3" ry="4" fill="#202027"/>
+                        <ellipse class="pingu-eye" cx="58" cy="38" rx="3" ry="4" fill="#202027"/>
+                        <path d="M43 47L50 53L57 47L50 44Z" fill="#f29a35"/>
+                    </g>
+                    <path class="pingu-pencil" d="M69 66L88 84L84 88L65 70Z" fill="#6f5ce7"/>
+                </svg>
+            </div>
+
+            <div class="typing-label">Pingu sedang menulis</div>
 
             <div class="typing-dots">  
                 <span></span>  
@@ -4037,10 +4186,32 @@ const avatar =
     );  
 
 avatar.className =  
-    "message-avatar";  
+    "message-avatar";
 
-avatar.textContent =  
-    "P";  
+avatar.setAttribute(
+    "aria-hidden",
+    "true"
+);
+
+avatar.innerHTML = `<svg class="pingu-visual idle" viewBox="0 0 100 100">
+                    <g class="pingu-body">
+                        <ellipse cx="50" cy="61" rx="31" ry="34" fill="#202027"/>
+                        <ellipse cx="50" cy="67" rx="20" ry="23" fill="#f7f7f2"/>
+                        <ellipse cx="39" cy="88" rx="10" ry="5" fill="#f29a35"/>
+                        <ellipse cx="61" cy="88" rx="10" ry="5" fill="#f29a35"/>
+                    </g>
+                    <g class="pingu-wing-left"><path d="M27 53C15 56 13 72 24 78C29 80 33 74 35 66Z" fill="#17181d"/></g>
+                    <g class="pingu-wing-right"><path d="M73 53C85 56 87 72 76 78C71 80 67 74 65 66Z" fill="#17181d"/></g>
+                    <g class="pingu-head">
+                        <ellipse cx="50" cy="39" rx="29" ry="27" fill="#202027"/>
+                        <ellipse cx="39" cy="38" rx="11" ry="14" fill="#f7f7f2"/>
+                        <ellipse cx="61" cy="38" rx="11" ry="14" fill="#f7f7f2"/>
+                        <ellipse class="pingu-eye" cx="42" cy="38" rx="3" ry="4" fill="#202027"/>
+                        <ellipse class="pingu-eye" cx="58" cy="38" rx="3" ry="4" fill="#202027"/>
+                        <path d="M43 47L50 53L57 47L50 44Z" fill="#f29a35"/>
+                    </g>
+                    <path class="pingu-pencil" d="M69 66L88 84L84 88L65 70Z" fill="#6f5ce7"/>
+                </svg>`;  
 
 
 const content =  
@@ -4936,7 +5107,9 @@ try {
 
     renderMessage(  
         assistantMessage  
-    );  
+    );
+
+    setPinguState("idle");
 
 
     elements.modelLabel.textContent =  
@@ -5004,6 +5177,34 @@ try {
 }
 
 /* =========================================================
+PINGU MOTION STATE
+========================================================= */
+
+function setPinguState(state) {
+
+    const safeState =
+        state === "writing" ||
+        state === "thinking"
+            ? state
+            : "idle";
+
+    document
+        .querySelectorAll(".pingu-visual")
+        .forEach(avatar => {
+
+            avatar.classList.remove(
+                "idle",
+                "thinking",
+                "writing"
+            );
+
+            avatar.classList.add(
+                safeState
+            );
+        });
+}
+
+/* =========================================================
 SEND STATE
 ========================================================= */
 
@@ -5024,8 +5225,13 @@ elements.typing
     .toggle(  
         "show",  
         sending  
-    );  
+    );
 
+setPinguState(
+    sending
+        ? "writing"
+        : "idle"
+    );
 
 if (sending) {  
 
