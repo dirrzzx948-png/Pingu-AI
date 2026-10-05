@@ -1783,6 +1783,624 @@
             flex: 0 0 40px;
         }
     }
+
+/* =========================================================
+   PINGU AI — PREMIUM DARK REDESIGN
+   UI-only override. Existing application logic is preserved.
+========================================================= */
+
+:root {
+    --bg: #07090d;
+    --bg-soft: #0b0e14;
+    --glass: rgba(17, 21, 29, 0.72);
+    --glass-strong: rgba(20, 24, 33, 0.92);
+    --glass-soft: rgba(15, 19, 27, 0.55);
+    --border: rgba(255,255,255,0.075);
+    --border-light: rgba(255,255,255,0.10);
+    --text: #f3f6fb;
+    --text-soft: #aab2c0;
+    --muted: #697384;
+    --accent: #7c6cff;
+    --accent-dark: #5b4be2;
+    --accent-soft: rgba(124,108,255,0.12);
+    --accent-glow: rgba(124,108,255,0.22);
+    --danger: #ff6b75;
+    --success: #62d58b;
+    --source-bg: rgba(18,23,32,0.78);
+    --source-hover: rgba(27,33,45,0.92);
+    --sidebar: 264px;
+    --shadow-sm: 0 5px 18px rgba(0,0,0,.18);
+    --shadow-md: 0 14px 38px rgba(0,0,0,.28);
+    --shadow-lg: 0 22px 60px rgba(0,0,0,.38);
+}
+
+html, body {
+    background: #07090d;
+}
+
+body {
+    background:
+        radial-gradient(circle at 18% 0%, rgba(124,108,255,.12), transparent 28%),
+        radial-gradient(circle at 88% 84%, rgba(40,104,255,.075), transparent 30%),
+        linear-gradient(180deg, #080a0f 0%, #07090d 100%);
+    color: var(--text);
+}
+
+button:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline-color: rgba(124,108,255,.72);
+}
+
+/* Sidebar */
+.sidebar {
+    background: rgba(10,13,19,.92);
+    border-right: 1px solid rgba(255,255,255,.065);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.brand {
+    padding: 10px 6px 16px;
+}
+
+.brand-logo,
+.welcome-logo {
+    background: linear-gradient(145deg,#181d27,#0e1219);
+    border-color: rgba(255,255,255,.09);
+    box-shadow: 0 10px 30px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.brand-logo {
+    color: #9b91ff;
+}
+
+.brand-title {
+    color: #f7f8fb;
+}
+
+.brand-subtitle {
+    color: #6e7888;
+}
+
+.new-chat {
+    background: linear-gradient(145deg, rgba(124,108,255,.16), rgba(124,108,255,.07));
+    border-color: rgba(124,108,255,.18);
+    color: #e9eaff;
+    box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+
+.new-chat:hover {
+    background: rgba(124,108,255,.2);
+    box-shadow: 0 12px 28px rgba(0,0,0,.25);
+}
+
+.history-head {
+    color: #707a8b;
+}
+
+.history-title {
+    color: #747e8d;
+}
+
+.history-item-wrap {
+    border-color: transparent;
+}
+
+.history-item {
+    color: #aab2c0;
+}
+
+.history-item:hover {
+    background: rgba(255,255,255,.045);
+    color: #f3f5f8;
+}
+
+.history-item.active {
+    background: rgba(124,108,255,.105);
+    border-color: rgba(124,108,255,.13);
+    color: #eeeefe;
+}
+
+.history-delete:hover {
+    background: rgba(255,107,117,.12);
+}
+
+.sidebar-footer {
+    border-top-color: rgba(255,255,255,.06);
+}
+
+.status {
+    color: #707a8b;
+}
+
+.status-dot {
+    background: #61d98b;
+    box-shadow: 0 0 0 3px rgba(97,217,139,.10), 0 0 14px rgba(97,217,139,.24);
+}
+
+/* Main / header */
+.main {
+    background:
+        radial-gradient(circle at 50% -20%, rgba(124,108,255,.055), transparent 38%);
+}
+
+.topbar {
+    min-height: 64px;
+    padding: 0 20px;
+    background: rgba(8,11,16,.74);
+    border-bottom: 1px solid rgba(255,255,255,.055);
+    box-shadow: 0 1px 0 rgba(255,255,255,.025);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.top-title {
+    color: #f5f7fb;
+    font-size: 15px;
+}
+
+.top-model {
+    color: #667183;
+}
+
+.mobile-menu {
+    background: rgba(255,255,255,.045);
+    border-color: rgba(255,255,255,.075);
+    color: #aab2c0;
+}
+
+.mobile-menu:hover {
+    background: rgba(255,255,255,.08);
+    color: #fff;
+}
+
+/* Chat */
+.chat-container {
+    padding: 34px max(20px,5vw) 190px;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.10);
+}
+
+.welcome {
+    max-width: 720px;
+    margin-top: 9vh;
+}
+
+.welcome-logo {
+    width: 104px;
+    height: 104px;
+    border-radius: 31px;
+    margin-bottom: 20px;
+    box-shadow:
+        0 18px 55px rgba(0,0,0,.35),
+        0 0 0 1px rgba(124,108,255,.08),
+        inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.welcome h1 {
+    color: #f6f8fb;
+    background: linear-gradient(135deg,#ffffff 22%,#a9a1ff 72%,#7c6cff);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.welcome p {
+    color: #8f99a9;
+    max-width: 600px;
+}
+
+.suggestions {
+    gap: 11px;
+    max-width: 680px;
+}
+
+.suggestion {
+    background: rgba(16,20,28,.76);
+    border: 1px solid rgba(255,255,255,.065);
+    color: #aeb6c4;
+    box-shadow: 0 10px 25px rgba(0,0,0,.16);
+}
+
+.suggestion:hover {
+    background: rgba(23,28,38,.94);
+    color: #f0f2f6;
+    border-color: rgba(124,108,255,.2);
+    box-shadow: 0 14px 30px rgba(0,0,0,.25);
+}
+
+.suggestion::after {
+    background: linear-gradient(90deg,transparent,#7c6cff,transparent);
+}
+
+/* Pingu motion / character */
+.pingu-visual {
+    filter: drop-shadow(0 10px 16px rgba(0,0,0,.18));
+}
+
+.pingu-visual .pingu-pencil {
+    stroke: none;
+}
+
+.pingu-visual.relaxed {
+    animation: pingu-relaxed 6.5s ease-in-out infinite;
+}
+
+.pingu-visual.relaxed .pingu-eye {
+    animation: pingu-blink 6s ease-in-out infinite;
+}
+
+@keyframes pingu-relaxed {
+    0%,100% { transform: translateY(0) rotate(0); }
+    45% { transform: translateY(-2px) rotate(-.6deg); }
+    70% { transform: translateY(-1px) rotate(.4deg); }
+}
+
+/* Messages */
+.message {
+    margin-bottom: 22px;
+}
+
+.message-avatar {
+    background: linear-gradient(145deg,#151a23,#0d1118);
+    border-color: rgba(255,255,255,.08);
+    color: #9c93ff;
+    box-shadow: 0 7px 20px rgba(0,0,0,.22);
+}
+
+.message-content {
+    max-width: min(780px,90%);
+}
+
+.message-bubble {
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.message.assistant .message-bubble {
+    background: rgba(15,19,26,.76);
+    border-color: rgba(255,255,255,.065);
+    color: #e8ecf2;
+    box-shadow: 0 8px 24px rgba(0,0,0,.16);
+}
+
+.message.user .message-bubble {
+    background: linear-gradient(145deg,#7465f4,#5a4bd7);
+    color: #fff;
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 9px 26px rgba(92,76,226,.25);
+}
+
+.message-bubble a {
+    color: #a79fff;
+}
+
+.message.user .message-bubble a {
+    color: #fff;
+}
+
+.message-meta {
+    color: #596474;
+}
+
+.message-edit-btn {
+    color: #677182;
+}
+
+.message-edit-btn:hover {
+    background: rgba(255,255,255,.055);
+    color: #dce1e8;
+}
+
+/* Sources */
+.sources-title {
+    color: #626d7e;
+}
+
+.sources-title-line {
+    background: rgba(255,255,255,.07);
+}
+
+.source-card {
+    background: rgba(14,18,25,.72);
+    border-color: rgba(255,255,255,.06);
+    color: #e1e5eb;
+}
+
+.source-card:hover {
+    background: rgba(23,28,38,.9);
+    border-color: rgba(124,108,255,.2);
+    box-shadow: 0 9px 22px rgba(0,0,0,.2);
+}
+
+.source-icon {
+    background: rgba(124,108,255,.11);
+    color: #a39bff;
+}
+
+/* Code */
+.code-wrapper {
+    background: #0b0f15;
+    border-color: rgba(255,255,255,.08);
+    box-shadow: 0 12px 30px rgba(0,0,0,.28);
+}
+
+.code-header {
+    background: #10151d;
+    border-bottom-color: rgba(255,255,255,.06);
+}
+
+.code-language {
+    color: #7e8999;
+}
+
+.copy-code {
+    background: rgba(255,255,255,.065);
+    color: #cbd2dc;
+}
+
+.copy-code:hover {
+    background: rgba(255,255,255,.12);
+}
+
+.copy-code.copied {
+    background: rgba(98,213,139,.18);
+}
+
+.code {
+    background: #0b0f15;
+    color: #d9e0e9;
+}
+
+.inline-code {
+    background: rgba(124,108,255,.10);
+    color: #c9c4ff;
+}
+
+/* Attachment */
+.attachment-inner {
+    background: rgba(14,18,25,.94);
+    border-color: rgba(255,255,255,.08);
+    box-shadow: 0 16px 38px rgba(0,0,0,.32);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.attachment-mode {
+    color: #697486;
+}
+
+.attachment-remove {
+    background: rgba(255,107,117,.09);
+}
+
+/* Composer */
+.composer-area {
+    padding: 14px max(18px,4vw) calc(14px + env(safe-area-inset-bottom));
+}
+
+.composer {
+    width: min(850px,100%);
+    border-radius: 19px;
+    padding: 8px;
+    background: rgba(12,16,23,.93);
+    border: 1px solid rgba(255,255,255,.085);
+    box-shadow:
+        0 18px 50px rgba(0,0,0,.38),
+        0 0 0 1px rgba(255,255,255,.018) inset;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.composer:focus-within {
+    border-color: rgba(124,108,255,.30);
+    box-shadow:
+        0 20px 55px rgba(0,0,0,.44),
+        0 0 0 3px rgba(124,108,255,.075);
+}
+
+.composer-button {
+    background: rgba(255,255,255,.045);
+    border-color: rgba(255,255,255,.065);
+    color: #8994a5;
+}
+
+.composer-button:hover {
+    background: rgba(124,108,255,.10);
+    color: #aaa3ff;
+    box-shadow: none;
+}
+
+.mode-button {
+    background: rgba(255,255,255,.045);
+    color: #818b9b;
+}
+
+.mode-button:hover {
+    background: rgba(255,255,255,.07);
+    color: #cbd1db;
+}
+
+.mode-button.active {
+    background: rgba(124,108,255,.12);
+    color: #a69fff;
+    border-color: rgba(124,108,255,.18);
+    box-shadow: none;
+}
+
+textarea {
+    color: #f1f4f8;
+    caret-color: #9389ff;
+}
+
+textarea::placeholder {
+    color: #626d7d;
+}
+
+.send-button {
+    background: linear-gradient(145deg,#8174ff,#5d4ddf);
+    box-shadow: 0 8px 22px rgba(91,76,225,.30);
+}
+
+.send-button:hover:not(:disabled) {
+    background: linear-gradient(145deg,#9186ff,#6959ec);
+    box-shadow: 0 10px 28px rgba(91,76,225,.38);
+}
+
+.send-button:disabled {
+    opacity: .34;
+    background: #2a303b;
+    color: #6c7685;
+}
+
+.composer-hint {
+    color: #505b6a;
+}
+
+/* Attachment menu */
+.attach-menu {
+    background: rgba(13,17,24,.97);
+    border-color: rgba(255,255,255,.08);
+    box-shadow: 0 18px 40px rgba(0,0,0,.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.attach-menu-item {
+    color: #d3d8e0;
+}
+
+.attach-menu-item:hover {
+    background: rgba(124,108,255,.10);
+    color: #a9a2ff;
+}
+
+/* Typing */
+.typing {
+    margin-bottom: 18px;
+}
+
+.typing-avatar {
+    background: linear-gradient(145deg,#151a23,#0d1118);
+    border-color: rgba(255,255,255,.075);
+    box-shadow: 0 8px 22px rgba(0,0,0,.24);
+}
+
+.typing-label {
+    color: #697486;
+}
+
+.typing-dots {
+    background: rgba(15,19,26,.82);
+    border-color: rgba(255,255,255,.065);
+    box-shadow: 0 7px 20px rgba(0,0,0,.18);
+}
+
+.typing-dots span {
+    background: #9b92ff;
+    box-shadow: 0 0 8px rgba(124,108,255,.3);
+}
+
+/* Better mobile composition */
+@media (max-width:720px) {
+    .sidebar {
+        background: #0a0d13;
+        box-shadow: 16px 0 40px rgba(0,0,0,.42);
+    }
+
+    .topbar {
+        min-height: 58px;
+        padding: 0 12px;
+        background: rgba(8,11,16,.88);
+    }
+
+    .chat-container {
+        padding: 22px 12px 172px;
+    }
+
+    .welcome {
+        margin-top: 6vh;
+    }
+
+    .welcome-logo {
+        width: 88px;
+        height: 88px;
+        border-radius: 27px;
+    }
+
+    .welcome h1 {
+        font-size: 30px;
+        letter-spacing: -1px;
+    }
+
+    .welcome p {
+        font-size: 13px;
+        padding: 0 12px;
+    }
+
+    .suggestions {
+        margin-top: 22px;
+        gap: 8px;
+    }
+
+    .suggestion {
+        padding: 13px 14px;
+        border-radius: 14px;
+    }
+
+    .message-content {
+        max-width: 92%;
+    }
+
+    .message-bubble {
+        padding: 11px 13px;
+        border-radius: 16px;
+    }
+
+    .composer-area {
+        padding: 8px 9px calc(9px + env(safe-area-inset-bottom));
+    }
+
+    .composer {
+        border-radius: 17px;
+        padding: 7px;
+    }
+
+    .composer-button,
+    .send-button {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width:380px) {
+    .welcome h1 {
+        font-size: 27px;
+    }
+
+    .message-bubble {
+        font-size: 13.5px;
+    }
+
+    .composer-button,
+    .send-button {
+        width: 38px;
+        height: 38px;
+        flex-basis: 38px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    .pingu-visual.relaxed {
+        animation: none !important;
+    }
+}
+
 </style>
 
 
@@ -1940,7 +2558,7 @@
             </div>  
 
             <h1>  
-                Halo, saya Pingu.  
+                Halo, aku Pingu.  
             </h1>  
 
             <p>  
@@ -2164,7 +2782,7 @@
                     id="messageInput"  
                     rows="1"  
                     maxlength="12000"  
-                    placeholder="Tulis pesan..."  
+                    placeholder="Tanyakan sesuatu ke Pingu..."  
                 ></textarea>  
 
             </div>  
@@ -5210,7 +5828,8 @@ function setPinguState(state) {
 
     const safeState =
         state === "writing" ||
-        state === "thinking"
+        state === "thinking" ||
+        state === "relaxed"
             ? state
             : "idle";
 
@@ -5255,7 +5874,7 @@ elements.typing
 
 setPinguState(
     sending
-        ? "writing"
+        ? "thinking"
         : "idle"
     );
 
@@ -5306,7 +5925,16 @@ event.preventDefault();
 
 elements.messageInput.addEventListener(
 "input",
-autoResize
+() => {
+    autoResize();
+    if (!isSending) {
+        setPinguState(
+            elements.messageInput.value.trim()
+                ? "writing"
+                : "idle"
+        );
+    }
+}
 );
 
 elements.messageInput.addEventListener(
