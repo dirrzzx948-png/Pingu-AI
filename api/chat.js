@@ -11,16 +11,28 @@ const TEXT_MODELS = [
   "gemini-3.8-flash",
   "gemini-3.7-flash",
   "gemini-3.6-flash",
-  "gemini-3.5-flash"
+  "gemini-3.5-flash",
+  "gemini-flash-latest"
 ];
 
-const IMAGE_MODEL = "gemini-3.1-flash-image";
+/*
+ * Image models (Nano Banana family).
+ * Primary first, then cheaper/faster fallbacks when 503/high demand.
+ */
+const IMAGE_MODELS = [
+  "gemini-3.1-flash-image",
+  "gemini-3.1-flash-lite-image",
+  "gemini-3-pro-image"
+];
+
+const IMAGE_MODEL = IMAGE_MODELS[0];
 
 const MAX_HISTORY = 30;
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 
-const RETRIES_PER_MODEL = 2;
-const RETRY_DELAY = 1200;
+const RETRIES_PER_MODEL = 3;
+const RETRY_DELAY = 1500;
+const RETRY_DELAY_503 = 2800;
 
 /*
  * =========================================================
@@ -55,7 +67,7 @@ function sleep(ms) {
 
 /*
  * =========================================================
- * ERROR STATUS
+ * ERROR STATUS / MESSAGE
  * =========================================================
  */
 
@@ -68,35 +80,71 @@ function getStatus(error) {
   );
 }
 
-/*
- * =========================================================
- * ERROR MESSAGE
- * =========================================================
- */
-
 function getMessage(error) {
-  return (
+  const raw =
     error?.message ||
     error?.error?.message ||
-    String(error)
-  );
+    error?.error?.status ||
+    "";
+
+  // If message is a JSON string from the API, pull the human text out.
+  if (typeof raw === "string" && raw.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(raw);
+      const nested =
+        parsed?.error?.message ||
+        parsed?.message ||
+        parsed?.error?.status;
+      if (nested) return String(nested);
+    } catch {
+      /* keep raw */
+    }
+  }
+
+  if (raw) return String(raw);
+
+  if (error?.error && typeof error.error === "object") {
+    return (
+      error.error.message ||
+      error.error.status ||
+      JSON.stringify(error.error)
+    );
+  }
+
+  return String(error || "Unknown error");
 }
 
-/*
- * =========================================================
- * RETRYABLE ERROR
- * =========================================================
- */
+function friendlyImageError(error) {
+  const status = getStatus(error);
+  const message = getMessage(error);
+  const lower = message.toLowerCase();
+
+  if (
+    status === 503 ||
+    lower.includes("high demand") ||
+    lower.includes("unavailable") ||
+    lower.includes("overloaded")
+  ) {
+    return "Model gambar sedang penuh (high demand). Coba lagi dalam beberapa detik.";
+  }
+
+  if (status === 429 || lower.includes("rate") || lower.includes("quota")) {
+    return "Batas permintaan API tercapai. Tunggu sebentar lalu coba lagi.";
+  }
+
+  if (status === 400) {
+    return message || "Permintaan gambar tidak valid.";
+  }
+
+  if (status === 401 || status === 403) {
+    return "API key tidak valid atau tidak punya akses ke model gambar.";
+  }
+
+  return message || "Gagal memproses gambar.";
+}
 
 function isRetryable(status) {
-  return [
-    408,
-    429,
-    500,
-    502,
-    503,
-    504
-  ].includes(status);
+  return [408, 429, 500, 502, 503, 504].includes(status);
 }
 
 /*
@@ -115,9 +163,7 @@ function cleanMessages(messages) {
       (message) =>
         message &&
         typeof message === "object" &&
-        ["user", "assistant"].includes(
-          message.role
-        ) &&
+        ["user", "assistant"].includes(message.role) &&
         typeof message.content === "string" &&
         message.content.trim()
     )
@@ -138,10 +184,7 @@ function buildTextPrompt(messages) {
   const conversation = messages
     .map((message) => {
       const role =
-        message.role === "assistant"
-          ? "Pingu"
-          : "User";
-
+        message.role === "assistant" ? "Pingu" : "User";
       return `${role}:\n${message.content}`;
     })
     .join("\n\n");
@@ -186,10 +229,7 @@ Jawab pesan terakhir user secara langsung.
  */
 
 function parseImage(image) {
-  if (
-    !image ||
-    typeof image !== "object"
-  ) {
+  if (!image || typeof image !== "object") {
     return null;
   }
 
@@ -201,35 +241,18 @@ function parseImage(image) {
         : "";
 
   let data =
-    typeof image.data === "string"
-      ? image.data
-      : "";
+    typeof image.data === "string" ? image.data : "";
 
   if (!mimeType) {
-    throw new Error(
-      "MIME type gambar tidak ditemukan."
-    );
+    throw new Error("MIME type gambar tidak ditemukan.");
   }
 
   if (!mimeType.toLowerCase().startsWith("image/")) {
-    throw new Error(
-      "File yang dikirim bukan gambar."
-    );
+    throw new Error("File yang dikirim bukan gambar.");
   }
-
-  /*
-   * Support:
-   *
-   * data:image/png;base64,AAAA...
-   *
-   * atau:
-   *
-   * AAAA...
-   */
 
   if (data.startsWith("data:")) {
     const comma = data.indexOf(",");
-
     if (comma !== -1) {
       data = data.slice(comma + 1);
     }
@@ -238,61 +261,27 @@ function parseImage(image) {
   data = data.replace(/\s/g, "");
 
   if (!data) {
-    throw new Error(
-      "Data gambar kosong."
-    );
+    throw new Error("Data gambar kosong.");
   }
-
-  /*
-   * Estimasi ukuran decoded Base64.
-   */
 
   const padding =
-    data.endsWith("==")
-      ? 2
-      : data.endsWith("=")
-        ? 1
-        : 0;
+    data.endsWith("==") ? 2 : data.endsWith("=") ? 1 : 0;
 
-  const estimatedBytes =
-    Math.max(
-      0,
-      Math.floor(
-        (data.length * 3) / 4
-      ) - padding
-    );
+  const estimatedBytes = Math.max(
+    0,
+    Math.floor((data.length * 3) / 4) - padding
+  );
 
   if (estimatedBytes > MAX_IMAGE_BYTES) {
-    throw new Error(
-      "Ukuran gambar terlalu besar. Maksimal 15 MB."
-    );
+    throw new Error("Ukuran gambar terlalu besar. Maksimal 15 MB.");
   }
 
-  return {
-    mimeType,
-    data
-  };
+  return { mimeType, data };
 }
 
 /*
  * =========================================================
  * DETECT IMAGE MODE
- * =========================================================
- *
- * Mendukung banyak nama mode supaya frontend
- * tidak harus persis menggunakan "image".
- *
- * Contoh:
- *
- * image
- * edit
- * image_edit
- * image-edit
- * edit_image
- * generate
- * generate_image
- * Edit-Buat
- *
  * =========================================================
  */
 
@@ -306,9 +295,7 @@ function isImageMode(body) {
   ];
 
   for (const raw of rawModes) {
-    if (typeof raw !== "string") {
-      continue;
-    }
+    if (typeof raw !== "string") continue;
 
     const mode = raw
       .trim()
@@ -345,17 +332,8 @@ function isImageMode(body) {
  * =========================================================
  */
 
-async function generateText(
-  ai,
-  model,
-  prompt,
-  image
-) {
+async function generateText(ai, model, prompt, image) {
   const contents = [];
-
-  /*
-   * IMAGE UNTUK ANALISIS
-   */
 
   if (image) {
     contents.push({
@@ -366,49 +344,30 @@ async function generateText(
     });
   }
 
-  /*
-   * TEXT PROMPT
-   */
-
-  contents.push({
-    text: prompt
-  });
+  contents.push({ text: prompt });
 
   let lastError;
 
-  for (
-    let attempt = 1;
-    attempt <= RETRIES_PER_MODEL;
-    attempt++
-  ) {
+  for (let attempt = 1; attempt <= RETRIES_PER_MODEL; attempt++) {
     try {
-      console.log(
-        `[Pingu] Text model=${model} attempt=${attempt}`
-      );
+      console.log(`[Pingu] Text model=${model} attempt=${attempt}`);
 
-      const result =
-        await ai.models.generateContent({
-          model,
-          contents
-        });
+      const result = await ai.models.generateContent({
+        model,
+        contents
+      });
 
       const reply =
-        typeof result?.text === "string"
-          ? result.text.trim()
-          : "";
+        typeof result?.text === "string" ? result.text.trim() : "";
 
       if (!reply) {
-        throw new Error(
-          `Model ${model} tidak mengembalikan teks.`
-        );
+        throw new Error(`Model ${model} tidak mengembalikan teks.`);
       }
 
       return reply;
     } catch (error) {
       lastError = error;
-
-      const status =
-        getStatus(error);
+      const status = getStatus(error);
 
       console.error(
         `[Pingu] Text error model=${model}`,
@@ -416,14 +375,11 @@ async function generateText(
         getMessage(error)
       );
 
-      if (
-        !isRetryable(status) ||
-        attempt >= RETRIES_PER_MODEL
-      ) {
+      if (!isRetryable(status) || attempt >= RETRIES_PER_MODEL) {
         break;
       }
 
-      await sleep(RETRY_DELAY);
+      await sleep(status === 503 ? RETRY_DELAY_503 : RETRY_DELAY);
     }
   }
 
@@ -432,127 +388,162 @@ async function generateText(
 
 /*
  * =========================================================
- * EXTRACT IMAGE FROM INTERACTION
+ * EXTRACT IMAGE FROM INTERACTION / GENERATE CONTENT
  * =========================================================
  */
 
+function normalizeImagePart(part) {
+  if (!part || typeof part !== "object") return null;
+
+  const data =
+    typeof part.data === "string"
+      ? part.data
+      : typeof part.inlineData?.data === "string"
+        ? part.inlineData.data
+        : typeof part.inline_data?.data === "string"
+          ? part.inline_data.data
+          : null;
+
+  if (!data) return null;
+
+  const mimeType =
+    part.mime_type ||
+    part.mimeType ||
+    part.inlineData?.mimeType ||
+    part.inline_data?.mime_type ||
+    "image/png";
+
+  return { mimeType, data };
+}
+
 function extractImage(interaction) {
-  let outputImage = null;
-
-  /*
-   * Cara 1:
-   * interaction.output_image
-   */
-
-  if (
-    interaction?.output_image &&
-    typeof interaction.output_image.data === "string"
-  ) {
-    outputImage = {
-      mimeType:
-        interaction.output_image.mime_type ||
-        interaction.output_image.mimeType ||
-        "image/png",
-
-      data:
-        interaction.output_image.data
-    };
+  if (!interaction || typeof interaction !== "object") {
+    return { image: null, text: "" };
   }
 
-  /*
-   * Cara 2:
-   * interaction.steps
-   */
+  let outputImage = null;
+  let outputText = "";
 
-  if (
-    Array.isArray(interaction?.steps)
-  ) {
-    for (
-      const step of interaction.steps
-    ) {
-      if (
-        step?.type !== "model_output"
-      ) {
-        continue;
+  // 1) interaction.output_image (SDK convenience field)
+  const fromOutputImage = normalizeImagePart(
+    interaction.output_image || interaction.outputImage
+  );
+  if (fromOutputImage) {
+    outputImage = fromOutputImage;
+  }
+
+  // 2) interaction.outputs[]
+  if (Array.isArray(interaction.outputs)) {
+    for (const output of interaction.outputs) {
+      if (!output) continue;
+      if (output.type === "image" || output.inlineData || output.inline_data) {
+        const img = normalizeImagePart(output);
+        if (img) outputImage = img;
       }
-
-      if (
-        !Array.isArray(step.content)
-      ) {
-        continue;
+      if (output.type === "text" && typeof output.text === "string") {
+        outputText += output.text;
       }
+      if (typeof output.text === "string" && !output.type) {
+        outputText += output.text;
+      }
+    }
+  }
 
-      for (
-        const block of step.content
-      ) {
-        if (
-          block?.type === "image" &&
-          typeof block.data === "string"
-        ) {
-          outputImage = {
-            mimeType:
-              block.mime_type ||
-              block.mimeType ||
-              "image/png",
+  // 3) interaction.steps[].content[]
+  if (Array.isArray(interaction.steps)) {
+    for (const step of interaction.steps) {
+      if (!step) continue;
+      if (step.type && step.type !== "model_output") continue;
+      if (!Array.isArray(step.content)) continue;
 
-            data:
-              block.data
-          };
+      for (const block of step.content) {
+        if (!block) continue;
+        if (block.type === "image" || block.inlineData || block.inline_data) {
+          const img = normalizeImagePart(block);
+          if (img) outputImage = img;
+        }
+        if (block.type === "text" && typeof block.text === "string") {
+          outputText += block.text;
         }
       }
     }
   }
 
-  return outputImage;
+  // 4) generateContent-style: candidates[].content.parts[]
+  const candidates = interaction.candidates;
+  if (Array.isArray(candidates)) {
+    for (const candidate of candidates) {
+      const parts = candidate?.content?.parts;
+      if (!Array.isArray(parts)) continue;
+      for (const part of parts) {
+        if (!part) continue;
+        if (part.inlineData || part.inline_data) {
+          const img = normalizeImagePart(part);
+          if (img) outputImage = img;
+        }
+        if (typeof part.text === "string") {
+          outputText += part.text;
+        }
+      }
+    }
+  }
+
+  // 5) result.parts (some SDK shapes)
+  if (Array.isArray(interaction.parts)) {
+    for (const part of interaction.parts) {
+      if (part?.inlineData || part?.inline_data) {
+        const img = normalizeImagePart(part);
+        if (img) outputImage = img;
+      }
+      if (typeof part?.text === "string") {
+        outputText += part.text;
+      }
+    }
+  }
+
+  return {
+    image: outputImage,
+    text: outputText.trim()
+  };
 }
 
 /*
  * =========================================================
  * IMAGE GENERATION / EDITING
  * =========================================================
- *
- * Gemini 3.1 Flash Image
- *
- * Bisa:
- *
- * - Generate gambar
- * - Edit foto
- * - Tambah objek
- * - Hapus objek
- * - Ganti background
- * - Ubah warna
- * - Restyle
- * - Enhance
- * - Perbaiki foto
- * - Menggunakan foto sebagai referensi
- *
- * =========================================================
  */
 
-async function generateImage(
-  ai,
-  prompt,
-  image
-) {
-  if (
-    typeof prompt !== "string" ||
-    !prompt.trim()
-  ) {
-    throw new Error(
-      "Instruksi gambar kosong."
-    );
+function buildImagePrompt(prompt, hasSourceImage) {
+  const clean = String(prompt || "").trim();
+
+  if (hasSourceImage) {
+    return `
+Edit the provided image based on this instruction:
+
+${clean}
+
+Rules:
+- Use the provided image as the source.
+- Keep the main subject/identity unless the user asks to change it.
+- Only change what the user requested.
+- Match lighting, shadows, color, and perspective so the result looks natural.
+- If asked to remove an object, remove it and fill the area realistically.
+- Return the edited image as the primary result.
+`.trim();
   }
 
-  const input = [];
+  return `
+Create an image based on this instruction:
 
-  /*
-   * =======================================================
-   * IMAGE INPUT
-   * =======================================================
-   *
-   * Kalau ada foto:
-   * foto dikirim sebagai source untuk editing.
-   */
+${clean}
+
+Return the image as the primary result.
+`.trim();
+}
+
+async function generateImageOnce(ai, model, prompt, image) {
+  const imagePrompt = buildImagePrompt(prompt, Boolean(image));
+  const input = [];
 
   if (image) {
     input.push({
@@ -562,196 +553,162 @@ async function generateImage(
     });
   }
 
-  /*
-   * =======================================================
-   * TEXT INSTRUCTION
-   * =======================================================
-   */
-
-  const imagePrompt = image
-    ? `
-Edit gambar yang diberikan berdasarkan instruksi berikut.
-
-INSTRUKSI USER:
-${prompt.trim()}
-
-ATURAN EDIT:
-- Gunakan gambar yang diberikan sebagai gambar sumber.
-- Pertahankan identitas dan subjek utama jika user tidak
-  meminta untuk mengubahnya.
-- Jangan mengubah bagian yang tidak diminta.
-- Pertahankan komposisi semaksimal mungkin.
-- Sesuaikan pencahayaan, bayangan, warna, perspektif,
-  dan tekstur agar hasil terlihat natural.
-- Jika user meminta menghapus objek, hilangkan objek tersebut
-  dan isi area kosong secara realistis.
-- Jika user meminta mengganti background, pertahankan
-  subjek utama dan sesuaikan pencahayaan dengan background baru.
-- Jika user meminta memperjelas atau meningkatkan kualitas,
-  tingkatkan detail yang tersedia tanpa mengarang perubahan
-  yang tidak diminta.
-- Jika wajah terlihat buram, lakukan enhancement secara natural
-  tanpa mengubah identitas orang tersebut.
-- Hasil akhir harus berupa gambar yang sudah diedit.
-
-Jangan hanya menjelaskan langkah-langkah.
-Buat dan kembalikan gambar hasil edit.
-`.trim()
-    : `
-Buat gambar berdasarkan instruksi user berikut:
-
-${prompt.trim()}
-
-Hasil akhir harus berupa gambar.
-`.trim();
-
   input.push({
     type: "text",
     text: imagePrompt
   });
 
   console.log(
-    `[Pingu] Starting ${
-      image
-        ? "IMAGE EDIT"
-        : "IMAGE GENERATION"
-    }`
+    `[Pingu] Image ${image ? "EDIT" : "GENERATE"} model=${model}`
   );
 
-  console.log(
-    `[Pingu] Image model: ${IMAGE_MODEL}`
-  );
+  // --- Path A: Interactions API (official Nano Banana path) ---
+  try {
+    const interaction = await ai.interactions.create({
+      model,
+      input,
+      response_format: { type: "image" }
+    });
 
-  /*
-   * =======================================================
-   * RETRY IMAGE REQUEST
-   * =======================================================
-   */
+    const extracted = extractImage(interaction);
+    if (extracted.image) {
+      return {
+        text: extracted.text,
+        image: extracted.image,
+        edited: Boolean(image),
+        model
+      };
+    }
+  } catch (error) {
+    const status = getStatus(error);
+    console.error(
+      `[Pingu] Interactions path failed model=${model}`,
+      status,
+      getMessage(error)
+    );
+
+    // Only fall through for extract-miss; rethrow hard/auth errors later via outer loop
+    if (status === 401 || status === 403) {
+      throw error;
+    }
+
+    // Try alternate interactions shape (response_modalities)
+    try {
+      const interaction2 = await ai.interactions.create({
+        model,
+        input,
+        response_modalities: ["image"]
+      });
+
+      const extracted2 = extractImage(interaction2);
+      if (extracted2.image) {
+        return {
+          text: extracted2.text,
+          image: extracted2.image,
+          edited: Boolean(image),
+          model
+        };
+      }
+    } catch (error2) {
+      console.error(
+        `[Pingu] Interactions modalities path failed model=${model}`,
+        getStatus(error2),
+        getMessage(error2)
+      );
+      // continue to generateContent fallback
+      if (!isRetryable(getStatus(error2)) && getStatus(error2) !== 0) {
+        // keep going to path B unless it's clearly non-retryable API design issue
+      }
+    }
+  }
+
+  // --- Path B: generateContent with responseModalities (legacy-compatible) ---
+  const contents = [];
+
+  if (image) {
+    contents.push({
+      inlineData: {
+        mimeType: image.mimeType,
+        data: image.data
+      }
+    });
+  }
+
+  contents.push({ text: imagePrompt });
+
+  const result = await ai.models.generateContent({
+    model,
+    contents,
+    config: {
+      responseModalities: ["TEXT", "IMAGE"]
+    }
+  });
+
+  const extracted = extractImage(result);
+
+  if (!extracted.image) {
+    throw new Error(
+      "Model berhasil dipanggil tetapi tidak mengembalikan gambar."
+    );
+  }
+
+  return {
+    text: extracted.text,
+    image: extracted.image,
+    edited: Boolean(image),
+    model
+  };
+}
+
+async function generateImage(ai, prompt, image) {
+  if (typeof prompt !== "string" || !prompt.trim()) {
+    throw new Error("Instruksi gambar kosong.");
+  }
 
   let lastError;
 
-  for (
-    let attempt = 1;
-    attempt <= RETRIES_PER_MODEL;
-    attempt++
-  ) {
-    try {
-      console.log(
-        `[Pingu] Image attempt=${attempt}`
-      );
+  for (const model of IMAGE_MODELS) {
+    for (let attempt = 1; attempt <= RETRIES_PER_MODEL; attempt++) {
+      try {
+        console.log(
+          `[Pingu] Image attempt model=${model} try=${attempt}`
+        );
 
-      const interaction =
-        await ai.interactions.create({
-          model: IMAGE_MODEL,
+        const result = await generateImageOnce(
+          ai,
+          model,
+          prompt,
+          image
+        );
 
-          input,
-
-          /*
-           * Paksa model mengembalikan output gambar.
-           */
-
-          response_format: {
-            type: "image"
-          }
-        });
-
-      /*
-       * ===================================================
-       * EXTRACT RESULT
-       * ===================================================
-       */
-
-      const outputImage =
-        extractImage(interaction);
-
-      /*
-       * TEXT OUTPUT OPTIONAL
-       */
-
-      let outputText = "";
-
-      if (
-        Array.isArray(
-          interaction?.steps
-        )
-      ) {
-        for (
-          const step of interaction.steps
-        ) {
-          if (
-            step?.type !==
-            "model_output"
-          ) {
-            continue;
-          }
-
-          if (
-            !Array.isArray(
-              step.content
-            )
-          ) {
-            continue;
-          }
-
-          for (
-            const block of step.content
-          ) {
-            if (
-              block?.type === "text" &&
-              typeof block.text === "string"
-            ) {
-              outputText += block.text;
-            }
-          }
+        if (result?.image) {
+          console.log(`[Pingu] Image OK model=${model}`);
+          return result;
         }
-      }
 
-      /*
-       * ===================================================
-       * CHECK IMAGE
-       * ===================================================
-       */
-
-      if (!outputImage) {
         throw new Error(
           "Gemini berhasil dipanggil tetapi tidak mengembalikan gambar."
         );
+      } catch (error) {
+        lastError = error;
+        const status = getStatus(error);
+
+        console.error(
+          `[Pingu] Image error model=${model} attempt=${attempt}`,
+          status,
+          getMessage(error)
+        );
+
+        if (!isRetryable(status) || attempt >= RETRIES_PER_MODEL) {
+          break;
+        }
+
+        await sleep(
+          status === 503 || status === 429
+            ? RETRY_DELAY_503 * attempt
+            : RETRY_DELAY
+        );
       }
-
-      console.log(
-        "[Pingu] Image output received."
-      );
-
-      return {
-        text:
-          outputText.trim(),
-
-        image:
-          outputImage,
-
-        edited:
-          Boolean(image)
-      };
-    } catch (error) {
-      lastError = error;
-
-      const status =
-        getStatus(error);
-
-      console.error(
-        `[Pingu] Image error attempt=${attempt}`,
-        status,
-        getMessage(error)
-      );
-
-      if (
-        !isRetryable(status) ||
-        attempt >= RETRIES_PER_MODEL
-      ) {
-        break;
-      }
-
-      await sleep(RETRY_DELAY);
     }
   }
 
@@ -767,23 +724,14 @@ Hasil akhir harus berupa gambar.
 export async function GET() {
   return json({
     ok: true,
-
     name: "Pingu AI",
-
     status: "online",
-
-    textModels:
-      TEXT_MODELS,
-
-    imageModel:
-      IMAGE_MODEL,
-
+    textModels: TEXT_MODELS,
+    imageModel: IMAGE_MODEL,
+    imageModels: IMAGE_MODELS,
     imageInput: true,
-
     imageGeneration: true,
-
     imageEditing: true,
-
     imageResponse: true
   });
 }
@@ -796,177 +744,96 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    /*
-     * =====================================================
-     * API KEY
-     * =====================================================
-     */
-
-    const apiKey =
-      process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
       return json(
         {
-          error:
-            "GEMINI_API_KEY belum disetel di Vercel."
+          error: "GEMINI_API_KEY belum disetel di Vercel."
         },
         500
       );
     }
 
-    /*
-     * =====================================================
-     * REQUEST JSON
-     * =====================================================
-     */
-
     let body;
 
     try {
-      body =
-        await request.json();
+      body = await request.json();
     } catch {
       return json(
         {
-          error:
-            "Request body bukan JSON yang valid."
+          error: "Request body bukan JSON yang valid."
         },
         400
       );
     }
 
-    /*
-     * =====================================================
-     * MESSAGES
-     * =====================================================
-     */
-
-    const messages =
-      cleanMessages(
-        body?.messages
-      );
+    const messages = cleanMessages(body?.messages);
 
     if (!messages.length) {
       return json(
         {
-          error:
-            "Pesan tidak ditemukan."
+          error: "Pesan tidak ditemukan."
         },
         400
       );
     }
 
-    const lastMessage =
-      messages[
-        messages.length - 1
-      ];
+    const lastMessage = messages[messages.length - 1];
 
-    if (
-      lastMessage.role !== "user"
-    ) {
+    if (lastMessage.role !== "user") {
       return json(
         {
-          error:
-            "Pesan terakhir harus dari user."
+          error: "Pesan terakhir harus dari user."
         },
         400
       );
     }
-
-    /*
-     * =====================================================
-     * IMAGE
-     * =====================================================
-     */
 
     let image = null;
 
     try {
-      image =
-        parseImage(
-          body?.image
-        );
+      image = parseImage(body?.image);
     } catch (error) {
       return json(
         {
-          error:
-            error?.message ||
-            "Gambar tidak valid."
+          error: error?.message || "Gambar tidak valid."
         },
         400
       );
     }
 
-    /*
-     * =====================================================
-     * DETECT MODE
-     * =====================================================
-     *
-     * Tidak lagi hanya:
-     *
-     * body.mode === "image"
-     *
-     * tetapi mendukung berbagai nama mode.
-     */
+    const imageMode = isImageMode(body);
 
-    const imageMode =
-      isImageMode(body);
+    console.log("[Pingu] Request:", {
+      mode: body?.mode || null,
+      imageMode,
+      hasImage: Boolean(image),
+      messageLength: lastMessage.content.length
+    });
 
-    console.log(
-      "[Pingu] Request:",
-      {
-        mode:
-          body?.mode || null,
-
-        imageMode,
-
-        hasImage:
-          Boolean(image),
-
-        messageLength:
-          lastMessage.content.length
-      }
-    );
-
-    const ai =
-      new GoogleGenAI({
-        apiKey
-      });
+    const ai = new GoogleGenAI({ apiKey });
 
     /*
      * =====================================================
-     * IMAGE MODE
+     * IMAGE MODE (generate / edit)
      * =====================================================
      */
 
     if (imageMode) {
-      const prompt =
-        lastMessage.content.trim();
+      const prompt = lastMessage.content.trim();
 
       if (!prompt) {
         return json(
           {
-            error:
-              "Tulis instruksi untuk gambar."
+            error: "Tulis instruksi untuk gambar."
           },
           400
         );
       }
 
       try {
-        const result =
-          await generateImage(
-            ai,
-            prompt,
-            image
-          );
-
-        /*
-         * =================================================
-         * NO IMAGE RESULT
-         * =================================================
-         */
+        const result = await generateImage(ai, prompt, image);
 
         if (!result?.image) {
           return json(
@@ -974,79 +841,40 @@ export async function POST(request) {
               error:
                 result?.text ||
                 "Gemini tidak menghasilkan gambar.",
-
-              model:
-                IMAGE_MODEL
+              model: result?.model || IMAGE_MODEL
             },
             502
           );
         }
 
-        /*
-         * =================================================
-         * SUCCESS
-         * =================================================
-         */
-
         return json({
           ok: true,
-
           reply:
             result.text ||
-            (
-              result.edited
-                ? "Foto berhasil diedit."
-                : "Gambar berhasil dibuat."
-            ),
-
-          image:
-            result.image,
-
-          model:
-            IMAGE_MODEL,
-
-          type:
-            result.edited
-              ? "image_edit"
-              : "image",
-
-          imageEdited:
-            result.edited,
-
-          imageGenerated:
-            !result.edited
+            (result.edited
+              ? "Foto berhasil diedit."
+              : "Gambar berhasil dibuat."),
+          image: result.image,
+          model: result.model || IMAGE_MODEL,
+          type: result.edited ? "image_edit" : "image",
+          imageEdited: result.edited,
+          imageGenerated: !result.edited
         });
       } catch (error) {
-        console.error(
-          "[Pingu] IMAGE MODE FAILED:",
-          error
-        );
+        console.error("[Pingu] IMAGE MODE FAILED:", error);
 
-        const status =
-          getStatus(error);
+        const status = getStatus(error);
+        const friendly = friendlyImageError(error);
 
         return json(
           {
             ok: false,
-
-            error:
-              getMessage(error) ||
-              "Gagal memproses gambar.",
-
-            code:
-              status,
-
-            model:
-              IMAGE_MODEL,
-
-            imageEdited:
-              Boolean(image)
+            error: friendly,
+            code: status || 503,
+            model: IMAGE_MODEL,
+            imageEdited: Boolean(image)
           },
-
-          status >= 400 &&
-          status <= 599
-            ? status
-            : 500
+          status >= 400 && status <= 599 ? status : 503
         );
       }
     }
@@ -1057,49 +885,25 @@ export async function POST(request) {
      * =====================================================
      */
 
-    const prompt =
-      buildTextPrompt(
-        messages
-      );
-
+    const prompt = buildTextPrompt(messages);
     const failures = [];
 
-    for (
-      const model of TEXT_MODELS
-    ) {
+    for (const model of TEXT_MODELS) {
       try {
-        const reply =
-          await generateText(
-            ai,
-            model,
-            prompt,
-            image
-          );
+        const reply = await generateText(ai, model, prompt, image);
 
         return json({
           ok: true,
-
           reply,
-
           model,
-
           type: "text",
-
-          imageAnalyzed:
-            Boolean(image)
+          imageAnalyzed: Boolean(image)
         });
       } catch (error) {
-        const status =
-          getStatus(error);
+        const status = getStatus(error);
+        const message = getMessage(error);
 
-        const message =
-          getMessage(error);
-
-        failures.push({
-          model,
-          status,
-          message
-        });
+        failures.push({ model, status, message });
 
         console.error(
           `[Pingu] Text model failed: ${model}`,
@@ -1107,80 +911,36 @@ export async function POST(request) {
           message
         );
 
-        /*
-         * Kalau error bukan retryable,
-         * tidak perlu mencoba model berikutnya.
-         */
-
         if (!isRetryable(status)) {
           break;
         }
       }
     }
 
-    /*
-     * =====================================================
-     * ALL TEXT MODELS FAILED
-     * =====================================================
-     */
-
-    const last =
-      failures[
-        failures.length - 1
-      ];
+    const last = failures[failures.length - 1];
 
     return json(
       {
         ok: false,
-
-        error:
-          last?.message ||
-          "Semua model Gemini gagal.",
-
-        code:
-          last?.status ||
-          500,
-
-        attempts:
-          failures.map(
-            (item) => ({
-              model:
-                item.model,
-
-              code:
-                item.status
-            })
-          )
+        error: last?.message || "Semua model Gemini gagal.",
+        code: last?.status || 500,
+        attempts: failures.map((item) => ({
+          model: item.model,
+          code: item.status
+        }))
       },
-
-      last?.status >= 400 &&
-      last?.status <= 599
-        ? last.status
-        : 500
+      last?.status >= 400 && last?.status <= 599 ? last.status : 500
     );
   } catch (error) {
-    /*
-     * =====================================================
-     * UNEXPECTED ERROR
-     * =====================================================
-     */
-
-    console.error(
-      "[Pingu] Unexpected error:",
-      error
-    );
+    console.error("[Pingu] Unexpected error:", error);
 
     return json(
       {
         ok: false,
-
         error:
-          error?.message ||
+          getMessage(error) ||
           "Terjadi kesalahan pada Pingu AI.",
-
-        code:
-          getStatus(error) ||
-          500
+        code: getStatus(error) || 500
       },
       500
     );
