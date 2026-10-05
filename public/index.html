@@ -21,17 +21,15 @@
     window.MathJax = {
         tex: {
             inlineMath: [
-                ["\\(", "\\)"],
-                ["$", "$"]
+                ["\\(", "\\)"]
             ],
             displayMath: [
-                ["\\[", "\\]"],
-                ["$$", "$$"]
+                ["\\[", "\\]"]
             ],
             processEscapes: true,
             processEnvironments: true,
             packages: {
-                "[+]": ["ams", "boldsymbol"]
+                "[+]": ["ams", "noerrors", "noundefined"]
             }
         },
         options: {
@@ -44,6 +42,11 @@
                 "code"
             ],
             ignoreHtmlClass: "math-ignore"
+        },
+        chtml: {
+            scale: 1,
+            displayAlign: "left",
+            displayIndent: "0"
         },
         startup: {
             typeset: false
@@ -2436,6 +2439,57 @@ textarea::placeholder {
     }
 }
 
+
+    /* MathJax reliability */
+    .math-display {
+        display: block;
+        width: 100%;
+        margin: 12px 0;
+        padding: 8px 4px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        text-align: left;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .math-inline {
+        display: inline;
+        white-space: normal;
+        vertical-align: middle;
+    }
+
+    .math-pending {
+        min-height: 1.2em;
+        opacity: 0.55;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.9em;
+    }
+
+    .message-bubble mjx-container {
+        color: inherit !important;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .message-bubble mjx-container[display="true"] {
+        display: block !important;
+        margin: 10px 0 !important;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 2px 0;
+        text-align: left !important;
+    }
+
+    .message.user mjx-container {
+        color: #fff !important;
+    }
+
+    .message-bubble mjx-container svg {
+        max-width: 100%;
+    }
+
 </style>
 
 
@@ -3909,40 +3963,45 @@ function extractMathBlocks(source, blocks) {
     let input = String(source ?? "");
     const ESC_DOLLAR = "__PINGU_ESCAPED_DOLLAR__";
 
-    // Preserve escaped dollar signs such as \$5.
+    // Preserve escaped dollars: \$5
     input = input.replace(/\\\$/g, ESC_DOLLAR);
 
     const add = (type, content) => {
+        const tex = String(content ?? "").trim();
+        if (!tex) return "";
         const index = blocks.length;
-        blocks.push({
-            type,
-            content: String(content ?? "").trim()
-        });
+        blocks.push({ type, content: tex });
         return `__PINGU_MATH_BLOCK_${index}__`;
     };
 
-    // Display delimiters first so $$...$$ is never consumed by $...$.
+    // Display: $$...$$
     input = input.replace(
         /\$\$([\s\S]*?)\$\$/g,
         (_, math) => add("display-math", math)
     );
 
+    // Display: \[...\]
     input = input.replace(
         /\\\[([\s\S]*?)\\\]/g,
         (_, math) => add("display-math", math)
     );
 
-    // Inline \(...\)
+    // Display environments
+    input = input.replace(
+        /\\begin\{(equation\*?|align\*?|gather\*?|multline\*?|eqnarray\*?|displaymath)\}([\s\S]*?)\\end\{\1\}/g,
+        (full) => add("display-math", full)
+    );
+
+    // Inline: \(...\)
     input = input.replace(
         /\\\(([\s\S]*?)\\\)/g,
         (_, math) => add("inline-math", math)
     );
 
-    // Inline $...$, excluding line breaks and additional $ characters.
+    // Inline: $...$ (no newlines, no extra $)
     input = input.replace(
-        /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
-        (full, before, math) =>
-            before + add("inline-math", math)
+        /(^|[^\\$])\$([^\$\n]+?)\$(?!\$)/g,
+        (full, before, math) => before + add("inline-math", math)
     );
 
     return input.replaceAll(ESC_DOLLAR, "$");
@@ -3955,39 +4014,68 @@ function renderMathBlocks(bubble, blocks) {
         const block = blocks[Number(element.dataset.mathIndex)];
         if (!block) return;
 
-        // Raw TeX goes through textContent. It must not be HTML-escaped.
-        element.textContent =
-            block.type === "display-math"
-                ? `\\[${block.content}\\]`
-                : `\\(${block.content}\\)`;
+        // Feed raw TeX to MathJax via textContent (never HTML-escape).
+        // Normalize to \(...\) / \[...\] so MathJax config stays simple.
+        const tex = block.content;
+        if (block.type === "display-math") {
+            // If already an environment, leave as-is; else wrap with \[ \]
+            if (/^\\begin\{/.test(tex)) {
+                element.textContent = tex;
+            } else {
+                element.textContent = "\\[" + tex + "\\]";
+            }
+        } else {
+            element.textContent = "\\(" + tex + "\\)";
+        }
 
         element.classList.add("math-pending");
     });
 }
 
 async function typesetMath(element) {
-    if (!element || !window.MathJax) return;
+    if (!element) return;
 
-    try {
-        if (
-            window.MathJax.startup &&
-            window.MathJax.startup.promise
-        ) {
-            await window.MathJax.startup.promise;
+    const attempt = async () => {
+        const MJ = window.MathJax;
+        if (!MJ) return false;
+
+        if (MJ.startup && MJ.startup.promise) {
+            await MJ.startup.promise;
         }
 
-        if (typeof window.MathJax.typesetClear === "function") {
-            window.MathJax.typesetClear([element]);
+        if (typeof MJ.typesetClear === "function") {
+            try {
+                MJ.typesetClear([element]);
+            } catch (_) {
+                /* ignore clear errors on fresh nodes */
+            }
         }
 
-        if (typeof window.MathJax.typesetPromise === "function") {
-            await window.MathJax.typesetPromise([element]);
+        if (typeof MJ.typesetPromise === "function") {
+            await MJ.typesetPromise([element]);
+        } else if (typeof MJ.typeset === "function") {
+            MJ.typeset([element]);
+        } else {
+            return false;
         }
 
         element
             .querySelectorAll(".math-pending")
             .forEach(node => node.classList.remove("math-pending"));
 
+        return true;
+    };
+
+    try {
+        if (await attempt()) return;
+
+        // MathJax script still loading — retry briefly
+        for (let i = 0; i < 15; i++) {
+            await new Promise(resolve => setTimeout(resolve, 150));
+            if (await attempt()) return;
+        }
+
+        console.warn("MathJax belum siap setelah beberapa percobaan.");
     } catch (error) {
         console.warn("MathJax gagal merender LaTeX:", error);
     }
