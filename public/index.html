@@ -17,40 +17,38 @@
 
 <title>Pingu AI</title>  
 
-<script>  
-    window.MathJax = {  
-        tex: {  
-            inlineMath: [  
-                ["$", "$"],  
-                ["\\(", "\\)"]  
-            ],  
-            displayMath: [  
-                ["$$", "$$"],  
-                ["\\[", "\\]"]  
-            ],  
-            processEscapes: true,  
-            processEnvironments: true,  
-            packages: {  
-                "[+]": ["ams", "boldsymbol"]  
-            }  
-        },  
-
-        options: {  
-            skipHtmlTags: [  
-                "script",  
-                "noscript",  
-                "style",  
-                "textarea",  
-                "pre",  
-                "code"  
-            ],  
-            ignoreHtmlClass: "math-ignore"  
-        },  
-
-        startup: {  
-            typeset: false  
-        }  
-    };  
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [
+                ["\\(", "\\)"],
+                ["$", "$"]
+            ],
+            displayMath: [
+                ["\\[", "\\]"],
+                ["$$", "$$"]
+            ],
+            processEscapes: true,
+            processEnvironments: true,
+            packages: {
+                "[+]": ["ams", "boldsymbol"]
+            }
+        },
+        options: {
+            skipHtmlTags: [
+                "script",
+                "noscript",
+                "style",
+                "textarea",
+                "pre",
+                "code"
+            ],
+            ignoreHtmlClass: "math-ignore"
+        },
+        startup: {
+            typeset: false
+        }
+    };
 </script>  
 
 <script  
@@ -896,6 +894,43 @@
 
     .message-bubble mjx-container {
         font-size: 103% !important;
+    }
+
+    .message.user mjx-container {
+        color: #fff !important;
+    }
+
+    .math-pending {
+        min-height: 1em;
+    }
+
+    .math-display {
+        width: 100%;
+        margin: 15px 0;
+        padding: 10px 4px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        text-align: center;
+        border-radius: 10px;
+    }
+
+    .math-inline {
+        display: inline;
+        white-space: normal;
+    }
+
+    .message-bubble mjx-container {
+        color: inherit !important;
+        max-width: 100%;
+    }
+
+    .message-bubble mjx-container[display="true"] {
+        display: block !important;
+        margin: 12px 0 !important;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 3px 0;
     }
 
     .message.user mjx-container {
@@ -3864,565 +3899,266 @@ function renderMarkdownLinks(
 }  
   
   
-/* =========================================================  
-   MATH  
-========================================================= */  
-  
-function extractMathBlocks(  
-    source,  
-    blocks  
-) {  
-  
-    source =  
-        source.replace(  
-            /\$\$([\s\S]*?)\$\$/g,  
-            (_, math) => {  
-  
-                const index =  
-                    blocks.length;  
-  
-                blocks.push({  
-  
-                    type:  
-                        "display-math",  
-  
-                    content:  
-                        String(  
-                            math || ""  
-                        ).trim()  
-                });  
-  
-                return `  
-                    __PINGU_MATH_BLOCK_${index}__  
-                `;  
-            }  
-        );  
-  
-    source =  
-        source.replace(  
-            /\\\[([\s\S]*?)\\\]/g,  
-            (_, math) => {  
-  
-                const index =  
-                    blocks.length;  
-  
-                blocks.push({  
-  
-                    type:  
-                        "display-math",  
-  
-                    content:  
-                        String(  
-                            math || ""  
-                        ).trim()  
-                });  
-  
-                return `  
-                    __PINGU_MATH_BLOCK_${index}__  
-                `;  
-            }  
-        );  
-  
-    source =  
-        source.replace(  
-            /\\\(([\s\S]*?)\\\)/g,  
-            (_, math) => {  
-  
-                const index =  
-                    blocks.length;  
-  
-                blocks.push({  
-  
-                    type:  
-                        "inline-math",  
-  
-                    content:  
-                        String(  
-                            math || ""  
-                        ).trim()  
-                });  
-  
-                return `  
-                    __PINGU_MATH_BLOCK_${index}__  
-                `;  
-            }  
-        );  
-  
-    source =  
-        source.replace(  
-            /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,  
-            (  
-                full,  
-                before,  
-                math  
-            ) => {  
-  
-                const index =  
-                    blocks.length;  
-  
-                blocks.push({  
-  
-                    type:  
-                        "inline-math",  
-  
-                    content:  
-                        String(  
-                            math || ""  
-                        ).trim()  
-                });  
-  
-                return (  
-                    before +  
-                    `__PINGU_MATH_BLOCK_${index}__`  
-                );  
-            }  
-        );  
-  
-    return source;  
-}  
-  
-  
-/* =========================================================  
-   NORMAL TEXT  
-========================================================= */  
-  
-function formatNormalText(  
-    text  
-) {  
-  
-    if (!text) {  
-        return "";  
-    }  
-  
-    let output =  
-        escapeHTML(  
-            text  
-        );  
-  
-    output =  
-        output.replace(  
-            /`([^`\n]+)`/g,  
-            '<span class="inline-code">$1</span>'  
-        );  
-  
-    output =  
-        output.replace(  
-            /\*\*([^*\n]+)\*\*/g,  
-            "<strong>$1</strong>"  
-        );  
-  
-    /*  
-     * URL langsung menjadi link.  
-     */  
-    output =  
-        output.replace(  
-            /(https?:\/\/[^\s<>"']+)/gi,  
-            raw => {  
-  
-                const url =  
-                    cleanUrl(  
-                        raw  
-                    );  
-  
-                const safe =  
-                    safeHref(  
-                        url  
-                    );  
-  
-                if (  
-                    safe === "#"  
-                ) {  
-  
-                    return raw;  
-                }  
-  
-                const label =  
-                    escapeHTML(  
-                        getDomainName(  
-                            url  
-                        )  
-                    );  
+/* =========================================================
+   MATH / LATEX
+   Robust MathJax 3 renderer.
+   Supports $$...$$, \[...\], $...$, and \(...\).
+========================================================= */
 
-                return `  
-                    <a  
-                        href="${safe}"  
-                        target="_blank"  
-                        rel="noopener noreferrer"  
-                    >${label}</a>  
-                `;  
-            }  
-        );  
-  
-    output =  
-        output.replace(  
-            /\r?\n/g,  
-            "<br>"  
-        );  
-  
-    return output;  
-}  
-  
-  
-/* =========================================================  
-   FORMAT TEXT  
-========================================================= */  
-  
-function formatText(  
-    text  
-) {  
-  
-    let source =  
-        String(  
-            text ?? ""  
-        );  
-  
-    /*  
-     * Buang tag HTML mentah dari model  
-     * agar tidak tampil sebagai script.  
-     */  
-    source =  
-        source.replace(  
-            /<\s*\/?\s*[a-zA-Z][^>]*>/g,  
-            ""  
-        );  
+function extractMathBlocks(source, blocks) {
+    let input = String(source ?? "");
+    const ESC_DOLLAR = "__PINGU_ESCAPED_DOLLAR__";
 
-    /*  
-     * Perbaiki markdown link yang putus baris.  
-     */  
-    source =  
-        source.replace(  
-            /\[([^\]\n]{1,200})\]\s*\n+\s*\((https?:\/\/[^\s)]+)\)/g,  
-            "[$1]($2)"  
-        );  
+    // Preserve escaped dollar signs such as \$5.
+    input = input.replace(/\\\$/g, ESC_DOLLAR);
 
-    const blocks = [];  
-  
-  
-    /*  
-     * Code block.  
-     */  
-    source =  
-        source.replace(  
-            /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g,  
-            (  
-                _,  
-                language,  
-                code  
-            ) => {  
-  
-                const index =  
-                    blocks.length;  
-  
-                blocks.push({  
-  
-                    type:  
-                        "code",  
-  
-                    language:  
-                        String(  
-                            language || ""  
-                        ).trim() ||  
-                        "code",  
-  
-                    content:  
-                        String(  
-                            code || ""  
-                        ).replace(  
-                            /\r?\n$/,  
-                            ""  
-                        )  
-  
-                });  
-  
-                return `  
-                    __PINGU_CODE_BLOCK_${index}__  
-                `;  
-            }  
-        );  
-  
-  
-    /*  
-     * Markdown links sebelum  
-     * escape HTML.  
-     */  
-    source =  
-        source.replace(  
-            /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,  
-            (  
-                _,  
-                title,  
-                url  
-            ) => {  
-  
-                const index =  
-                    blocks.length;  
-  
-                blocks.push({  
-  
-                    type:  
-                        "link",  
-  
-                    title:  
-                        title,  
-  
-                    url:  
-                        cleanUrl(  
-                            url  
-                        )  
-  
-                });  
-  
-                return `  
-                    __PINGU_LINK_BLOCK_${index}__  
-                `;  
-            }  
-        );  
-  
-  
-    /*  
-     * Math.  
-     */  
-    source =  
-        extractMathBlocks(  
-            source,  
-            blocks  
-        );  
-  
-  
-    let output =  
-        formatNormalText(  
-            source  
-        );  
-  
-  
-    /*  
-     * Render semua placeholder.  
-     */  
-    for (  
-        let i = 0;  
-        i < blocks.length;  
-        i++  
-    ) {  
-  
-        const block =  
-            blocks[i];  
-  
-        const codePlaceholder =  
-            `__PINGU_CODE_BLOCK_${i}__`;  
-  
-        const mathPlaceholder =  
-            `__PINGU_MATH_BLOCK_${i}__`;  
-  
-        const linkPlaceholder =  
-            `__PINGU_LINK_BLOCK_${i}__`;  
-  
-  
-        if (  
-            block.type ===  
-            "code"  
-        ) {  
-  
-            output =  
-                output.replace(  
-                    codePlaceholder,  
-                    `  
-                    <div class="code-wrapper">  
-  
-                        <div class="code-header">  
-  
-                            <span class="code-language">  
-                                ${escapeHTML(  
-                                    block.language  
-                                )}  
-                            </span>  
-  
-                            <button  
-                                class="copy-code"  
-                                type="button"  
-                            >  
-                                Salin  
-                            </button>  
-  
-                        </div>  
-  
-                        <pre class="code"><code>${escapeHTML(  
-                            block.content  
-                        )}</code></pre>  </div>  
-                `  
-            );  
+    const add = (type, content) => {
+        const index = blocks.length;
+        blocks.push({
+            type,
+            content: String(content ?? "").trim()
+        });
+        return `__PINGU_MATH_BLOCK_${index}__`;
+    };
 
-    } else if (  
-        block.type ===  
-        "display-math"  
-    ) {  
+    // Display delimiters first so $$...$$ is never consumed by $...$.
+    input = input.replace(
+        /\$\$([\s\S]*?)\$\$/g,
+        (_, math) => add("display-math", math)
+    );
 
-        output =  
-            output.replace(  
-                mathPlaceholder,  
-                `<div class="math-display" data-math-index="${i}"></div>`  
-            );  
+    input = input.replace(
+        /\\\[([\s\S]*?)\\\]/g,
+        (_, math) => add("display-math", math)
+    );
 
-    } else if (  
-        block.type ===  
-        "inline-math"  
-    ) {  
+    // Inline \(...\)
+    input = input.replace(
+        /\\\(([\s\S]*?)\\\)/g,
+        (_, math) => add("inline-math", math)
+    );
 
-        output =  
-            output.replace(  
-                mathPlaceholder,  
-                `<span class="math-inline" data-math-index="${i}"></span>`  
-            );  
+    // Inline $...$, excluding line breaks and additional $ characters.
+    input = input.replace(
+        /(^|[^\$])\$([^\$\n]+)\$(?!\$)/g,
+        (full, before, math) =>
+            before + add("inline-math", math)
+    );
 
-    } else if (  
-        block.type ===  
-        "link"  
-    ) {  
+    return input.replaceAll(ESC_DOLLAR, "$");
+}
 
-        const safe =  
-            safeHref(  
-                block.url  
-            );  
+function renderMathBlocks(bubble, blocks) {
+    if (!bubble) return;
 
-        if (  
-            safe === "#"  
-        ) {  
+    bubble.querySelectorAll("[data-math-index]").forEach(element => {
+        const block = blocks[Number(element.dataset.mathIndex)];
+        if (!block) return;
 
-            output =  
-                output.replace(  
-                    linkPlaceholder,  
-                    escapeHTML(  
-                        block.title  
-                    )  
-                );  
+        // Raw TeX goes through textContent. It must not be HTML-escaped.
+        element.textContent =
+            block.type === "display-math"
+                ? `\\[${block.content}\\]`
+                : `\\(${block.content}\\)`;
 
-        } else {  
+        element.classList.add("math-pending");
+    });
+}
 
-            output =  
-                output.replace(  
-                    linkPlaceholder,  
-                    `  
-                    <a  
-                        href="${safe}"  
-                        target="_blank"  
-                        rel="noopener noreferrer"  
-                    >${escapeHTML(  
-                        block.title  
-                    )}</a>  
-                    `  
-                );  
-        }  
-    }  
-}  
+async function typesetMath(element) {
+    if (!element || !window.MathJax) return;
 
+    try {
+        if (
+            window.MathJax.startup &&
+            window.MathJax.startup.promise
+        ) {
+            await window.MathJax.startup.promise;
+        }
 
-return {  
+        if (typeof window.MathJax.typesetClear === "function") {
+            window.MathJax.typesetClear([element]);
+        }
 
-    html:  
-        output,  
+        if (typeof window.MathJax.typesetPromise === "function") {
+            await window.MathJax.typesetPromise([element]);
+        }
 
-    blocks  
-};
+        element
+            .querySelectorAll(".math-pending")
+            .forEach(node => node.classList.remove("math-pending"));
 
+    } catch (error) {
+        console.warn("MathJax gagal merender LaTeX:", error);
+    }
 }
 
 /* =========================================================
-MATH RENDER
+   NORMAL TEXT
 ========================================================= */
 
-function renderMathBlocks(
-bubble,
-blocks
-) {
+function formatNormalText(text) {
+    if (!text) return "";
 
-if (!bubble) {  
-    return;  
-}  
+    let output = escapeHTML(text);
 
-bubble  
-    .querySelectorAll(  
-        "[data-math-index]"  
-    )  
-    .forEach(  
-        element => {  
-
-            const block =  
-                blocks[  
-                    Number(  
-                        element.dataset  
-                            .mathIndex  
-                    )  
-                ];  
-
-            if (!block) {  
-                return;  
-            }  
-
-            if (  
-                block.type ===  
-                "display-math"  
-            ) {  
-
-                element.textContent =  
-                    "\\[" +  
-                    block.content +  
-                    "\\]";  
-
-            } else {  
-
-                element.textContent =  
-                    "\\(" +  
-                    block.content +  
-                    "\\)";  
-            }  
-        }  
+    output = output.replace(
+        /`([^`\n]+)`/g,
+        '<span class="inline-code">$1</span>'
     );
 
+    output = output.replace(
+        /\*\*([^*\n]+)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+    output = output.replace(
+        /(https?:\/\/[^\s<>"']+)/gi,
+        raw => {
+            const url = cleanUrl(raw);
+            const safe = safeHref(url);
+
+            if (safe === "#") return raw;
+
+            const label = escapeHTML(getDomainName(url));
+
+            return `
+                <a
+                    href="${safe}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >${label}</a>
+            `;
+        }
+    );
+
+    output = output.replace(/\r?\n/g, "<br>");
+    return output;
 }
 
-async function typesetMath(
-element
-) {
+/* =========================================================
+   FORMAT TEXT
+========================================================= */
 
-if (!element) {  
-    return;  
-}  
+function formatText(text) {
+    let source = String(text ?? "");
 
-try {  
+    source = source.replace(
+        /<\s*\/?\s*[a-zA-Z][^>]*>/g,
+        ""
+    );
 
-    if (!window.MathJax) {  
-        return;  
-    }  
+    source = source.replace(
+        /\[([^\]\n]{1,200})\]\s*\n+\s*\((https?:\/\/[^\s)]+)\)/g,
+        "[$1]($2)"
+    );
 
-    if (  
-        window.MathJax.startup &&  
-        window.MathJax.startup.promise  
-    ) {  
+    const blocks = [];
 
-        await window.MathJax  
-            .startup  
-            .promise;  
-    }  
+    // Extract code before math so TeX inside code is never rendered.
+    source = source.replace(
+        /```[ \t]*([a-zA-Z0-9_+#.-]*)[ \t]*\r?\n([\s\S]*?)```/g,
+        (_, language, code) => {
+            const index = blocks.length;
 
-    if (  
-        typeof  
-            window.MathJax.typesetPromise ===  
-            "function"  
-    ) {  
+            blocks.push({
+                type: "code",
+                language:
+                    String(language || "").trim() || "code",
+                content: String(code || "").replace(/\r?\n$/, "")
+            });
 
-        await window.MathJax  
-            .typesetPromise(  
-                [element]  
-            );  
-    }  
+            return `__PINGU_CODE_BLOCK_${index}__`;
+        }
+    );
 
-} catch (error) {  
+    // Preserve markdown links before HTML escaping.
+    source = source.replace(
+        /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,
+        (_, title, url) => {
+            const index = blocks.length;
 
-    console.warn(  
-        "MathJax gagal:",  
-        error  
-    );  
-}
+            blocks.push({
+                type: "link",
+                title,
+                url: cleanUrl(url)
+            });
 
+            return `__PINGU_LINK_BLOCK_${index}__`;
+        }
+    );
+
+    // Extract TeX after code/link protection.
+    source = extractMathBlocks(source, blocks);
+
+    let output = formatNormalText(source);
+
+    for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+
+        const codePlaceholder =
+            `__PINGU_CODE_BLOCK_${i}__`;
+
+        const mathPlaceholder =
+            `__PINGU_MATH_BLOCK_${i}__`;
+
+        const linkPlaceholder =
+            `__PINGU_LINK_BLOCK_${i}__`;
+
+        if (block.type === "code") {
+            output = output.replace(
+                codePlaceholder,
+                `
+                <div class="code-wrapper">
+                    <div class="code-header">
+                        <span class="code-language">
+                            ${escapeHTML(block.language)}
+                        </span>
+                        <button class="copy-code" type="button">
+                            Salin
+                        </button>
+                    </div>
+                    <pre class="code"><code>${escapeHTML(
+                        block.content
+                    )}</code></pre>
+                </div>
+                `
+            );
+
+        } else if (block.type === "display-math") {
+            output = output.replace(
+                mathPlaceholder,
+                `<div class="math-display" data-math-index="${i}"></div>`
+            );
+
+        } else if (block.type === "inline-math") {
+            output = output.replace(
+                mathPlaceholder,
+                `<span class="math-inline" data-math-index="${i}"></span>`
+            );
+
+        } else if (block.type === "link") {
+            const safe = safeHref(block.url);
+
+            output = output.replace(
+                linkPlaceholder,
+                safe === "#"
+                    ? escapeHTML(block.title)
+                    : `
+                        <a
+                            href="${safe}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >${escapeHTML(block.title)}</a>
+                    `
+            );
+        }
+    }
+
+    return {
+        html: output,
+        blocks
+    };
 }
 
 /* =========================================================
