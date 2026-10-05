@@ -7,12 +7,23 @@ import { GoogleGenAI } from "@google/genai";
  * =========================================================
  */
 
-const TEXT_MODELS = [
+/*
+ * Mode normal: model lebih baru dulu.
+ * Mode hemat: gemini-3.5-flash (dipakai otomatis kalau model atas kena limit/quota).
+ */
+const TEXT_MODELS_NORMAL = [
+  "gemini-flash-latest",
   "gemini-3.8-flash",
   "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-flash-latest"
+  "gemini-3.6-flash"
+];
+
+const TEXT_MODEL_HEMAT = "gemini-3.5-flash";
+
+const TEXT_MODELS = [
+  ...TEXT_MODELS_NORMAL,
+  TEXT_MODEL_HEMAT,
+  "gemini-2.5-flash"
 ];
 
 /*
@@ -30,9 +41,9 @@ const IMAGE_MODEL = IMAGE_MODELS[0];
 const MAX_HISTORY = 30;
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 
-const RETRIES_PER_MODEL = 3;
-const RETRY_DELAY = 1500;
-const RETRY_DELAY_503 = 2800;
+const RETRIES_PER_MODEL = 2;
+const RETRY_DELAY = 1200;
+const RETRY_DELAY_503 = 2500;
 
 /*
  * =========================================================
@@ -81,13 +92,12 @@ function getStatus(error) {
 }
 
 function getMessage(error) {
-  const raw =
+  let raw =
     error?.message ||
     error?.error?.message ||
     error?.error?.status ||
     "";
 
-  // If message is a JSON string from the API, pull the human text out.
   if (typeof raw === "string" && raw.trim().startsWith("{")) {
     try {
       const parsed = JSON.parse(raw);
@@ -95,29 +105,79 @@ function getMessage(error) {
         parsed?.error?.message ||
         parsed?.message ||
         parsed?.error?.status;
-      if (nested) return String(nested);
+      if (nested) raw = String(nested);
     } catch {
       /* keep raw */
     }
   }
 
-  if (raw) return String(raw);
-
-  if (error?.error && typeof error.error === "object") {
-    return (
+  if (!raw && error?.error && typeof error.error === "object") {
+    raw =
       error.error.message ||
       error.error.status ||
-      JSON.stringify(error.error)
+      JSON.stringify(error.error);
+  }
+
+  let text = String(raw || error || "Unknown error");
+
+  // Strip accidental HTML / markdown link noise from provider errors
+  text = text
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s*href\s*=\s*"[^"]*"/gi, "")
+    .replace(/\s*target\s*=\s*"[^"]*"/gi, "")
+    .replace(/\s*rel\s*=\s*"[^"]*"/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return text || "Unknown error";
+}
+
+function isQuotaError(error) {
+  const status = getStatus(error);
+  const message = getMessage(error).toLowerCase();
+  return (
+    status === 429 ||
+    message.includes("quota") ||
+    message.includes("rate limit") ||
+    message.includes("rate-limit") ||
+    message.includes("exceeded your current quota") ||
+    message.includes("resource_exhausted") ||
+    message.includes("free_tier")
+  );
+}
+
+function extractRetryHint(message) {
+  const m = String(message || "").match(
+    /retry in\s+([0-9]+h)?\s*([0-9]+m)?\s*([0-9]+(?:\.[0-9]+)?s)?/i
+  );
+  if (!m) return "";
+  const parts = [m[1], m[2], m[3]].filter(Boolean);
+  return parts.length ? parts.join(" ") : "";
+}
+
+function friendlyQuotaMessage(error, kind = "teks") {
+  const message = getMessage(error);
+  const retry = extractRetryHint(message);
+
+  if (retry) {
+    return (
+      `Waktu kuota ${kind} telah habis. Coba lagi nanti (sekitar ${retry}).`
     );
   }
 
-  return String(error || "Unknown error");
+  return (
+    `Waktu kuota ${kind} telah habis. Coba lagi nanti.`
+  );
 }
 
 function friendlyImageError(error) {
   const status = getStatus(error);
   const message = getMessage(error);
   const lower = message.toLowerCase();
+
+  if (isQuotaError(error)) {
+    return friendlyQuotaMessage(error, "gambar");
+  }
 
   if (
     status === 503 ||
@@ -126,10 +186,6 @@ function friendlyImageError(error) {
     lower.includes("overloaded")
   ) {
     return "Model gambar sedang penuh (high demand). Coba lagi dalam beberapa detik.";
-  }
-
-  if (status === 429 || lower.includes("rate") || lower.includes("quota")) {
-    return "Batas permintaan API tercapai. Tunggu sebentar lalu coba lagi.";
   }
 
   if (status === 400) {
@@ -141,6 +197,13 @@ function friendlyImageError(error) {
   }
 
   return message || "Gagal memproses gambar.";
+}
+
+function friendlyTextError(error) {
+  if (isQuotaError(error)) {
+    return friendlyQuotaMessage(error, "teks");
+  }
+  return getMessage(error) || "Semua model Gemini gagal.";
 }
 
 function isRetryable(status) {
@@ -374,6 +437,11 @@ async function generateText(ai, model, prompt, image) {
         status,
         getMessage(error)
       );
+
+      // Quota: stop retrying this model immediately
+      if (isQuotaError(error)) {
+        break;
+      }
 
       if (!isRetryable(status) || attempt >= RETRIES_PER_MODEL) {
         break;
@@ -887,17 +955,21 @@ export async function POST(request) {
 
     const prompt = buildTextPrompt(messages);
     const failures = [];
+    let usedHemat = false;
 
     for (const model of TEXT_MODELS) {
       try {
         const reply = await generateText(ai, model, prompt, image);
+
+        usedHemat = model === TEXT_MODEL_HEMAT;
 
         return json({
           ok: true,
           reply,
           model,
           type: "text",
-          imageAnalyzed: Boolean(image)
+          imageAnalyzed: Boolean(image),
+          hematMode: usedHemat
         });
       } catch (error) {
         const status = getStatus(error);
@@ -911,6 +983,14 @@ export async function POST(request) {
           message
         );
 
+        // Model atas kena limit → lanjut ke model berikutnya (termasuk 3.5 hemat)
+        if (isQuotaError(error)) {
+          console.log(
+            `[Pingu] Quota on ${model}, mencoba model berikutnya / mode hemat...`
+          );
+          continue;
+        }
+
         if (!isRetryable(status)) {
           break;
         }
@@ -918,11 +998,22 @@ export async function POST(request) {
     }
 
     const last = failures[failures.length - 1];
+    const quotaCount = failures.filter(
+      (f) =>
+        f.status === 429 ||
+        String(f.message || "").toLowerCase().includes("quota")
+    ).length;
+    const mostlyQuota = failures.length > 0 && quotaCount === failures.length;
 
     return json(
       {
         ok: false,
-        error: last?.message || "Semua model Gemini gagal.",
+        error: mostlyQuota
+          ? friendlyQuotaMessage(
+              { status: 429, message: last?.message },
+              "teks"
+            )
+          : (last?.message || "Semua model Gemini gagal."),
         code: last?.status || 500,
         attempts: failures.map((item) => ({
           model: item.model,
